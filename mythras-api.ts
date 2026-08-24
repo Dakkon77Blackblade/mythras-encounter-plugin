@@ -13,6 +13,7 @@ export interface MythrasSearchResult {
 export interface MythrasTemplate {
     id: number;
     name: string;
+    author: string;
     race: string;
     rank: string;
     notes: string;
@@ -53,6 +54,7 @@ export class MythrasApi {
         const template: MythrasTemplate = {
             id,
             name: '',
+            author: '',
             race: '',
             rank: '',
             notes: '',
@@ -79,6 +81,7 @@ export class MythrasApi {
                 if (th === 'Rank') template.rank = td || '';
                 if (th === 'Race') template.race = td || '';
                 if (th === 'Notes') template.notes = td || '';
+                if (th === 'Creator') template.author = td || '';
             });
         }
 

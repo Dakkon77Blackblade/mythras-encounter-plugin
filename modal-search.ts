@@ -54,7 +54,9 @@ export class MythrasSearchModal extends SuggestModal<MythrasSearchResult> {
 
         // Sanitize filename
         const safeName = template.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-        const filePath = `${folderPath}/${safeName}.json`;
+        const safeAuthor = (template.author || 'unknown').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const fileName = `${safeName}_by_${safeAuthor}`;
+        const filePath = `${folderPath}/${fileName}.json`;
         
         const content = JSON.stringify(template, null, 4);
 
