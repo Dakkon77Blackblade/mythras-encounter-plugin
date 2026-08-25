@@ -24,6 +24,7 @@ Whenever the user asks you to implement a new feature or fix a bug in this proje
 ## 4. Building and Verification
 - Always run `npm run build` to verify the code compiles without TypeScript errors.
 - Ensure the Obsidian plugin's `main.js` is up to date (we use a symlink for local development, so the build output immediately reflects in the Obsidian vault).
+- **User Testing:** Wait for the user to test and verify the new functionality in Obsidian before proceeding to the merge step.
 
 ## 5. Pull Request and Merge
 - Add all files, commit with a descriptive message referencing the issue number (e.g., `git commit -m "Implement spells system (fixes #8)"`).
