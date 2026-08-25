@@ -31,6 +31,7 @@ export interface MythrasTemplate {
     id: number;
     name: string;
     author: string;
+    image?: string;
     tags: string[];
     race: string;
     rank: string;

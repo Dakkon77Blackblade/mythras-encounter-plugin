@@ -12,6 +12,7 @@ Anstatt während der Spielsitzung ständig auf externe Webseiten zugreifen zu m�
 
 ## Features des Plugins
 - **Intelligenter Scraper**: Parst sämtliche relevanten Daten aus der Website, einschließlich Hit Locations, Sonderfertigkeiten (Features), Standard/Custom Skills, Combat Styles und detaillierte Waffenprofile.
+- **Lokaler Bestiary Manager**: Ein komfortables Interface in den Obsidian-Einstellungen, mit dem du alle lokal gespeicherten Kreaturen durchsuchen, filtern und editieren kannst. Du kannst eigene Bilder verlinken, Stats anpassen und eigene Waffen hinzufügen.
 - **Zufalls-Waffen**: Wenn ein Template "Weapon options" enthält (z.B. 1 von 3 verschiedenen Schwertern), wählt das Plugin beim Generieren automatisch die angegebene Anzahl an Waffen zufällig aus.
 - **Mythras Dice Roller**: Echte Regel-Abbildungen wie `Math.ceil((CON + SIZ) / 5)` für die Basis-HP je Hit Location, plus die modifizierten Trefferzonen-HP. Auch Action Points und Strike Rank werden nach Core-Rules abgeleitet.
 

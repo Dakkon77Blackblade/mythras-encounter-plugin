@@ -1,0 +1,12 @@
+/* Mythras Encounter Plugin Styles */
+
+.mythras-bestiary-modal {
+    width: 80vw !important;
+    max-width: 1200px !important;
+    height: 80vh !important;
+}
+
+.mythras-bestiary-modal .modal-content {
+    height: calc(100% - 40px);
+    overflow-y: auto;
+}

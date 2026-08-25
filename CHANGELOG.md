@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Accurately replicated the Mythras Encounter Generator's weighted random selection logic (probability weights without replacement) and support for dice formulas in weapon amounts (Fixes #6).
 - Overhauled Markdown weapon formatting to distinctly render Melee, Ranged, and Shield weapon types with their correct specific stats (e.g. Range instead of Reach for Bows).
 - Restructured the plugin's file layout to use a single configurable `baseFolder` that automatically houses `Bestiary` and `Armory` subdirectories to prevent clutter (Fixes #7).
+- Introduced the **Local Bestiary Manager**, a full UI available from the plugin settings to list, view, and edit local templates.
+- Features dynamic editing views with Obsidian Vault image selection, custom vs. armory weapon handling, and automatic author tagging for manually customized creatures (Fixes #9).
 
 ## [0.1.0] - 2026-08-24
 ### Added
