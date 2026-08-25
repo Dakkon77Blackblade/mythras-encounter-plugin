@@ -13,6 +13,7 @@ Anstatt während der Spielsitzung ständig auf externe Webseiten zugreifen zu m�
 ## Features des Plugins
 - **Intelligenter Scraper**: Parst sämtliche relevanten Daten aus der Website, einschließlich Hit Locations, Sonderfertigkeiten (Features), Standard/Custom Skills, Combat Styles und detaillierte Waffenprofile.
 - **Lokaler Bestiary Manager**: Ein komfortables Interface in den Obsidian-Einstellungen, mit dem du alle lokal gespeicherten Kreaturen durchsuchen, filtern und editieren kannst. Du kannst eigene Bilder verlinken, Stats anpassen und eigene Waffen hinzufügen.
+- **Lokaler Armory Manager**: Ein dediziertes UI für die Verwaltung von Nahkampfwaffen, Fernkampfwaffen und Schilden. Die Basisdaten (inklusive 1H/2H-Varianten und Ranged-Sonderregeln) stammen direkt aus der *Classic Fantasy Imperative SRD* und sind als Rohdaten statisch im Code unter `default-armory.ts` abgelegt. Über den Manager kannst du jederzeit dein lokales `armory.json` Backup überschreiben (Repopulate) und aus über 60 Standardwaffen neue Kopien erzeugen.
 - **Zufalls-Waffen**: Wenn ein Template "Weapon options" enthält (z.B. 1 von 3 verschiedenen Schwertern), wählt das Plugin beim Generieren automatisch die angegebene Anzahl an Waffen zufällig aus.
 - **Mythras Dice Roller**: Echte Regel-Abbildungen wie `Math.ceil((CON + SIZ) / 5)` für die Basis-HP je Hit Location, plus die modifizierten Trefferzonen-HP. Auch Action Points und Strike Rank werden nach Core-Rules abgeleitet.
 

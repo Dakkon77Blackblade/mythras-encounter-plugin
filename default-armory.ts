@@ -260,7 +260,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "hp": "10",
     "specialFx": "Bleed, Sunder",
     "traits": "",
-    "cost": "25GP"
+    "cost": "25GP",
+    "notes": "Counts as 2 Things with regards to ENC"
   },
   {
     "name": "Great axe",
@@ -271,7 +272,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "hp": "10",
     "specialFx": "Bleed, Sunder",
     "traits": "",
-    "cost": "15GP"
+    "cost": "15GP",
+    "notes": "Counts as 2 Things with regards to ENC"
   },
   {
     "name": "Great hammer",
@@ -282,7 +284,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "hp": "10",
     "specialFx": "Bash, Stun Location, Sunder",
     "traits": "",
-    "cost": "25GP"
+    "cost": "25GP",
+    "notes": "Counts as 2 Things with regards to ENC"
   },
   {
     "name": "Great sword",
@@ -293,7 +296,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "hp": "12",
     "specialFx": "Bleed, Impale, Sunder",
     "traits": "",
-    "cost": "30GP"
+    "cost": "30GP",
+    "notes": "Counts as 2 Things with regards to ENC"
   },
   {
     "name": "Halberd/ Poleaxe",
@@ -304,7 +308,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "hp": "10",
     "specialFx": "Entangle, Impale, Sunder",
     "traits": "Set",
-    "cost": "20GP"
+    "cost": "20GP",
+    "notes": "Counts as 2 Things with regards to ENC"
   },
   {
     "name": "Knife",
@@ -499,7 +504,7 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "specialFx": "Bash, Stun Location",
     "traits": "Ranged Parry; Passive Block 3 locations",
     "cost": "15GP",
-    "notes": "Counts as 2 'Things' with regards to ENC"
+    "notes": "Counts as 2 Things with regards to ENC"
   },
   {
     "name": "Kite",
@@ -511,7 +516,7 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "specialFx": "Bash, Stun Location",
     "traits": "Ranged Parry; Passive Block 4 locations",
     "cost": "30GP",
-    "notes": "Counts as 2 'Things' with regards to ENC"
+    "notes": "Counts as 2 Things with regards to ENC"
   },
   {
     "name": "Round",
@@ -523,7 +528,7 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "specialFx": "Bash, Stun Location",
     "traits": "Ranged Parry; Passive Block 4 locations",
     "cost": "30GP",
-    "notes": "Counts as 2 'Things' with regards to ENC"
+    "notes": "Counts as 2 Things with regards to ENC"
   },
   {
     "name": "Target",
@@ -535,7 +540,7 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "specialFx": "Bash, Impale",
     "traits": "Ranged Parry; Passive Block 3 locations",
     "cost": "15GP",
-    "notes": "Counts as 2 'Things' with regards to ENC"
+    "notes": "Counts as 2 Things with regards to ENC"
   },
   {
     "name": "Tower",
@@ -547,7 +552,7 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "specialFx": "Bash, Stun Location",
     "traits": "Ranged Parry; Passive Block 5 locations",
     "cost": "30GP",
-    "notes": "Counts as 2 'Things' with regards to ENC"
+    "notes": "Counts as 2 Things with regards to ENC"
   },
   {
     "name": "Crossbow, heavy",
@@ -590,7 +595,7 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "specialFx": "Impale",
     "traits": "",
     "cost": "3GP",
-    "notes": "Counts as \u00bd of a 'Thing' with regards to ENC",
+    "notes": "Counts as \u00bd of a Thing with regards to ENC, has the 1H trait",
     "range": "15/30/60",
     "load": "\u2014",
     "impSize": "S",
@@ -606,7 +611,7 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "specialFx": "Impale",
     "traits": "",
     "cost": "1GP",
-    "notes": "Counts as \u00bd of a 'Thing' with regards to ENC",
+    "notes": "Counts as \u00bd of a Thing with regards to ENC, has the 1H trait",
     "range": "15/30/60",
     "load": "\u2014",
     "impSize": "S",
@@ -637,7 +642,7 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "specialFx": "Stun Location",
     "traits": "",
     "cost": "5SP",
-    "notes": "Counts as \u00bd of a 'Thing' with regards to ENC",
+    "notes": "Counts as \u00bd of a Thing with regards to ENC, has the 1H trait",
     "range": "30/450/900",
     "load": "3",
     "impSize": "\u2014",
@@ -744,7 +749,7 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "specialFx": "Bleed",
     "traits": "",
     "cost": "2.5GP",
-    "notes": "Counts as \u00bd of a 'Thing' with regards to ENC, has the 1H trait",
+    "notes": "Counts as \u00bd of a Thing with regards to ENC, has the 1H trait",
     "range": "30/60/90",
     "load": "\u2014",
     "impSize": "\u2014",
