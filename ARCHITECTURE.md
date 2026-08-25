@@ -12,11 +12,11 @@ The codebase is structured into the following TypeScript modules:
 - **`settings.ts`**: Defines the user settings schema (e.g., the local `bestiaryFolder` path) and the settings UI tab.
 - **`mythras-api.ts`**: Handles all external network communication. 
   - `search()`: Hits the JSON search endpoint.
-  - `fetchTemplate()`: Fetches the template's HTML page and parses it using `DOMParser` to extract base stats, dice formulas, and metadata into a `MythrasTemplate` JSON object.
+  - `fetchTemplate()`: Fetches the template's HTML page and parses it using `DOMParser` to extract base stats, dice formulas, attributes, hit locations, features, skills, and weapons (handling both optional random lists and explicit statblocks) into a `MythrasTemplate` JSON object.
 - **`dice-roller.ts`**: A dedicated engine for Mythras mechanics. It evaluates string formulas (e.g., `STR+DEX+30`, `1d8`) and calculates derived statistics such as Damage Modifier, Strike Rank, and base Hit Points.
 - **`modal-search.ts`**: The UI for finding templates online. Uses Obsidian's `SuggestModal` for interactive search.
 - **`modal-generate.ts`**: The UI for selecting a local template from the Bestiary and defining how many instances to generate.
-- **`statblock-formatter.ts`**: Transforms the freshly rolled data into clean, readable Markdown tables to be inserted into the editor.
+- **`statblock-formatter.ts`**: Transforms the freshly rolled data into clean, readable Markdown tables. It resolves optional random weapons automatically.
 
 ## 3. Data Flow
 1. **Search & Import**: 

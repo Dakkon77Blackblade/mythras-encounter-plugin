@@ -1,4 +1,4 @@
-import { MythrasTemplate } from './mythras-api';
+import { MythrasTemplate, MythrasWeapon } from './mythras-api';
 import { DiceRoller } from './dice-roller';
 
 export function generateStatblock(template: MythrasTemplate, index: number): string {
@@ -42,20 +42,51 @@ export function generateStatblock(template: MythrasTemplate, index: number): str
     });
 
     // 4. Roll Skills
-    const rolledSkills: string[] = [];
-    for (const [skill, formula] of Object.entries(template.skills)) {
+    const rolledStandardSkills: string[] = [];
+    for (const [skill, formula] of Object.entries(template.standardSkills || {})) {
         const val = DiceRoller.rollExpression(formula, rolledStats);
-        rolledSkills.push(`**${skill}:** ${val}%`);
+        rolledStandardSkills.push(`**${skill}:** ${val}%`);
+    }
+
+    const rolledCustomSkills: string[] = [];
+    for (const [skill, formula] of Object.entries(template.customSkills || {})) {
+        const val = DiceRoller.rollExpression(formula, rolledStats);
+        rolledCustomSkills.push(`**${skill}:** ${val}%`);
     }
 
     // 5. Roll Combat Styles
     const rolledStyles: string[] = [];
-    for (const [style, formula] of Object.entries(template.combatStyles)) {
+    for (const [style, formula] of Object.entries(template.combatStyles || {})) {
         const val = DiceRoller.rollExpression(formula, rolledStats);
         rolledStyles.push(`**${style}:** ${val}%`);
     }
 
-    // 6. Format Markdown
+    // 6. Resolve Weapons
+    const activeWeapons: MythrasWeapon[] = [];
+    
+    // Add all non-optional weapons
+    activeWeapons.push(...(template.weapons || []).filter(w => !w.isOptional));
+
+    // Randomly select optional weapons
+    const optionalWeapons = (template.weapons || []).filter(w => w.isOptional);
+    const optByCategory: Record<string, MythrasWeapon[]> = {};
+    optionalWeapons.forEach(w => {
+        const cat = w.category || 'Unknown';
+        if (!optByCategory[cat]) optByCategory[cat] = [];
+        optByCategory[cat].push(w);
+    });
+
+    for (const cat of Object.keys(optByCategory)) {
+        const options = optByCategory[cat];
+        // All options in this category should share the same amountToChoose, just grab the first
+        const amount = options[0].amountToChoose || 1;
+        
+        // Shuffle and pick `amount`
+        const shuffled = options.sort(() => 0.5 - Math.random());
+        activeWeapons.push(...shuffled.slice(0, amount));
+    }
+
+    // 7. Format Markdown
     let md = `### ${template.name} #${index}\n`;
     
     // Core Stats Table
@@ -79,9 +110,26 @@ export function generateStatblock(template: MythrasTemplate, index: number): str
     }
 
     // Weapons
-    if (template.weapons && template.weapons.length > 0) {
+    if (activeWeapons.length > 0) {
         md += `**Weapons:**\n`;
-        template.weapons.forEach(w => md += `- ${w}\n`);
+        activeWeapons.forEach(w => {
+            if (w.isOptional) {
+                // We only have the name for optional weapons
+                md += `- ${w.name}\n`;
+            } else {
+                // We have full stats for custom/natural weapons
+                md += `- **${w.name}** (${w.type || '-'}): Damage ${w.damage || '-'}, Size ${w.size || '-'}, Reach ${w.reach || '-'}, Special: ${w.specialFx || 'None'}\n`;
+            }
+        });
+        md += `\n`;
+    }
+
+    // Features
+    if (template.features && template.features.length > 0) {
+        md += `**Features:**\n`;
+        template.features.forEach(f => {
+            md += `- **${f.name}:** ${f.description}\n`;
+        });
         md += `\n`;
     }
 
@@ -91,8 +139,11 @@ export function generateStatblock(template: MythrasTemplate, index: number): str
     }
 
     // Skills
-    if (rolledSkills.length > 0) {
-        md += `**Skills:** ${rolledSkills.join(' | ')}\n\n`;
+    if (rolledStandardSkills.length > 0) {
+        md += `**Standard Skills:** ${rolledStandardSkills.join(' | ')}\n\n`;
+    }
+    if (rolledCustomSkills.length > 0) {
+        md += `**Custom Skills:** ${rolledCustomSkills.join(' | ')}\n\n`;
     }
 
     // Notes

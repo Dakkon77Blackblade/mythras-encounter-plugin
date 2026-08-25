@@ -10,19 +10,37 @@ export interface MythrasSearchResult {
     starred: boolean;
 }
 
+export interface MythrasWeapon {
+    name: string;
+    isOptional: boolean;
+    category?: string;       // For optional weapons, e.g. "1-handed weapons"
+    amountToChoose?: number; // For optional weapons, e.g. 1
+    type?: string;           // e.g. "1h-melee"
+    damage?: string;         // e.g. "1d10"
+    size?: string;
+    reach?: string;
+    ap?: string;
+    hp?: string;
+    specialFx?: string;
+}
+
 export interface MythrasTemplate {
     id: number;
     name: string;
     author: string;
+    tags: string[];
     race: string;
     rank: string;
+    cultRank: string;
     notes: string;
-    stats: Record<string, string>; // e.g. "STR": "3d6"
-    attributes: Record<string, string>; // e.g. "Movement": "6m"
-    hitLocations: Array<{ range: string, name: string, armor: string }>;
-    skills: Record<string, string>; // e.g. "Athletics": "STR+DEX"
-    combatStyles: Record<string, string>; // e.g. "Sword and Shield": "STR+DEX+10"
-    weapons: string[];
+    stats: { [key: string]: string };
+    attributes: { [key: string]: string };
+    hitLocations: { range: string; name: string; armor: string; hpBonus?: number }[];
+    features: { name: string; description: string }[];
+    standardSkills: { [key: string]: string };
+    customSkills: { [key: string]: string };
+    combatStyles: { [key: string]: string };
+    weapons: MythrasWeapon[];
 }
 
 export class MythrasApi {
@@ -55,13 +73,17 @@ export class MythrasApi {
             id,
             name: '',
             author: '',
+            tags: [],
             race: '',
             rank: '',
+            cultRank: '',
             notes: '',
             stats: {},
             attributes: {},
             hitLocations: [],
-            skills: {},
+            features: [],
+            standardSkills: {},
+            customSkills: {},
             combatStyles: {},
             weapons: []
         };
@@ -77,11 +99,20 @@ export class MythrasApi {
             const rows = topTable.querySelectorAll('tr');
             rows.forEach(row => {
                 const th = row.querySelector('th')?.textContent?.trim();
-                const td = row.querySelector('td')?.textContent?.trim();
-                if (th === 'Rank') template.rank = td || '';
-                if (th === 'Race') template.race = td || '';
-                if (th === 'Notes') template.notes = td || '';
-                if (th === 'Creator') template.author = td || '';
+                const td = row.querySelector('td');
+                if (!td) return;
+                
+                if (th === 'Rank') template.rank = td.textContent?.trim() || '';
+                if (th === 'Race') template.race = td.textContent?.trim() || '';
+                if (th === 'Cult rank') template.cultRank = td.textContent?.trim() || '';
+                if (th === 'Notes') template.notes = td.textContent?.trim() || '';
+                if (th === 'Creator') template.author = td.textContent?.trim() || '';
+                if (th === 'Tags') {
+                    const tagDivs = td.querySelectorAll('.tag');
+                    tagDivs.forEach(tagEl => {
+                        if (tagEl.textContent) template.tags.push(tagEl.textContent.trim());
+                    });
+                }
             });
         }
 
@@ -121,6 +152,23 @@ export class MythrasApi {
             }
         }
 
+        // Features
+        const featuresH3 = Array.from(doc.querySelectorAll('h3')).filter(h => h.textContent === 'Non-random features' || h.textContent === 'Additional Features');
+        featuresH3.forEach(h3 => {
+            const table = h3.nextElementSibling;
+            if (table && table.tagName === 'TABLE') {
+                table.querySelectorAll('tr').forEach(row => {
+                    const tds = row.querySelectorAll('td');
+                    if (tds.length === 2) {
+                        template.features.push({
+                            name: tds[0].textContent?.trim() || '',
+                            description: tds[1].textContent?.trim() || ''
+                        });
+                    }
+                });
+            }
+        });
+        
         // Attributes
         const attrHeaders = Array.from(doc.querySelectorAll('th')).filter(th => th.textContent === 'Attributes');
         if (attrHeaders.length > 0) {
@@ -140,7 +188,7 @@ export class MythrasApi {
         }
 
         // Skills (Standard and Custom)
-        const parseSkills = (headerText: string) => {
+        const parseSkills = (headerText: string, targetObj: { [key: string]: string }) => {
             const h3s = Array.from(doc.querySelectorAll('h3')).filter(h => h.textContent?.includes(headerText));
             h3s.forEach(h3 => {
                 let node = h3.nextElementSibling;
@@ -153,7 +201,7 @@ export class MythrasApi {
                                 const key = cells[i].textContent?.trim();
                                 const val = cells[i+1].textContent?.trim();
                                 if (cells[i].tagName === 'TH' && cells[i+1].tagName === 'TD' && key && val) {
-                                    template.skills[key] = val;
+                                    targetObj[key] = val;
                                 }
                                 i++;
                             }
@@ -164,10 +212,10 @@ export class MythrasApi {
             });
         };
 
-        parseSkills('Standard skills');
-        parseSkills('Custom skills');
-        parseSkills('Combat styles');
+        parseSkills('Standard skills', template.standardSkills);
+        parseSkills('Custom skills', template.customSkills);
 
+        // Combat styles
         const csH3 = Array.from(doc.querySelectorAll('h3')).filter(h => h.textContent?.includes('Combat styles'));
         if(csH3.length > 0) {
             const csTable = csH3[0].nextElementSibling;
@@ -183,22 +231,57 @@ export class MythrasApi {
         }
 
         // Weapon options
-        const parseWeapons = (headerText: string) => {
-            const h4s = Array.from(doc.querySelectorAll('h4')).filter(h => h.textContent?.includes(headerText));
-            h4s.forEach(h4 => {
-                const table = h4.parentElement?.querySelector('table');
-                if (table) {
-                    table.querySelectorAll('tr').forEach(row => {
+        const weaponCategories = ['1-handed weapons', '2-handed weapons', 'Ranged weapons', 'Shields'];
+        weaponCategories.forEach(cat => {
+            const h4 = Array.from(doc.querySelectorAll('h4')).find(h => h.textContent?.includes(cat));
+            if (h4) {
+                let amountToChoose = 1;
+                let nextNode = h4.nextElementSibling;
+                if (nextNode && nextNode.tagName === 'B' && nextNode.textContent?.includes('Amount:')) {
+                    const amountStr = nextNode.textContent.replace('Amount:', '').trim();
+                    amountToChoose = parseInt(amountStr) || 1;
+                    nextNode = nextNode.nextElementSibling;
+                }
+                
+                if (nextNode && nextNode.tagName === 'TABLE') {
+                    nextNode.querySelectorAll('tr').forEach(row => {
                         const td = row.querySelector('td')?.textContent?.trim();
-                        if (td) template.weapons.push(td);
+                        if (td) {
+                            template.weapons.push({
+                                name: td,
+                                isOptional: true,
+                                category: cat,
+                                amountToChoose
+                            });
+                        }
                     });
                 }
-            });
-        };
-        parseWeapons('1-handed weapons');
-        parseWeapons('2-handed weapons');
-        parseWeapons('Ranged weapons');
-        parseWeapons('Shields');
+            }
+        });
+
+        // Custom Weapons (or Natural weapons)
+        doc.querySelectorAll('table').forEach(table => {
+            const firstRow = table.querySelector('tr');
+            if (firstRow && firstRow.textContent?.includes('Damage') && firstRow.textContent?.includes('Reach')) {
+                const rows = Array.from(table.querySelectorAll('tr'));
+                rows.slice(1).forEach(row => {
+                    const tds = Array.from(row.querySelectorAll('td'));
+                    if (tds.length >= 7) {
+                        template.weapons.push({
+                            name: tds[0].textContent?.trim() || '',
+                            isOptional: false,
+                            type: tds[1].textContent?.trim() || '',
+                            damage: tds[2].textContent?.trim() || '',
+                            size: tds[3].textContent?.trim() || '',
+                            reach: tds[4].textContent?.trim() || '',
+                            specialFx: tds[6]?.textContent?.trim() || '',
+                            ap: tds[9]?.textContent?.trim() || '',
+                            hp: tds[10]?.textContent?.trim() || ''
+                        });
+                    }
+                });
+            }
+        });
 
         return template;
     }
