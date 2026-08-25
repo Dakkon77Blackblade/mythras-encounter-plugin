@@ -2,11 +2,11 @@ import { App, PluginSettingTab, Setting } from 'obsidian';
 import MythrasEncounterPlugin from './main';
 
 export interface MythrasEncounterSettings {
-    bestiaryFolder: string;
+    baseFolder: string;
 }
 
 export const DEFAULT_SETTINGS: MythrasEncounterSettings = {
-    bestiaryFolder: 'Bestiary/Mythras',
+    baseFolder: 'Mythras-Helper',
 };
 
 export class MythrasEncounterSettingTab extends PluginSettingTab {
@@ -22,14 +22,14 @@ export class MythrasEncounterSettingTab extends PluginSettingTab {
         containerEl.empty();
 
         new Setting(containerEl)
-            .setName('Bestiary Folder')
-            .setDesc('Folder where Mythras JSON templates will be saved (e.g. Bestiary/Mythras)')
+            .setName('Base Folder')
+            .setDesc('Folder where Bestiary and Armory subfolders will be created (e.g. Mythras-Helper)')
             .addText((text) =>
                 text
-                    .setPlaceholder('Bestiary/Mythras')
-                    .setValue(this.plugin.settings.bestiaryFolder)
+                    .setPlaceholder('Mythras-Helper')
+                    .setValue(this.plugin.settings.baseFolder)
                     .onChange(async (value) => {
-                        this.plugin.settings.bestiaryFolder = value;
+                        this.plugin.settings.baseFolder = value;
                         await this.plugin.saveSettings();
                     })
             );

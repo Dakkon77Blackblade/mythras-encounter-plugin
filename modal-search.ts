@@ -44,15 +44,12 @@ export class MythrasSearchModal extends SuggestModal<MythrasSearchResult> {
     }
 
     async saveTemplateToBestiary(template: MythrasTemplate) {
-        const folderPath = this.plugin.settings.bestiaryFolder;
-        
-        // Ensure folder exists
-        const folderExists = await this.app.vault.adapter.exists(folderPath);
-        if (!folderExists) {
-            await this.app.vault.createFolder(folderPath);
+        const folderPath = `${this.plugin.settings.baseFolder}/Bestiary`;
+
+        if (!(await this.app.vault.adapter.exists(folderPath))) {
+            await this.app.vault.adapter.mkdir(folderPath);
         }
 
-        // Sanitize filename
         const safeName = template.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
         const safeAuthor = (template.author || 'unknown').replace(/[^a-z0-9]/gi, '_').toLowerCase();
         const fileName = `${safeName}_by_${safeAuthor}`;

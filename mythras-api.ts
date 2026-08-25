@@ -14,11 +14,14 @@ export interface MythrasWeapon {
     name: string;
     isOptional: boolean;
     category?: string;       // For optional weapons, e.g. "1-handed weapons"
-    amountToChoose?: number; // For optional weapons, e.g. 1
-    type?: string;           // e.g. "1h-melee"
+    amountFormula?: string;  // e.g. "1", "1d3", "0"
+    probability?: number;    // e.g. 1
+    type?: string;           // e.g. "1h-melee", "ranged", "shield"
     damage?: string;         // e.g. "1d10"
+    damageModifier?: boolean;// Should STR+SIZ damage modifier apply?
     size?: string;
     reach?: string;
+    range?: string;          // e.g. "100m"
     ap?: string;
     hp?: string;
     specialFx?: string;
@@ -235,23 +238,30 @@ export class MythrasApi {
         weaponCategories.forEach(cat => {
             const h4 = Array.from(doc.querySelectorAll('h4')).find(h => h.textContent?.includes(cat));
             if (h4) {
-                let amountToChoose = 1;
+                let amountFormula = "1";
                 let nextNode = h4.nextElementSibling;
                 if (nextNode && nextNode.tagName === 'B' && nextNode.textContent?.includes('Amount:')) {
-                    const amountStr = nextNode.textContent.replace('Amount:', '').trim();
-                    amountToChoose = parseInt(amountStr) || 1;
+                    amountFormula = nextNode.textContent.replace('Amount:', '').trim();
                     nextNode = nextNode.nextElementSibling;
                 }
                 
                 if (nextNode && nextNode.tagName === 'TABLE') {
                     nextNode.querySelectorAll('tr').forEach(row => {
-                        const td = row.querySelector('td')?.textContent?.trim();
+                        let td = row.querySelector('td')?.textContent?.trim();
                         if (td) {
+                            let probability = 1;
+                            const probMatch = td.match(/(.*?)\s*\((\d+)\)$/);
+                            if (probMatch) {
+                                td = probMatch[1].trim();
+                                probability = parseInt(probMatch[2]);
+                            }
+
                             template.weapons.push({
                                 name: td,
                                 isOptional: true,
                                 category: cat,
-                                amountToChoose
+                                amountFormula,
+                                probability
                             });
                         }
                     });
@@ -262,22 +272,32 @@ export class MythrasApi {
         // Custom Weapons (or Natural weapons)
         doc.querySelectorAll('table').forEach(table => {
             const firstRow = table.querySelector('tr');
-            if (firstRow && firstRow.textContent?.includes('Damage') && firstRow.textContent?.includes('Reach')) {
+            if (firstRow && firstRow.textContent?.includes('Damage') && (firstRow.textContent?.includes('Reach') || firstRow.textContent?.includes('Range'))) {
+                const headers = Array.from(firstRow.querySelectorAll('th')).map(th => th.textContent?.trim().toLowerCase() || '');
                 const rows = Array.from(table.querySelectorAll('tr'));
                 rows.slice(1).forEach(row => {
                     const tds = Array.from(row.querySelectorAll('td'));
-                    if (tds.length >= 7) {
-                        template.weapons.push({
-                            name: tds[0].textContent?.trim() || '',
-                            isOptional: false,
-                            type: tds[1].textContent?.trim() || '',
-                            damage: tds[2].textContent?.trim() || '',
-                            size: tds[3].textContent?.trim() || '',
-                            reach: tds[4].textContent?.trim() || '',
-                            specialFx: tds[6]?.textContent?.trim() || '',
-                            ap: tds[9]?.textContent?.trim() || '',
-                            hp: tds[10]?.textContent?.trim() || ''
+                    if (tds.length > 0) {
+                        const weapon: MythrasWeapon = { name: '', isOptional: false };
+                        headers.forEach((header, i) => {
+                            if (i >= tds.length) return;
+                            const val = tds[i].textContent?.trim() || '';
+                            if (header === 'weapon') weapon.name = val;
+                            else if (header === 'type') weapon.type = val;
+                            else if (header === 'damage') weapon.damage = val;
+                            else if (header === 'size') weapon.size = val;
+                            else if (header === 'reach') weapon.reach = val;
+                            else if (header === 'range') weapon.range = val;
+                            else if (header === 'combat effects') weapon.specialFx = val;
+                            else if (header === 'ap') weapon.ap = val;
+                            else if (header === 'hp') weapon.hp = val;
+                            // the generator sometimes has damage modifier column
+                            else if (header === 'dmg mod') weapon.damageModifier = (val !== 'N');
                         });
+                        
+                        if (weapon.name) {
+                            template.weapons.push(weapon);
+                        }
                     }
                 });
             }

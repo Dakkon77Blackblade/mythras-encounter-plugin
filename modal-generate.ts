@@ -21,7 +21,8 @@ export class MythrasGenerateModal extends Modal {
         contentEl.createEl("h2", { text: "Generate Mythras Encounter" });
 
         // Load templates from Bestiary
-        const folder = this.app.vault.getAbstractFileByPath(this.plugin.settings.bestiaryFolder);
+        const bestiaryPath = `${this.plugin.settings.baseFolder}/Bestiary`;
+        const folder = this.app.vault.getAbstractFileByPath(bestiaryPath);
         if (folder && 'children' in folder) {
             // @ts-ignore
             this.templates = folder.children.filter(f => f instanceof TFile && f.extension === 'json');
@@ -91,7 +92,8 @@ export class MythrasGenerateModal extends Modal {
 
             let output = `\n## Encounter: ${template.name}\n\n`;
             for (let i = 0; i < this.amount; i++) {
-                output += generateStatblock(template, i + 1) + '\n\n';
+                const armoryPath = `${this.plugin.settings.baseFolder}/Armory/armory.json`;
+                output += (await generateStatblock(this.app, armoryPath, template, i + 1)) + '\n\n';
             }
 
             const cursor = activeView.editor.getCursor();

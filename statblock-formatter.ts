@@ -1,7 +1,8 @@
+import { App, normalizePath } from 'obsidian';
 import { MythrasTemplate, MythrasWeapon } from './mythras-api';
 import { DiceRoller } from './dice-roller';
 
-export function generateStatblock(template: MythrasTemplate, index: number): string {
+export async function generateStatblock(app: App, armoryFile: string, template: MythrasTemplate, index: number): Promise<string> {
     // 1. Roll Core Stats
     const rolledStats: Record<string, number> = {};
     for (const [stat, formula] of Object.entries(template.stats)) {
@@ -62,6 +63,18 @@ export function generateStatblock(template: MythrasTemplate, index: number): str
     }
 
     // 6. Resolve Weapons
+    // Load armory
+    let armory: MythrasWeapon[] = [];
+    try {
+        const armoryPath = normalizePath(armoryFile);
+        if (await app.vault.adapter.exists(armoryPath)) {
+            const content = await app.vault.adapter.read(armoryPath);
+            armory = JSON.parse(content);
+        }
+    } catch (e) {
+        console.error("Failed to load armory:", e);
+    }
+
     const activeWeapons: MythrasWeapon[] = [];
     
     // Add all non-optional weapons
@@ -78,13 +91,55 @@ export function generateStatblock(template: MythrasTemplate, index: number): str
 
     for (const cat of Object.keys(optByCategory)) {
         const options = optByCategory[cat];
-        // All options in this category should share the same amountToChoose, just grab the first
-        const amount = options[0].amountToChoose || 1;
+        const amountFormula = options[0].amountFormula || "1";
+        const amountToChoose = DiceRoller.rollExpression(amountFormula);
         
-        // Shuffle and pick `amount`
-        const shuffled = options.sort(() => 0.5 - Math.random());
-        activeWeapons.push(...shuffled.slice(0, amount));
+        if (amountToChoose <= 0) continue;
+
+        // Weighted random selection without replacement
+        const availableOptions = [...options];
+        for (let i = 0; i < amountToChoose && availableOptions.length > 0; i++) {
+            const totalWeight = availableOptions.reduce((sum, w) => sum + (w.probability || 1), 0);
+            let rand = Math.random() * totalWeight;
+            
+            let selectedIndex = 0;
+            for (let j = 0; j < availableOptions.length; j++) {
+                rand -= (availableOptions[j].probability || 1);
+                if (rand <= 0) {
+                    selectedIndex = j;
+                    break;
+                }
+            }
+
+            activeWeapons.push(availableOptions[selectedIndex]);
+            availableOptions.splice(selectedIndex, 1);
+        }
     }
+
+    // Merge stats from Armory and apply damage modifier
+    activeWeapons.forEach(w => {
+        if (!w.damage) {
+            // Find in armory
+            const armoryWeapon = armory.find(aw => aw.name.toLowerCase() === w.name.toLowerCase());
+            if (armoryWeapon) {
+                w.type = armoryWeapon.type;
+                w.damage = armoryWeapon.damage;
+                w.size = armoryWeapon.size;
+                w.reach = armoryWeapon.reach;
+                w.range = armoryWeapon.range;
+                w.ap = armoryWeapon.ap;
+                w.hp = armoryWeapon.hp;
+                w.damageModifier = armoryWeapon.damageModifier;
+                w.specialFx = armoryWeapon.specialFx;
+            }
+        }
+
+        // Apply Damage Modifier if weapon has damage and damageModifier is not explicitly false
+        if (w.damage && w.damageModifier !== false && damageModifier !== "+0" && damageModifier !== "0") {
+            const mod = damageModifier.startsWith("+") || damageModifier.startsWith("-") ? damageModifier : "+" + damageModifier;
+            w.damage += mod;
+        }
+    });
 
     // 7. Format Markdown
     let md = `### ${template.name} #${index}\n`;
@@ -113,13 +168,28 @@ export function generateStatblock(template: MythrasTemplate, index: number): str
     if (activeWeapons.length > 0) {
         md += `**Weapons:**\n`;
         activeWeapons.forEach(w => {
-            if (w.isOptional) {
-                // We only have the name for optional weapons
-                md += `- ${w.name}\n`;
+            const typeLower = (w.type || '').toLowerCase();
+            const apHpStr = w.ap && w.hp ? `AP/HP ${w.ap}/${w.hp}` : '';
+            const specialFxStr = w.specialFx || 'None';
+            const sizeStr = w.size ? `Size ${w.size}` : '';
+
+            let weaponDesc = `- **${w.name}** (${w.type || '-'}): `;
+
+            if (typeLower === 'ranged') {
+                const dmgStr = w.damage ? `Damage ${w.damage}` : '';
+                const rangeStr = w.range ? `Range ${w.range}` : '';
+                weaponDesc += [dmgStr, rangeStr, sizeStr, apHpStr, `Special: ${specialFxStr}`].filter(Boolean).join(', ');
+            } else if (typeLower === 'shield') {
+                const dmgStr = w.damage ? `Damage ${w.damage} (bash)` : '';
+                weaponDesc += [dmgStr, sizeStr, apHpStr, `Special: ${specialFxStr}`].filter(Boolean).join(', ');
             } else {
-                // We have full stats for custom/natural weapons
-                md += `- **${w.name}** (${w.type || '-'}): Damage ${w.damage || '-'}, Size ${w.size || '-'}, Reach ${w.reach || '-'}, Special: ${w.specialFx || 'None'}\n`;
+                // Default to Melee
+                const dmgStr = w.damage ? `Damage ${w.damage}` : '';
+                const reachStr = w.reach ? `Reach ${w.reach}` : '';
+                weaponDesc += [dmgStr, sizeStr, reachStr, apHpStr, `Special: ${specialFxStr}`].filter(Boolean).join(', ');
             }
+            
+            md += `${weaponDesc}\n`;
         });
         md += `\n`;
     }
