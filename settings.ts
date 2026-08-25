@@ -3,10 +3,12 @@ import MythrasEncounterPlugin from './main';
 
 export interface MythrasEncounterSettings {
     bestiaryFolder: string;
+    armoryFile: string;
 }
 
 export const DEFAULT_SETTINGS: MythrasEncounterSettings = {
     bestiaryFolder: 'Bestiary/Mythras',
+    armoryFile: 'Bestiary/Mythras/armory.json',
 };
 
 export class MythrasEncounterSettingTab extends PluginSettingTab {
@@ -30,6 +32,19 @@ export class MythrasEncounterSettingTab extends PluginSettingTab {
                     .setValue(this.plugin.settings.bestiaryFolder)
                     .onChange(async (value) => {
                         this.plugin.settings.bestiaryFolder = value;
+                        await this.plugin.saveSettings();
+                    })
+            );
+
+        new Setting(containerEl)
+            .setName('Armory File')
+            .setDesc('File where custom weapons are stored (e.g. Bestiary/Mythras/armory.json)')
+            .addText((text) =>
+                text
+                    .setPlaceholder('Bestiary/Mythras/armory.json')
+                    .setValue(this.plugin.settings.armoryFile)
+                    .onChange(async (value) => {
+                        this.plugin.settings.armoryFile = value;
                         await this.plugin.saveSettings();
                     })
             );

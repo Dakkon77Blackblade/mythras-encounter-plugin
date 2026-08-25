@@ -91,7 +91,7 @@ export class MythrasGenerateModal extends Modal {
 
             let output = `\n## Encounter: ${template.name}\n\n`;
             for (let i = 0; i < this.amount; i++) {
-                output += generateStatblock(template, i + 1) + '\n\n';
+                output += (await generateStatblock(this.app, this.plugin.settings.armoryFile, template, i + 1)) + '\n\n';
             }
 
             const cursor = activeView.editor.getCursor();
