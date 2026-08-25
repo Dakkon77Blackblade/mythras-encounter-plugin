@@ -33,5 +33,19 @@ export class MythrasEncounterSettingTab extends PluginSettingTab {
                         await this.plugin.saveSettings();
                     })
             );
+
+        new Setting(containerEl)
+            .setName('Bestiary Manager')
+            .setDesc('Manage your locally saved Mythras templates (view, edit, delete).')
+            .addButton((btn) =>
+                btn
+                    .setButtonText('Open Manager')
+                    .setCta()
+                    .onClick(() => {
+                        import('./modal-bestiary-manager').then((m) => {
+                            new m.BestiaryManagerModal(this.app, this.plugin).open();
+                        });
+                    })
+            );
     }
 }
