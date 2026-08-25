@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Templates saved to the Bestiary now include the author's name in the filename to prevent overwriting templates with the same name from different authors (Fixes #1).
+- Complete data model overhaul for Bestiary templates. The scraper now extracts `attributes`, `features`, `standardSkills`, `customSkills`, `combatStyles`, and detailed `weapons` profiles (Fixes #4).
+- The Encounter Generator now randomly selects optional weapons from the scraped weapon lists (e.g., 1-handed weapons) and fully renders Custom Weapons with damage, size, reach, and special effects.
 
 ## [0.1.0] - 2026-08-24
 ### Added
