@@ -22,9 +22,14 @@ export interface MythrasWeapon {
     size?: string;
     reach?: string;
     range?: string;          // e.g. "100m"
+    load?: string;           // e.g. "1 Turn"
+    impSize?: string;        // e.g. "S", "M"
     ap?: string;
     hp?: string;
     specialFx?: string;
+    traits?: string;
+    cost?: string;
+    notes?: string;
 }
 
 export interface MythrasTemplate {

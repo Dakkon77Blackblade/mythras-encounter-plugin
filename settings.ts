@@ -47,5 +47,19 @@ export class MythrasEncounterSettingTab extends PluginSettingTab {
                         });
                     })
             );
+
+        new Setting(containerEl)
+            .setName('Armory Manager')
+            .setDesc('Manage your locally saved Mythras weapons and shields.')
+            .addButton((btn) =>
+                btn
+                    .setButtonText('Open Armory')
+                    .setCta()
+                    .onClick(() => {
+                        import('./modal-armory-manager').then((m) => {
+                            new m.ArmoryManagerModal(this.app, this.plugin).open();
+                        });
+                    })
+            );
     }
 }
