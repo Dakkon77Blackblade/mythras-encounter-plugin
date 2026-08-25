@@ -26,7 +26,12 @@ Whenever the user asks you to implement a new feature or fix a bug in this proje
 - Ensure the Obsidian plugin's `main.js` is up to date (we use a symlink for local development, so the build output immediately reflects in the Obsidian vault).
 - **User Testing:** Wait for the user to test and verify the new functionality in Obsidian before proceeding to the merge step.
 
-## 5. Pull Request and Merge
+## 5. Versioning
+- Before committing your final changes on the feature branch, always bump the version if the changes warrant it.
+- Run `npm version patch` (for bug fixes), `npm version minor` (for new features), or `npm version major` (for breaking changes).
+- This will automatically run `version-bump.mjs` and sync `manifest.json` and `versions.json`.
+
+## 6. Pull Request and Merge
 - Add all files, commit with a descriptive message referencing the issue number (e.g., `git commit -m "Implement spells system (fixes #8)"`).
 - Push the feature branch to `origin`.
 - Use the GitHub CLI to create and merge a Pull Request automatically:
