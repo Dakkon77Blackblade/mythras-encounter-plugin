@@ -155,7 +155,7 @@ export class ArmoryManagerModal extends Modal {
             { id: 'name', label: 'Name', sortable: true },
             { id: 'type', label: 'Type', sortable: true },
             { id: 'damage', label: 'Damage', sortable: true },
-            { id: 'size', label: 'Size', sortable: false },
+            { id: 'size', label: this.currentTab === 'ranged' ? 'Force' : 'Size', sortable: false },
             { id: 'aphp', label: 'AP/HP', sortable: false },
         ];
 
@@ -321,12 +321,7 @@ export class ArmoryManagerModal extends Modal {
         });
 
         createTextField('Damage', weapon.damage, v => weapon.damage = v);
-        createTextField('Size', weapon.size, v => weapon.size = v);
-
-        // Dynamic fields based on type
-        if (weapon.type === '1h-melee' || weapon.type === '2h-melee' || weapon.type === 'shield') {
-            createTextField('Reach (Short, Medium, Long, etc.)', weapon.reach, v => weapon.reach = v);
-        }
+        createTextField(weapon.type === 'ranged' ? 'Force' : 'Size', weapon.size, v => weapon.size = v);
 
         if (weapon.type === 'ranged') {
             createTextField('Range (Close/Effective/Long)', weapon.range, v => weapon.range = v);
@@ -359,5 +354,6 @@ export class ArmoryManagerModal extends Modal {
         createTextField('Combat Effects (SpecialFx)', weapon.specialFx, v => weapon.specialFx = v);
         createTextField('Traits', weapon.traits, v => weapon.traits = v);
         createTextField('Cost', weapon.cost, v => weapon.cost = v);
+        createTextField('Notes', weapon.notes, v => weapon.notes = v);
     }
 }

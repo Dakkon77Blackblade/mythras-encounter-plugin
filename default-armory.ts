@@ -21,7 +21,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "hp": "8",
     "specialFx": "Bleed, Impale",
     "traits": "Thrown",
-    "cost": "3GP"
+    "cost": "3GP",
+    "notes": "Counts as \u00bd of a Thing with regards to ENC"
   },
   {
     "name": "Great club",
@@ -32,7 +33,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "hp": "10",
     "specialFx": "Bash, Stun Location",
     "traits": "",
-    "cost": "5GP"
+    "cost": "5GP",
+    "notes": "Counts as 2 Things with regards to ENC"
   },
   {
     "name": "Hand axe",
@@ -43,7 +45,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "hp": "6",
     "specialFx": "Bleed",
     "traits": "Thrown",
-    "cost": "2.5GP"
+    "cost": "2.5GP",
+    "notes": "Counts as \u00bd of a Thing with regards to ENC"
   },
   {
     "name": "Longspear",
@@ -54,7 +57,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "hp": "10",
     "specialFx": "Impale",
     "traits": "Set",
-    "cost": "3GP"
+    "cost": "3GP",
+    "notes": "Counts as 2 Things with regards to ENC"
   },
   {
     "name": "Mace",
@@ -76,7 +80,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "hp": "10",
     "specialFx": "Bash, Stun Location",
     "traits": "",
-    "cost": "20GP"
+    "cost": "20GP",
+    "notes": "Counts as 2 Things with regards to ENC"
   },
   {
     "name": "Morning star",
@@ -98,7 +103,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "hp": "8",
     "specialFx": "Stun Location",
     "traits": "",
-    "cost": "2GP"
+    "cost": "2GP",
+    "notes": "Counts as 2 Things with regards to ENC"
   },
   {
     "name": "Shortspear",
@@ -230,7 +236,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "hp": "10",
     "specialFx": "Bash, Stun Location",
     "traits": "Flexible",
-    "cost": "25GP"
+    "cost": "25GP",
+    "notes": "Counts as 2 Things with regards to ENC"
   },
   {
     "name": "Garrote",
@@ -241,7 +248,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "hp": "2",
     "specialFx": "\u2014",
     "traits": "Stealth",
-    "cost": "1.5GP"
+    "cost": "1.5GP",
+    "notes": "Counts as \u00bd of a Thing with regards to ENC"
   },
   {
     "name": "Glaive",
@@ -307,7 +315,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "hp": "4",
     "specialFx": "Bleed, Impale",
     "traits": "",
-    "cost": "1GP"
+    "cost": "1GP",
+    "notes": "Counts as \u00bd of a Thing with regards to ENC"
   },
   {
     "name": "Lance",
@@ -318,7 +327,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "hp": "10",
     "specialFx": "Impale, Sunder",
     "traits": "Mount",
-    "cost": "15GP"
+    "cost": "15GP",
+    "notes": "Counts as 2 Things with regards to ENC"
   },
   {
     "name": "Longsword",
@@ -340,7 +350,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "hp": "10",
     "specialFx": "Bleed, Impale",
     "traits": "Entrapping",
-    "cost": "18GP"
+    "cost": "18GP",
+    "notes": "Counts as \u00bd of a Thing with regards to ENC"
   },
   {
     "name": "Military pick",
@@ -362,7 +373,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "hp": "10",
     "specialFx": "Impale, Stun Location, Sunder",
     "traits": "",
-    "cost": "25GP"
+    "cost": "25GP",
+    "notes": "Counts as 2 Things with regards to ENC"
   },
   {
     "name": "Net",
@@ -373,7 +385,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "hp": "20",
     "specialFx": "Entangle",
     "traits": "Entrapping",
-    "cost": "2GP"
+    "cost": "2GP",
+    "notes": "Counts as \u00bd of a Thing with regards to ENC"
   },
   {
     "name": "Pike",
@@ -384,7 +397,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "hp": "12",
     "specialFx": "Impale",
     "traits": "Set",
-    "cost": "9GP"
+    "cost": "9GP",
+    "notes": "Counts as 2 Things with regards to ENC"
   },
   {
     "name": "Rapier",
@@ -461,7 +475,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "hp": "8",
     "specialFx": "Stun Location",
     "traits": "Flexible, Entrapping",
-    "cost": "10GP"
+    "cost": "10GP",
+    "notes": "Does not add damage modifier"
   },
   {
     "name": "Buckler",
@@ -483,7 +498,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "hp": "12",
     "specialFx": "Bash, Stun Location",
     "traits": "Ranged Parry; Passive Block 3 locations",
-    "cost": "15GP"
+    "cost": "15GP",
+    "notes": "Counts as 2 'Things' with regards to ENC"
   },
   {
     "name": "Kite",
@@ -494,7 +510,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "hp": "15",
     "specialFx": "Bash, Stun Location",
     "traits": "Ranged Parry; Passive Block 4 locations",
-    "cost": "30GP"
+    "cost": "30GP",
+    "notes": "Counts as 2 'Things' with regards to ENC"
   },
   {
     "name": "Round",
@@ -505,7 +522,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "hp": "12",
     "specialFx": "Bash, Stun Location",
     "traits": "Ranged Parry; Passive Block 4 locations",
-    "cost": "30GP"
+    "cost": "30GP",
+    "notes": "Counts as 2 'Things' with regards to ENC"
   },
   {
     "name": "Target",
@@ -516,7 +534,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "hp": "9",
     "specialFx": "Bash, Impale",
     "traits": "Ranged Parry; Passive Block 3 locations",
-    "cost": "15GP"
+    "cost": "15GP",
+    "notes": "Counts as 2 'Things' with regards to ENC"
   },
   {
     "name": "Tower",
@@ -527,7 +546,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "hp": "18",
     "specialFx": "Bash, Stun Location",
     "traits": "Ranged Parry; Passive Block 5 locations",
-    "cost": "30GP"
+    "cost": "30GP",
+    "notes": "Counts as 2 'Things' with regards to ENC"
   },
   {
     "name": "Crossbow, heavy",
@@ -537,8 +557,9 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "ap": "4",
     "hp": "8",
     "specialFx": "Impale, Sunder",
-    "traits": "35GP",
-    "cost": "",
+    "traits": "",
+    "cost": "35GP",
+    "notes": "Counts as 2 Things with regards to ENC",
     "range": "60/450/900",
     "load": "4",
     "impSize": "S",
@@ -552,8 +573,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "ap": "4",
     "hp": "5",
     "specialFx": "Impale",
-    "traits": "15GP",
-    "cost": "",
+    "traits": "",
+    "cost": "15GP",
     "range": "60/300/600",
     "load": "3",
     "impSize": "S",
@@ -567,8 +588,9 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "ap": "4",
     "hp": "6",
     "specialFx": "Impale",
-    "traits": "3GP",
-    "cost": "",
+    "traits": "",
+    "cost": "3GP",
+    "notes": "Counts as \u00bd of a 'Thing' with regards to ENC",
     "range": "15/30/60",
     "load": "\u2014",
     "impSize": "S",
@@ -582,8 +604,9 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "ap": "2",
     "hp": "1",
     "specialFx": "Impale",
-    "traits": "1GP",
-    "cost": "",
+    "traits": "",
+    "cost": "1GP",
+    "notes": "Counts as \u00bd of a 'Thing' with regards to ENC",
     "range": "15/30/60",
     "load": "\u2014",
     "impSize": "S",
@@ -597,8 +620,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "ap": "4",
     "hp": "5",
     "specialFx": "Impale",
-    "traits": "2GP",
-    "cost": "",
+    "traits": "",
+    "cost": "2GP",
     "range": "30/45/90",
     "load": "\u2014",
     "impSize": "M",
@@ -612,8 +635,9 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "ap": "1",
     "hp": "2",
     "specialFx": "Stun Location",
-    "traits": "5SP",
-    "cost": "",
+    "traits": "",
+    "cost": "5SP",
+    "notes": "Counts as \u00bd of a 'Thing' with regards to ENC",
     "range": "30/450/900",
     "load": "3",
     "impSize": "\u2014",
@@ -628,7 +652,7 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "hp": "0",
     "specialFx": "Stun Location",
     "traits": "",
-    "cost": "",
+    "cost": "\u2014",
     "range": "15/75/150",
     "load": "\u2014",
     "impSize": "\u2014",
@@ -642,8 +666,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "ap": "4",
     "hp": "7",
     "specialFx": "Impale",
-    "traits": "20GP",
-    "cost": "",
+    "traits": "",
+    "cost": "20GP",
     "range": "45/375/750",
     "load": "2",
     "impSize": "S",
@@ -657,8 +681,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "ap": "4",
     "hp": "4",
     "specialFx": "Impale",
-    "traits": "7.5GP",
-    "cost": "",
+    "traits": "",
+    "cost": "7.5GP",
     "range": "45/300/600",
     "load": "2",
     "impSize": "S",
@@ -672,8 +696,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "ap": "4",
     "hp": "8",
     "specialFx": "Impale",
-    "traits": "25GP",
-    "cost": "",
+    "traits": "",
+    "cost": "25GP",
     "range": "50/400/800",
     "load": "2",
     "impSize": "S",
@@ -687,8 +711,8 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "ap": "4",
     "hp": "5",
     "specialFx": "Impale",
-    "traits": "9GP",
-    "cost": "",
+    "traits": "",
+    "cost": "9GP",
     "range": "50/325/650",
     "load": "2",
     "impSize": "S",
@@ -702,8 +726,9 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "ap": "4",
     "hp": "5",
     "specialFx": "Impale",
-    "traits": "75GP",
-    "cost": "",
+    "traits": "",
+    "cost": "75GP",
+    "notes": "Counts as 2 Things with regards to ENC, has the Dwarf and Repeating traits",
     "range": "60/300/600",
     "load": "\u2014",
     "impSize": "S",
@@ -717,8 +742,9 @@ export const DEFAULT_ARMORY: MythrasWeapon[] =
     "ap": "4",
     "hp": "6",
     "specialFx": "Bleed",
-    "traits": "2.5GP",
-    "cost": "",
+    "traits": "",
+    "cost": "2.5GP",
+    "notes": "Counts as \u00bd of a 'Thing' with regards to ENC, has the 1H trait",
     "range": "30/60/90",
     "load": "\u2014",
     "impSize": "\u2014",

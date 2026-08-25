@@ -29,6 +29,7 @@ export interface MythrasWeapon {
     specialFx?: string;
     traits?: string;
     cost?: string;
+    notes?: string;
 }
 
 export interface MythrasTemplate {
