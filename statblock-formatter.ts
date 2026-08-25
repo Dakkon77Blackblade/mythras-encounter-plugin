@@ -126,12 +126,16 @@ export async function generateStatblock(app: App, armoryFile: string, template: 
                 w.damage = armoryWeapon.damage;
                 w.size = armoryWeapon.size;
                 w.reach = armoryWeapon.reach;
+                w.range = armoryWeapon.range;
+                w.ap = armoryWeapon.ap;
+                w.hp = armoryWeapon.hp;
+                w.damageModifier = armoryWeapon.damageModifier;
                 w.specialFx = armoryWeapon.specialFx;
             }
         }
 
-        // Apply Damage Modifier if weapon has damage
-        if (w.damage && damageModifier !== "+0" && damageModifier !== "0") {
+        // Apply Damage Modifier if weapon has damage and damageModifier is not explicitly false
+        if (w.damage && w.damageModifier !== false && damageModifier !== "+0" && damageModifier !== "0") {
             const mod = damageModifier.startsWith("+") || damageModifier.startsWith("-") ? damageModifier : "+" + damageModifier;
             w.damage += mod;
         }
@@ -164,7 +168,28 @@ export async function generateStatblock(app: App, armoryFile: string, template: 
     if (activeWeapons.length > 0) {
         md += `**Weapons:**\n`;
         activeWeapons.forEach(w => {
-            md += `- **${w.name}** (${w.type || '-'}): Damage ${w.damage || '-'}, Size ${w.size || '-'}, Reach ${w.reach || '-'}, Special: ${w.specialFx || 'None'}\n`;
+            const typeLower = (w.type || '').toLowerCase();
+            const apHpStr = w.ap && w.hp ? `AP/HP ${w.ap}/${w.hp}` : '';
+            const specialFxStr = w.specialFx || 'None';
+            const sizeStr = w.size ? `Size ${w.size}` : '';
+
+            let weaponDesc = `- **${w.name}** (${w.type || '-'}): `;
+
+            if (typeLower === 'ranged') {
+                const dmgStr = w.damage ? `Damage ${w.damage}` : '';
+                const rangeStr = w.range ? `Range ${w.range}` : '';
+                weaponDesc += [dmgStr, rangeStr, sizeStr, apHpStr, `Special: ${specialFxStr}`].filter(Boolean).join(', ');
+            } else if (typeLower === 'shield') {
+                const dmgStr = w.damage ? `Damage ${w.damage} (bash)` : '';
+                weaponDesc += [dmgStr, sizeStr, apHpStr, `Special: ${specialFxStr}`].filter(Boolean).join(', ');
+            } else {
+                // Default to Melee
+                const dmgStr = w.damage ? `Damage ${w.damage}` : '';
+                const reachStr = w.reach ? `Reach ${w.reach}` : '';
+                weaponDesc += [dmgStr, sizeStr, reachStr, apHpStr, `Special: ${specialFxStr}`].filter(Boolean).join(', ');
+            }
+            
+            md += `${weaponDesc}\n`;
         });
         md += `\n`;
     }

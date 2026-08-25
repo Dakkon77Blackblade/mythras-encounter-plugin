@@ -2,13 +2,11 @@ import { App, PluginSettingTab, Setting } from 'obsidian';
 import MythrasEncounterPlugin from './main';
 
 export interface MythrasEncounterSettings {
-    bestiaryFolder: string;
-    armoryFile: string;
+    baseFolder: string;
 }
 
 export const DEFAULT_SETTINGS: MythrasEncounterSettings = {
-    bestiaryFolder: 'Bestiary/Mythras',
-    armoryFile: 'Bestiary/Mythras/armory.json',
+    baseFolder: 'Mythras-Helper',
 };
 
 export class MythrasEncounterSettingTab extends PluginSettingTab {
@@ -24,27 +22,14 @@ export class MythrasEncounterSettingTab extends PluginSettingTab {
         containerEl.empty();
 
         new Setting(containerEl)
-            .setName('Bestiary Folder')
-            .setDesc('Folder where Mythras JSON templates will be saved (e.g. Bestiary/Mythras)')
+            .setName('Base Folder')
+            .setDesc('Folder where Bestiary and Armory subfolders will be created (e.g. Mythras-Helper)')
             .addText((text) =>
                 text
-                    .setPlaceholder('Bestiary/Mythras')
-                    .setValue(this.plugin.settings.bestiaryFolder)
+                    .setPlaceholder('Mythras-Helper')
+                    .setValue(this.plugin.settings.baseFolder)
                     .onChange(async (value) => {
-                        this.plugin.settings.bestiaryFolder = value;
-                        await this.plugin.saveSettings();
-                    })
-            );
-
-        new Setting(containerEl)
-            .setName('Armory File')
-            .setDesc('File where custom weapons are stored (e.g. Bestiary/Mythras/armory.json)')
-            .addText((text) =>
-                text
-                    .setPlaceholder('Bestiary/Mythras/armory.json')
-                    .setValue(this.plugin.settings.armoryFile)
-                    .onChange(async (value) => {
-                        this.plugin.settings.armoryFile = value;
+                        this.plugin.settings.baseFolder = value;
                         await this.plugin.saveSettings();
                     })
             );

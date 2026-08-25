@@ -45,23 +45,33 @@ export default class MythrasEncounterPlugin extends Plugin {
     }
 
     async initArmory() {
-        const armoryPath = normalizePath(this.settings.armoryFile);
+        const baseFolder = normalizePath(this.settings.baseFolder);
+        const bestiaryPath = normalizePath(`${baseFolder}/Bestiary`);
+        const armoryFolderPath = normalizePath(`${baseFolder}/Armory`);
+        const armoryPath = normalizePath(`${armoryFolderPath}/armory.json`);
+
+        // Ensure Base, Bestiary and Armory folders exist
+        if (!(await this.app.vault.adapter.exists(baseFolder))) {
+            await this.app.vault.adapter.mkdir(baseFolder);
+        }
+        if (!(await this.app.vault.adapter.exists(bestiaryPath))) {
+            await this.app.vault.adapter.mkdir(bestiaryPath);
+        }
+        if (!(await this.app.vault.adapter.exists(armoryFolderPath))) {
+            await this.app.vault.adapter.mkdir(armoryFolderPath);
+        }
+
         const exists = await this.app.vault.adapter.exists(armoryPath);
         if (!exists) {
             const defaultArmory = [
-                { name: "Hatchet", type: "1h-melee", damage: "1d6+1", size: "S", reach: "S", specialFx: "None" },
-                { name: "Shortspear", type: "1h-melee", damage: "1d8+1", size: "M", reach: "L", specialFx: "Impale" },
-                { name: "Shortsword", type: "1h-melee", damage: "1d6", size: "S", reach: "S", specialFx: "Impale, Bleed" },
-                { name: "Military flail", type: "2h-melee", damage: "1d10+1", size: "M", reach: "M", specialFx: "Entangle" },
-                { name: "Viking Shield", type: "shield", damage: "1d4", size: "L", reach: "S", specialFx: "Bash" },
-                { name: "Longbow", type: "ranged", damage: "1d8", size: "L", reach: "-", specialFx: "Impale" }
+                { name: "Hatchet", type: "1h-melee", damage: "1d6+1", size: "S", reach: "S", ap: "4", hp: "6", specialFx: "None" },
+                { name: "Shortspear", type: "1h-melee", damage: "1d8+1", size: "M", reach: "L", ap: "4", hp: "5", specialFx: "Impale" },
+                { name: "Shortsword", type: "1h-melee", damage: "1d6", size: "S", reach: "S", ap: "6", hp: "8", specialFx: "Impale, Bleed" },
+                { name: "Military flail", type: "2h-melee", damage: "1d10+1", size: "M", reach: "M", ap: "3", hp: "8", specialFx: "Entangle" },
+                { name: "Viking Shield", type: "shield", damage: "1d4", size: "L", ap: "4", hp: "12", specialFx: "Bash" },
+                { name: "Longbow", type: "ranged", damage: "1d8", size: "L", range: "150m", ap: "4", hp: "4", damageModifier: true, specialFx: "Impale" },
+                { name: "Heavy Crossbow", type: "ranged", damage: "2d6", size: "M", range: "250m", ap: "4", hp: "6", damageModifier: false, specialFx: "Impale" }
             ];
-            
-            // Ensure folder exists
-            const folderPath = armoryPath.substring(0, armoryPath.lastIndexOf('/'));
-            if (folderPath && !(await this.app.vault.adapter.exists(folderPath))) {
-                await this.app.vault.adapter.mkdir(folderPath);
-            }
             
             await this.app.vault.adapter.write(armoryPath, JSON.stringify(defaultArmory, null, 2));
         }
