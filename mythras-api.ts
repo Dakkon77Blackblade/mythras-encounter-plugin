@@ -27,6 +27,8 @@ export interface MythrasWeapon {
     ap?: string;
     hp?: string;
     specialFx?: string;
+    traits?: string;
+    cost?: string;
 }
 
 export interface MythrasTemplate {
