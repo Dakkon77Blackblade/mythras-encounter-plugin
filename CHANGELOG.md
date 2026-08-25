@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Templates saved to the Bestiary now include the author's name in the filename to prevent overwriting templates with the same name from different authors (Fixes #1).
 - Complete data model overhaul for Bestiary templates. The scraper now extracts `attributes`, `features`, `standardSkills`, `customSkills`, `combatStyles`, and detailed `weapons` profiles (Fixes #4).
 - The Encounter Generator now randomly selects optional weapons from the scraped weapon lists (e.g., 1-handed weapons) and fully renders Custom Weapons with damage, size, reach, and special effects.
+- Added a local `armory.json` feature for populating standard weapon stats (Damage, Size, Reach/Range, AP/HP, SpecialFx) automatically during encounter generation.
+- Accurately replicated the Mythras Encounter Generator's weighted random selection logic (probability weights without replacement) and support for dice formulas in weapon amounts (Fixes #6).
+- Overhauled Markdown weapon formatting to distinctly render Melee, Ranged, and Shield weapon types with their correct specific stats (e.g. Range instead of Reach for Bows).
+- Restructured the plugin's file layout to use a single configurable `baseFolder` that automatically houses `Bestiary` and `Armory` subdirectories to prevent clutter (Fixes #7).
 
 ## [0.1.0] - 2026-08-24
 ### Added
