@@ -1,7 +1,46 @@
-import { App, Modal, Notice, TFile } from 'obsidian';
+import { App, Modal, Notice, TFile, Setting } from 'obsidian';
 import MythrasEncounterPlugin from './main';
 import { MythrasWeapon } from './mythras-api';
 import { DEFAULT_ARMORY } from './default-armory';
+
+export class ConfirmModal extends Modal {
+    onSubmit: (result: boolean) => void;
+    message: string;
+
+    constructor(app: App, message: string, onSubmit: (result: boolean) => void) {
+        super(app);
+        this.message = message;
+        this.onSubmit = onSubmit;
+    }
+
+    onOpen() {
+        const { contentEl } = this;
+        contentEl.createEl('h2', { text: 'Confirm' });
+        contentEl.createEl('p', { text: this.message });
+
+        new Setting(contentEl)
+            .addButton((btn) =>
+                btn
+                    .setButtonText('Yes')
+                    .setCta()
+                    .onClick(() => {
+                        this.close();
+                        this.onSubmit(true);
+                    }))
+            .addButton((btn) =>
+                btn
+                    .setButtonText('No')
+                    .onClick(() => {
+                        this.close();
+                        this.onSubmit(false);
+                    }));
+    }
+
+    onClose() {
+        const { contentEl } = this;
+        contentEl.empty();
+    }
+}
 
 export class ArmoryManagerModal extends Modal {
     plugin: MythrasEncounterPlugin;
@@ -235,14 +274,16 @@ export class ArmoryManagerModal extends Modal {
             actionsTd.style.textAlign = 'right';
             const btnDeleteList = actionsTd.createEl('button', { text: '🗑️', cls: 'mod-warning' });
             btnDeleteList.style.padding = '4px 8px';
-            btnDeleteList.onclick = async (e) => {
+            btnDeleteList.onclick = (e) => {
                 e.stopPropagation(); // prevent row click
-                if (window.confirm(`Do you really want to delete ${w.name}?`)) {
-                    this.weapons = this.weapons.filter(weapon => weapon !== w);
-                    await this.saveArmory();
-                    new Notice(`Weapon ${w.name} deleted.`);
-                    this.renderView();
-                }
+                new ConfirmModal(this.app, `Do you really want to delete ${w.name}?`, async (result) => {
+                    if (result) {
+                        this.weapons = this.weapons.filter(weapon => weapon !== w);
+                        await this.saveArmory();
+                        new Notice(`Weapon ${w.name} deleted.`);
+                        this.renderView();
+                    }
+                }).open();
             };
         }
     }
@@ -278,14 +319,16 @@ export class ArmoryManagerModal extends Modal {
 
         if (!this.isNewWeapon) {
             const btnDelete = buttonDiv.createEl('button', { text: 'Delete', cls: 'mod-warning' });
-            btnDelete.onclick = async () => {
-                if (window.confirm(`Do you really want to delete ${weapon.name}?`)) {
-                    this.weapons = this.weapons.filter(w => w !== weapon);
-                    await this.saveArmory();
-                    new Notice(`Weapon ${weapon.name} deleted.`);
-                    this.currentView = 'list';
-                    this.renderView();
-                }
+            btnDelete.onclick = () => {
+                new ConfirmModal(this.app, `Do you really want to delete ${weapon.name}?`, async (result) => {
+                    if (result) {
+                        this.weapons = this.weapons.filter(w => w !== weapon);
+                        await this.saveArmory();
+                        new Notice(`Weapon ${weapon.name} deleted.`);
+                        this.currentView = 'list';
+                        this.renderView();
+                    }
+                }).open();
             };
         }
 
