@@ -28,6 +28,15 @@ export class ArmoryManagerModal extends Modal {
         this.renderView();
     }
 
+    close() {
+        if (this.currentView === 'edit') {
+            this.currentView = 'list';
+            this.renderView();
+            return;
+        }
+        super.close();
+    }
+
     onClose() {
         this.contentEl.empty();
     }
@@ -157,6 +166,7 @@ export class ArmoryManagerModal extends Modal {
             { id: 'damage', label: 'Damage', sortable: true },
             { id: 'size', label: this.currentTab === 'ranged' ? 'Force' : 'Size', sortable: false },
             { id: 'aphp', label: 'AP/HP', sortable: false },
+            { id: 'actions', label: '', sortable: false },
         ];
 
         headers.forEach(h => {
@@ -219,6 +229,21 @@ export class ArmoryManagerModal extends Modal {
             row.createEl('td', { text: w.damage || '-' }).style.padding = '8px';
             row.createEl('td', { text: w.size || '-' }).style.padding = '8px';
             row.createEl('td', { text: `${w.ap || 0}/${w.hp || 0}` }).style.padding = '8px';
+            
+            const actionsTd = row.createEl('td');
+            actionsTd.style.padding = '8px';
+            actionsTd.style.textAlign = 'right';
+            const btnDeleteList = actionsTd.createEl('button', { text: '🗑️', cls: 'mod-warning' });
+            btnDeleteList.style.padding = '4px 8px';
+            btnDeleteList.onclick = async (e) => {
+                e.stopPropagation(); // prevent row click
+                if (window.confirm(`Do you really want to delete ${w.name}?`)) {
+                    this.weapons = this.weapons.filter(weapon => weapon !== w);
+                    await this.saveArmory();
+                    new Notice(`Weapon ${w.name} deleted.`);
+                    this.renderView();
+                }
+            };
         }
     }
 
@@ -234,7 +259,7 @@ export class ArmoryManagerModal extends Modal {
         buttonDiv.style.gap = '10px';
         buttonDiv.style.marginBottom = '20px';
 
-        const btnBack = buttonDiv.createEl('button', { text: 'Back to List' });
+        const btnBack = buttonDiv.createEl('button', { text: 'Cancel' });
         btnBack.onclick = () => {
             this.currentView = 'list';
             this.renderView();
@@ -254,11 +279,13 @@ export class ArmoryManagerModal extends Modal {
         if (!this.isNewWeapon) {
             const btnDelete = buttonDiv.createEl('button', { text: 'Delete', cls: 'mod-warning' });
             btnDelete.onclick = async () => {
-                this.weapons = this.weapons.filter(w => w !== weapon);
-                await this.saveArmory();
-                new Notice(`Weapon ${weapon.name} deleted.`);
-                this.currentView = 'list';
-                this.renderView();
+                if (window.confirm(`Do you really want to delete ${weapon.name}?`)) {
+                    this.weapons = this.weapons.filter(w => w !== weapon);
+                    await this.saveArmory();
+                    new Notice(`Weapon ${weapon.name} deleted.`);
+                    this.currentView = 'list';
+                    this.renderView();
+                }
             };
         }
 
