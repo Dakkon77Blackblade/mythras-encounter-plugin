@@ -292,6 +292,7 @@
     background-color: var(--background-secondary);
     margin: 10px 0;
     font-size: 0.9em;
+    max-width: 600px;
 }
 
 .mythras-enemy-header {
