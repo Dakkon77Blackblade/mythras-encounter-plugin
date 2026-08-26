@@ -370,19 +370,13 @@ export function renderEnemyStatblock(instance: MythrasInstance, mode: 'short' | 
     }
 
     if (instance.weapons && instance.weapons.length > 0) {
-        const wTable = container.createEl('table', { cls: 'mythras-weapon-table' });
-        const thead = wTable.createEl('thead');
-        const hRow = thead.createEl('tr');
-        ['Weapon', 'Damage', 'Size', 'Reach/Range', 'Effects'].forEach(h => hRow.createEl('th', { text: h }));
-        
-        const tbody = wTable.createEl('tbody');
+        const weaponsDiv = container.createDiv('mythras-enemy-weapons');
         instance.weapons.forEach(w => {
-            const row = tbody.createEl('tr');
-            row.createEl('td', { text: w.name });
-            row.createEl('td', { text: w.damage || '-' });
-            row.createEl('td', { text: w.size || '-' });
-            row.createEl('td', { text: w.reach || w.range || '-' });
-            row.createEl('td', { text: w.specialFx || '-' });
+            const wLine = weaponsDiv.createDiv('mythras-weapon-line');
+            const reachRange = w.reach || w.range || '-';
+            const fx = w.specialFx && w.specialFx !== 'None' ? `, ${w.specialFx}` : '';
+            wLine.createSpan({ text: `⚔️ ${w.name}: `, cls: 'mythras-label-bold' });
+            wLine.createSpan({ text: `${w.damage || '-'}, Size ${w.size || '-'}, Reach/Range ${reachRange}${fx}` });
         });
     }
 

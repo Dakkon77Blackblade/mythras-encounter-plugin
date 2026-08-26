@@ -385,22 +385,10 @@
     color: var(--text-accent);
 }
 
-.mythras-weapon-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.85em;
+.mythras-weapon-line {
+    margin-top: 4px;
+    padding-left: 8px;
+    border-left: 2px solid var(--background-modifier-border-hover);
 }
 
-.mythras-weapon-table th {
-    text-align: left;
-    border-bottom: 1px solid var(--background-modifier-border);
-    padding: 4px 8px;
-    color: var(--text-muted);
-    font-weight: normal;
-}
-
-.mythras-weapon-table td {
-    padding: 4px 8px;
-    border-bottom: 1px dashed var(--background-modifier-border-hover);
-}
 
