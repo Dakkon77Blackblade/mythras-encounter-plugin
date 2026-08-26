@@ -391,4 +391,10 @@
     border-left: 2px solid var(--background-modifier-border-hover);
 }
 
+.mythras-weapon-fx {
+    font-style: italic;
+    color: var(--text-muted);
+}
+
+
 

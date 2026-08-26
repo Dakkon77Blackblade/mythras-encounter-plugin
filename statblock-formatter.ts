@@ -377,9 +377,16 @@ export function renderEnemyStatblock(instance: MythrasInstance, mode: 'short' | 
             if (w.reach) reachRange = `, Reach ${w.reach}`;
             else if (w.range) reachRange = `, Range ${w.range}`;
 
-            const fx = w.specialFx && w.specialFx !== 'None' ? `, ${w.specialFx}` : '';
+            const allFx = [];
+            if (w.specialFx && w.specialFx !== 'None' && w.specialFx !== '—') allFx.push(w.specialFx);
+            if (w.traits) allFx.push(w.traits);
+
             wLine.createSpan({ text: `⚔️ ${w.name}: `, cls: 'mythras-label-bold' });
-            wLine.createSpan({ text: `${w.damage || '-'}, Size ${w.size || '-'}${reachRange}${fx}` });
+            wLine.createSpan({ text: `${w.damage || '-'}, Size ${w.size || '-'}${reachRange}` });
+            if (allFx.length > 0) {
+                wLine.createSpan({ text: `, ` });
+                wLine.createSpan({ text: allFx.join(', '), cls: 'mythras-weapon-fx' });
+            }
         });
     }
 
