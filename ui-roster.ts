@@ -1,4 +1,5 @@
 import { App, Modal, Setting, Notice, TFile, TFolder, normalizePath, setIcon } from 'obsidian';
+import { ImageSuggestModal } from './modal-image-search';
 import MythrasEncounterPlugin from './main';
 import { MythrasInstance } from './mythras-api';
 import { ConfirmModal } from './ui-armory';
@@ -831,7 +832,32 @@ export class RosterManagerUI {
             createTextField('Instance Name', data.instanceName, v => data.instanceName = v);
             createTextField('Scenario', data.scenario, v => data.scenario = v);
             createTextField('Encounter', data.encounter, v => data.encounter = v);
-            createTextField('Image (e.g. [[image.png]])', data.image || '', v => data.image = v);
+            
+            const imgWrap = formArea.createDiv();
+            imgWrap.style.display = 'flex';
+            imgWrap.style.alignItems = 'flex-end';
+            imgWrap.style.gap = '10px';
+            
+            const fieldWrap = imgWrap.createDiv();
+            fieldWrap.style.display = 'flex';
+            fieldWrap.style.flexDirection = 'column';
+            fieldWrap.style.flex = '1';
+            fieldWrap.createEl('label', { text: 'Image' }).style.fontWeight = 'bold';
+            
+            const imgInp = fieldWrap.createEl('input', { type: 'text' });
+            imgInp.value = data.image || '';
+            imgInp.placeholder = 'e.g. [[image.png]]';
+            imgInp.oninput = (e) => data.image = (e.target as HTMLInputElement).value;
+            
+            const btnBrowse = imgWrap.createEl('button', { text: 'Search Vault...' });
+            btnBrowse.onclick = () => {
+                new ImageSuggestModal(this.app, (file) => {
+                    const link = `[[${file.name}]]`;
+                    imgInp.value = link;
+                    data.image = link;
+                }).open();
+            };
+
 
             
             const notesWrap = formArea.createDiv();
