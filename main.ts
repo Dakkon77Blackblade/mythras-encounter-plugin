@@ -138,11 +138,21 @@ export default class MythrasEncounterPlugin extends Plugin {
                 // Render image if present
                 const imgDiv = statblock.querySelector('.mythras-enemy-image') as HTMLElement;
                 if (imgDiv && imgDiv.dataset.imageLink) {
-                    let imgText = imgDiv.dataset.imageLink;
-                    if (!imgText.startsWith('!')) {
-                        imgText = `!${imgText}`; // ensure it renders as an image
+                    let link = imgDiv.dataset.imageLink.trim();
+                    link = link.replace(/^!*\[\[(.*?)\]\]$/, '$1'); // strip brackets
+                    
+                    if (link.startsWith('http') || link.startsWith('data:')) {
+                        imgDiv.createEl('img', { attr: { src: link } });
+                    } else {
+                        const imgFile = this.app.metadataCache.getFirstLinkpathDest(link, '');
+                        if (imgFile) {
+                            const src = this.app.vault.getResourcePath(imgFile);
+                            imgDiv.createEl('img', { attr: { src } });
+                        } else {
+                            // fallback
+                            await MarkdownRenderer.renderMarkdown(`![[${link}]]`, imgDiv, ctx.sourcePath, this);
+                        }
                     }
-                    await MarkdownRenderer.renderMarkdown(imgText, imgDiv, ctx.sourcePath, this);
                 }
             } catch (e) {
                 el.createEl('div', { text: `Failed to load enemy: ${e}` });
