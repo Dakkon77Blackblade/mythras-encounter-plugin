@@ -290,9 +290,12 @@ export class RosterManagerModal extends Modal {
             this.display();
         };
 
-        const btnSave = btnGroup.createEl('button', { text: 'Save Changes', cls: 'mod-cta' });
+        const btnSave = btnGroup.createEl('button', { text: 'Save & Return', cls: 'mod-cta' });
         btnSave.onclick = async () => {
             await this.saveSelectedInstance();
+            this.selectedInstance = null;
+            this.currentView = 'list';
+            this.display();
         };
 
         // Tabs
