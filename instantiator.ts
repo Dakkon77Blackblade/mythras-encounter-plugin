@@ -148,6 +148,7 @@ export async function instantiateEnemy(
         id,
         templateName: template.name,
         instanceName,
+        image: template.image,
         scenario,
         encounter,
         lastModified: Date.now(),

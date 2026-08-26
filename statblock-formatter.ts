@@ -327,6 +327,11 @@ export function renderEnemyStatblock(instance: MythrasInstance, mode: 'short' | 
     const container = document.createElement('div');
     container.addClass('mythras-enemy-short');
 
+    if (instance.image) {
+        const imgContainer = container.createDiv('mythras-enemy-image');
+        imgContainer.dataset.imageLink = instance.image;
+    }
+
     const header = container.createDiv('mythras-enemy-header');
     header.createEl('h3', { text: instance.instanceName, cls: 'mythras-enemy-name' });
     header.createEl('span', { text: `(${instance.templateName})`, cls: 'mythras-enemy-template' });

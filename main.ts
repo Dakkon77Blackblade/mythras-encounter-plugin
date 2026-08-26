@@ -134,6 +134,16 @@ export default class MythrasEncounterPlugin extends Plugin {
                 const instance: MythrasInstance = JSON.parse(content);
                 const statblock = renderEnemyStatblock(instance, 'short');
                 el.appendChild(statblock);
+
+                // Render image if present
+                const imgDiv = statblock.querySelector('.mythras-enemy-image') as HTMLElement;
+                if (imgDiv && imgDiv.dataset.imageLink) {
+                    let imgText = imgDiv.dataset.imageLink;
+                    if (!imgText.startsWith('!')) {
+                        imgText = `!${imgText}`; // ensure it renders as an image
+                    }
+                    await MarkdownRenderer.renderMarkdown(imgText, imgDiv, ctx.sourcePath, this);
+                }
             } catch (e) {
                 el.createEl('div', { text: `Failed to load enemy: ${e}` });
                 console.error(e);

@@ -64,6 +64,7 @@ export interface MythrasInstance {
     id: string;
     templateName: string;
     instanceName: string;
+    image?: string;
     scenario: string;
     encounter: string;
     lastModified: number;

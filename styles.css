@@ -295,6 +295,29 @@
     max-width: 600px;
 }
 
+.mythras-enemy-short::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.mythras-enemy-image {
+    float: right;
+    width: 120px;
+    margin-left: 15px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.mythras-enemy-image img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    border-radius: 6px;
+}
+
+
 .mythras-enemy-header {
     display: flex;
     align-items: baseline;
