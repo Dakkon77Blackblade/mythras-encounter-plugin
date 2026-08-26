@@ -324,16 +324,16 @@ export class RosterManagerUI {
             item.style.display = 'flex';
             item.style.justifyContent = 'space-between';
             item.style.alignItems = 'center';
-
-            const nameSpan = item.createEl('span', { text: sc.name });
-            nameSpan.style.cursor = 'pointer';
-            nameSpan.style.flex = '1';
-            nameSpan.onclick = () => {
+            item.style.cursor = 'pointer';
+            item.onclick = () => {
                 this.selectedScenario = sc.name;
                 this.selectedEncounter = null;
                 this.selectedInstancePaths.clear();
                 this.display();
             };
+
+            const nameSpan = item.createEl('span', { text: sc.name });
+            nameSpan.style.flex = '1';
             
             const btnWrap = item.createDiv();
             btnWrap.style.display = 'flex';
@@ -454,14 +454,14 @@ export class RosterManagerUI {
             tag.style.display = 'flex';
             tag.style.alignItems = 'center';
             tag.style.gap = '8px';
-
-            const nameSpan = tag.createEl('span', { text: `${enc.name} (${enc.instances.length})` });
-            nameSpan.style.cursor = 'pointer';
-            nameSpan.onclick = () => {
+            tag.style.cursor = 'pointer';
+            tag.onclick = () => {
                 this.selectedEncounter = enc.name;
                 this.selectedInstancePaths.clear();
                 this.display();
             };
+
+            const nameSpan = tag.createEl('span', { text: `${enc.name} (${enc.instances.length})` });
 
             const btnRename = tag.createEl('button', { text: '✏️' });
             btnRename.style.padding = '0 4px';
