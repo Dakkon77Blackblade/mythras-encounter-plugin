@@ -32,8 +32,8 @@ export default class MythrasEncounterPlugin extends Plugin {
         // Command to generate enemies from a local template
         this.addCommand({
             id: 'generate-mythras-encounter',
-            name: 'Generate Encounter from Bestiary',
-            editorCallback: (editor, view) => {
+            name: 'Generate Mythras Encounter',
+            callback: () => {
                 new MythrasGenerateModal(this.app, this).open();
             }
         });

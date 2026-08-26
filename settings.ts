@@ -1,5 +1,8 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
 import MythrasEncounterPlugin from './main';
+import { BestiaryManagerModal } from './modal-bestiary-manager';
+import { ArmoryManagerModal } from './modal-armory-manager';
+import { RosterManagerModal } from './modal-roster-manager';
 
 export interface MythrasEncounterSettings {
     baseFolder: string;
@@ -42,9 +45,19 @@ export class MythrasEncounterSettingTab extends PluginSettingTab {
                     .setButtonText('Open Manager')
                     .setCta()
                     .onClick(() => {
-                        import('./modal-bestiary-manager').then((m) => {
-                            new m.BestiaryManagerModal(this.app, this.plugin).open();
-                        });
+                        new BestiaryManagerModal(this.app, this.plugin).open();
+                    })
+            );
+
+        new Setting(containerEl)
+            .setName('Roster Manager')
+            .setDesc('View and manage your instantiated enemies (Roster).')
+            .addButton((btn) =>
+                btn
+                    .setButtonText('Open Roster')
+                    .setCta()
+                    .onClick(() => {
+                        new RosterManagerModal(this.app, this.plugin).open();
                     })
             );
 
