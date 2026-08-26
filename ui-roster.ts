@@ -224,8 +224,8 @@ export class RosterManagerUI {
         this.selectedInstance.data.lastModified = Date.now();
         const dataStr = JSON.stringify(this.selectedInstance.data, null, 2);
         
-        const safeScenario = this.selectedInstance.data.scenario.replace(/[^a-zA-Z0-9 -]/g, '').trim() || 'General';
-        const safeEncounter = this.selectedInstance.data.encounter.replace(/[^a-zA-Z0-9 -]/g, '').trim() || 'Random Encounter';
+        const safeScenario = this.selectedInstance.data.scenario.replace(/[^\p{L}\p{N} -]/gu, '').trim() || 'General';
+        const safeEncounter = this.selectedInstance.data.encounter.replace(/[^\p{L}\p{N} -]/gu, '').trim() || 'Random Encounter';
         
         const oldFile = this.selectedInstance.file;
         const oldScenario = oldFile.path.split('/')[2];
@@ -295,7 +295,7 @@ export class RosterManagerUI {
         btnNewScen.onclick = () => {
             new PromptModal(this.app, 'New Scenario', 'Enter the name of the new Scenario', 'Scenario Name', '', async (name) => {
                 if (name) {
-                    const safeName = name.replace(/[^a-zA-Z0-9 -]/g, '').trim();
+                    const safeName = name.replace(/[^\p{L}\p{N} -]/gu, '').trim();
                     if (safeName) {
                         const newPath = normalizePath(`${this.plugin.settings.baseFolder}/Roster/${safeName}`);
                         if (!(await this.app.vault.adapter.exists(newPath))) {
@@ -345,7 +345,7 @@ export class RosterManagerUI {
                 e.stopPropagation();
                 new PromptModal(this.app, 'Rename Scenario', 'Enter new name:', 'Name', sc.name, async (name) => {
                     if (name && name !== sc.name) {
-                        const safeName = name.replace(/[^a-zA-Z0-9 -]/g, '').trim();
+                        const safeName = name.replace(/[^\p{L}\p{N} -]/gu, '').trim();
                         const newPath = normalizePath(`${this.plugin.settings.baseFolder}/Roster/${safeName}`);
                         if (!(await this.app.vault.adapter.exists(newPath))) {
                             const folder = this.app.vault.getAbstractFileByPath(sc.path);
@@ -424,7 +424,7 @@ export class RosterManagerUI {
         btnNewEnc.onclick = () => {
             new PromptModal(this.app, 'New Encounter', 'Enter the name of the new Encounter', 'Encounter Name', '', async (name) => {
                 if (name) {
-                    const safeName = name.replace(/[^a-zA-Z0-9 -]/g, '').trim();
+                    const safeName = name.replace(/[^\p{L}\p{N} -]/gu, '').trim();
                     if (safeName) {
                         const newPath = normalizePath(`${scenario.path}/${safeName}`);
                         if (!(await this.app.vault.adapter.exists(newPath))) {
@@ -470,7 +470,7 @@ export class RosterManagerUI {
                 e.stopPropagation();
                 new PromptModal(this.app, 'Rename Encounter', 'Enter new name:', 'Name', enc.name, async (name) => {
                     if (name && name !== enc.name) {
-                        const safeName = name.replace(/[^a-zA-Z0-9 -]/g, '').trim();
+                        const safeName = name.replace(/[^\p{L}\p{N} -]/gu, '').trim();
                         const newPath = normalizePath(`${scenario.path}/${safeName}`);
                         if (!(await this.app.vault.adapter.exists(newPath))) {
                             const folder = this.app.vault.getAbstractFileByPath(enc.path);

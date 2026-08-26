@@ -110,8 +110,8 @@ export class MythrasGenerateModal extends Modal {
             // Removed the early return if no editor exists, as we still want to save to the Roster!
 
             // Ensure folder structure exists
-            const safeScenario = this.scenario.replace(/[^a-zA-Z0-9 -]/g, '').trim() || 'General';
-            const safeEncounter = this.encounter.replace(/[^a-zA-Z0-9 -]/g, '').trim() || 'Random Encounter';
+            const safeScenario = this.scenario.replace(/[^\p{L}\p{N} -]/gu, '').trim() || 'General';
+            const safeEncounter = this.encounter.replace(/[^\p{L}\p{N} -]/gu, '').trim() || 'Random Encounter';
             const folderPath = normalizePath(`${this.plugin.settings.baseFolder}/Roster/${safeScenario}/${safeEncounter}`);
             
             await this.ensureFolderExists(folderPath);
@@ -123,7 +123,7 @@ export class MythrasGenerateModal extends Modal {
                 const instanceName = `${template.name} ${i + 1}`;
                 const instance = await instantiateEnemy(this.app, armoryPath, template, instanceName, safeScenario, safeEncounter);
                 
-                const filePath = normalizePath(`${folderPath}/${instance.id}_${template.name.replace(/[^a-zA-Z0-9]/g, '')}.json`);
+                const filePath = normalizePath(`${folderPath}/${instance.id}_${template.name.replace(/[^\p{L}\p{N}]/gu, '')}.json`);
                 await this.app.vault.create(filePath, JSON.stringify(instance, null, 2));
                 
                 output += `\`\`\`enemy\n${instance.id}\n\`\`\`\n\n`;
