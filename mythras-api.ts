@@ -52,6 +52,35 @@ export interface MythrasTemplate {
     weapons: MythrasWeapon[];
 }
 
+export interface HitLocationInstance {
+    range: string;
+    name: string;
+    ap: string;
+    hp: number;
+    currentHp: number;
+}
+
+export interface MythrasInstance {
+    id: string;
+    templateName: string;
+    instanceName: string;
+    scenario: string;
+    encounter: string;
+    lastModified: number;
+    
+    stats: { [key: string]: number };
+    attributes: { [key: string]: string | number };
+    hitLocations: HitLocationInstance[];
+    
+    standardSkills: { [key: string]: number };
+    customSkills: { [key: string]: number };
+    combatStyles: { [key: string]: number };
+    
+    weapons: MythrasWeapon[];
+    features: { name: string; description: string }[];
+    notes: string;
+}
+
 export class MythrasApi {
     private static BASE_URL = 'https://mythras.skoll.xyz';
 
