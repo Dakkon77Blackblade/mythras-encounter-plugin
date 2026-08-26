@@ -336,7 +336,7 @@ export class RosterManagerModal extends Modal {
             wrap.createEl('label', { text: label }).style.fontWeight = 'bold';
             const inp = wrap.createEl('input', { type: 'text' });
             inp.value = val;
-            inp.onchange = (e) => onChange((e.target as HTMLInputElement).value);
+            inp.oninput = (e) => onChange((e.target as HTMLInputElement).value);
         };
 
         if (this.editTab === 'general') {
@@ -351,7 +351,7 @@ export class RosterManagerModal extends Modal {
             const ta = notesWrap.createEl('textarea');
             ta.value = data.notes || '';
             ta.rows = 6;
-            ta.onchange = (e) => data.notes = (e.target as HTMLTextAreaElement).value;
+            ta.oninput = (e) => data.notes = (e.target as HTMLTextAreaElement).value;
 
         } else if (this.editTab === 'hitlocations') {
             const table = formArea.createEl('table', { cls: 'armory-table' });
@@ -370,21 +370,21 @@ export class RosterManagerModal extends Modal {
                 const apInp = apTd.createEl('input', { type: 'text' });
                 apInp.style.width = '60px';
                 apInp.value = hl.ap;
-                apInp.onchange = (e) => hl.ap = (e.target as HTMLInputElement).value;
+                apInp.oninput = (e) => hl.ap = (e.target as HTMLInputElement).value;
 
                 const currTd = tr.createEl('td');
                 currTd.style.padding = '8px';
                 const currInp = currTd.createEl('input', { type: 'number' });
                 currInp.style.width = '60px';
                 currInp.value = hl.currentHp.toString();
-                currInp.onchange = (e) => hl.currentHp = parseInt((e.target as HTMLInputElement).value);
+                currInp.oninput = (e) => hl.currentHp = parseInt((e.target as HTMLInputElement).value) || 0;
 
                 const maxTd = tr.createEl('td');
                 maxTd.style.padding = '8px';
                 const maxInp = maxTd.createEl('input', { type: 'number' });
                 maxInp.style.width = '60px';
                 maxInp.value = hl.hp.toString();
-                maxInp.onchange = (e) => hl.hp = parseInt((e.target as HTMLInputElement).value);
+                maxInp.oninput = (e) => hl.hp = parseInt((e.target as HTMLInputElement).value) || 0;
             });
 
         } else if (this.editTab === 'stats') {
@@ -407,7 +407,7 @@ export class RosterManagerModal extends Modal {
                     field.createEl('label', { text: k });
                     const inp = field.createEl('input', { type: typeof obj[k] === 'number' ? 'number' : 'text' });
                     inp.value = obj[k].toString();
-                    inp.onchange = (e) => {
+                    inp.oninput = (e) => {
                         obj[k] = typeof obj[k] === 'number' 
                             ? parseInt((e.target as HTMLInputElement).value) || 0 
                             : (e.target as HTMLInputElement).value;
@@ -433,7 +433,7 @@ export class RosterManagerModal extends Modal {
                     tdInp.style.padding = '4px';
                     const inp = tdInp.createEl('input', { type: 'number' });
                     inp.value = obj[k].toString();
-                    inp.onchange = (e) => obj[k] = parseInt((e.target as HTMLInputElement).value) || 0;
+                    inp.oninput = (e) => obj[k] = parseInt((e.target as HTMLInputElement).value) || 0;
                 });
             };
 
@@ -522,7 +522,7 @@ export class RosterManagerModal extends Modal {
                     fWrap.createEl('label', { text: label }).style.fontSize = '0.85em';
                     const inp = fWrap.createEl('input', { type: 'text' });
                     inp.value = (w[field] as string) || '';
-                    inp.onchange = (e) => w[field] = (e.target as HTMLInputElement).value;
+                    inp.oninput = (e) => w[field] = (e.target as HTMLInputElement).value;
                 };
 
                 createField('AP', 'ap');
