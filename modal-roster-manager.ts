@@ -107,10 +107,10 @@ export class RosterManagerModal extends Modal {
             
             // Reload and reselect
             await this.loadInstances();
-            this.selectedInstance = this.instances.find(i => i.file.path === newFilePath) || null;
             new Notice(`Saved and moved to ${safeScenario}/${safeEncounter}`);
         } else {
             await this.app.vault.modify(this.selectedInstance.file, dataStr);
+            await this.loadInstances();
             new Notice("Saved successfully.");
         }
     }
