@@ -21,7 +21,7 @@ export async function generateStatblock(app: App, armoryFile: string, template: 
     // 2. Derived Attributes
     const actionPoints = DiceRoller.calculateActionPoints(INT, DEX);
     const damageModifier = DiceRoller.calculateDamageModifier(STR, SIZ);
-    const strikeRank = DiceRoller.calculateStrikeRank(INT, DEX);
+    const initiative = DiceRoller.calculateInitiative(INT, DEX);
     const magicPoints = POW;
     const movement = template.attributes['Movement'] || "6m";
 
@@ -150,9 +150,10 @@ export async function generateStatblock(app: App, armoryFile: string, template: 
     md += `| ${STR} | ${CON} | ${SIZ} | ${DEX} | ${INT} | ${POW} | ${CHA} |\n\n`;
 
     // Attributes Table
-    md += `| Action Points | Damage Mod | Magic Points | Strike Rank | Movement |\n`;
-    md += `|:---:|:---:|:---:|:---:|:---:|\n`;
-    md += `| ${actionPoints} | ${damageModifier} | ${magicPoints} | ${strikeRank} | ${movement} |\n\n`;
+    md += `| Action Points | Damage Mod | Initiative | Magic Points | Movement |
+| :---: | :---: | :---: | :---: | :---: |
+| ${actionPoints} | ${damageModifier} | ${initiative} | ${magicPoints} | ${movement} |
+\n\n`;
 
     // Hit Locations Table
     if (rolledHitLocations.length > 0) {
@@ -320,4 +321,70 @@ export function formatInstanceAsMarkdown(instance: MythrasInstance): string {
     }
 
     return md;
+}
+
+export function renderEnemyStatblock(instance: MythrasInstance, mode: 'short' | 'long'): HTMLElement {
+    const container = document.createElement('div');
+    container.addClass('mythras-enemy-short');
+
+    const header = container.createDiv('mythras-enemy-header');
+    header.createEl('h3', { text: instance.instanceName, cls: 'mythras-enemy-name' });
+    header.createEl('span', { text: `(${instance.templateName})`, cls: 'mythras-enemy-template' });
+
+    const topWrap = container.createDiv('mythras-enemy-top-wrap');
+
+    const charGrid = topWrap.createDiv('mythras-char-grid');
+    const chars = ['STR', 'CON', 'SIZ', 'DEX', 'INT', 'POW', 'CHA'];
+    chars.forEach(c => {
+        const box = charGrid.createDiv('mythras-char-box');
+        box.createDiv({ text: c, cls: 'mythras-char-label' });
+        box.createDiv({ text: String(instance.stats[c] || '-'), cls: 'mythras-char-value' });
+    });
+
+    const derivedGrid = topWrap.createDiv('mythras-derived-grid');
+    const derived = [
+        { label: 'AP', val: instance.attributes['Action Points'] },
+        { label: 'Dmg Mod', val: instance.attributes['Damage Mod'] },
+        { label: 'Init', val: instance.attributes['Initiative'] || instance.attributes['Strike Rank'] },
+        { label: 'Move', val: instance.attributes['Movement'] },
+        { label: 'MP', val: instance.attributes['Magic Points'] }
+    ];
+    derived.forEach(d => {
+        const box = derivedGrid.createDiv('mythras-derived-box');
+        box.createDiv({ text: d.label, cls: 'mythras-derived-label' });
+        box.createDiv({ text: String(d.val || '-'), cls: 'mythras-derived-value' });
+    });
+
+    const hlContainer = container.createDiv('mythras-hl-container');
+    instance.hitLocations.forEach(hl => {
+        const pill = hlContainer.createDiv('mythras-hl-compact');
+        pill.createSpan({ text: hl.name, cls: 'mythras-hl-name' });
+        pill.createSpan({ text: `(${hl.ap}/${hl.hp})`, cls: 'mythras-hl-vals' });
+    });
+
+    if (instance.combatStyles && Object.keys(instance.combatStyles).length > 0) {
+        const csDiv = container.createDiv('mythras-enemy-cs');
+        const styles = Object.entries(instance.combatStyles).map(([k, v]) => `${k} ${v}%`).join(', ');
+        csDiv.createSpan({ text: 'Combat Styles: ', cls: 'mythras-label-bold' });
+        csDiv.createSpan({ text: styles });
+    }
+
+    if (instance.weapons && instance.weapons.length > 0) {
+        const wTable = container.createEl('table', { cls: 'mythras-weapon-table' });
+        const thead = wTable.createEl('thead');
+        const hRow = thead.createEl('tr');
+        ['Weapon', 'Damage', 'Size', 'Reach/Range', 'Effects'].forEach(h => hRow.createEl('th', { text: h }));
+        
+        const tbody = wTable.createEl('tbody');
+        instance.weapons.forEach(w => {
+            const row = tbody.createEl('tr');
+            row.createEl('td', { text: w.name });
+            row.createEl('td', { text: w.damage || '-' });
+            row.createEl('td', { text: w.size || '-' });
+            row.createEl('td', { text: w.reach || w.range || '-' });
+            row.createEl('td', { text: w.specialFx || '-' });
+        });
+    }
+
+    return container;
 }

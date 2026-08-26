@@ -67,7 +67,7 @@ export class DiceRoller {
         return Math.ceil((int + dex) / 12);
     }
 
-    static calculateStrikeRank(int: number, dex: number): number {
+    static calculateInitiative(int: number, dex: number): number {
         return Math.ceil((int + dex) / 2);
     }
 }

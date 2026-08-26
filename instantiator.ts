@@ -30,7 +30,7 @@ export async function instantiateEnemy(
     const attributes: Record<string, string | number> = {};
     attributes['Action Points'] = DiceRoller.calculateActionPoints(INT, DEX);
     attributes['Damage Mod'] = DiceRoller.calculateDamageModifier(STR, SIZ);
-    attributes['Strike Rank'] = DiceRoller.calculateStrikeRank(INT, DEX);
+    attributes['Initiative'] = DiceRoller.calculateInitiative(INT, DEX);
     attributes['Magic Points'] = POW;
     attributes['Movement'] = template.attributes['Movement'] || "6m";
 

@@ -7,7 +7,7 @@ import { MythrasWeapon } from './mythras-api';
 import { renderItemStatblock } from './item-formatter';
 import { ItemSuggester } from './item-suggester';
 import { buildItemLivePreviewPlugin } from './live-preview';
-import { formatInstanceAsMarkdown } from './statblock-formatter';
+import { formatInstanceAsMarkdown, renderEnemyStatblock } from './statblock-formatter';
 import { MythrasInstance } from './mythras-api';
 import { MarkdownRenderer, TFile } from 'obsidian';
 
@@ -132,18 +132,8 @@ export default class MythrasEncounterPlugin extends Plugin {
             try {
                 const content = await this.app.vault.read(file);
                 const instance: MythrasInstance = JSON.parse(content);
-                const md = formatInstanceAsMarkdown(instance);
-                
-                // Wrap in a custom div for styling if needed
-                const container = el.createDiv('mythras-enemy-statblock-container');
-                container.style.border = '1px solid var(--background-modifier-border)';
-                container.style.padding = '15px';
-                container.style.borderRadius = '8px';
-                container.style.backgroundColor = 'var(--background-secondary)';
-                container.style.marginTop = '10px';
-                container.style.marginBottom = '10px';
-                
-                await MarkdownRenderer.renderMarkdown(md, container, ctx.sourcePath, this);
+                const statblock = renderEnemyStatblock(instance, 'short');
+                el.appendChild(statblock);
             } catch (e) {
                 el.createEl('div', { text: `Failed to load enemy: ${e}` });
                 console.error(e);
