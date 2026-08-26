@@ -357,7 +357,8 @@ export class RosterManagerUI {
         titleWrap.style.alignItems = 'center';
         titleWrap.style.gap = '8px';
 
-        titleWrap.createEl('h3', { text: `Scenario: ${scenario.name}`, cls: 'mythras-item-name-grid' });
+        const h3 = titleWrap.createEl('h3', { text: scenario.name });
+        h3.style.margin = '0';
         
         const btnRenameScen = titleWrap.createEl('button', { cls: 'clickable-icon' });
         setIcon(btnRenameScen, 'pencil');
