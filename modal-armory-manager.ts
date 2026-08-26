@@ -113,6 +113,7 @@ export class ArmoryManagerModal extends Modal {
         } else {
             await this.app.vault.create(armoryPath, data);
         }
+        await this.plugin.refreshArmoryCache();
     }
 
     async repopulateArmory() {

@@ -2,14 +2,20 @@ import { Plugin, normalizePath } from 'obsidian';
 import { MythrasEncounterSettings, DEFAULT_SETTINGS, MythrasEncounterSettingTab } from './settings';
 import { MythrasSearchModal } from './modal-search';
 import { MythrasGenerateModal } from './modal-generate';
+import { MythrasWeapon } from './mythras-api';
+import { renderItemStatblock } from './item-formatter';
+import { ItemSuggester } from './item-suggester';
+import { buildItemLivePreviewPlugin } from './live-preview';
 
 export default class MythrasEncounterPlugin extends Plugin {
     settings: MythrasEncounterSettings;
+    armoryCache: MythrasWeapon[] = [];
 
     async onload() {
         await this.loadSettings();
 
         await this.initArmory();
+        await this.refreshArmoryCache();
 
         // This adds a settings tab so the user can configure various aspects of the plugin
         this.addSettingTab(new MythrasEncounterSettingTab(this.app, this));
@@ -31,6 +37,51 @@ export default class MythrasEncounterPlugin extends Plugin {
                 new MythrasGenerateModal(this.app, this).open();
             }
         });
+
+        // Register the autocomplete suggester for items
+        this.registerEditorSuggest(new ItemSuggester(this.app, this));
+
+        // Register the CodeMirror 6 plugin for Live Preview inline items
+        this.registerEditorExtension(buildItemLivePreviewPlugin(this));
+
+        // Inline code post processor for item: Weapon Name
+        this.registerMarkdownPostProcessor((element, context) => {
+            const codeElements = element.findAll('code');
+            codeElements.forEach((codeEl) => {
+                const text = codeEl.innerText.trim();
+                if (text.startsWith('item:')) {
+                    const itemName = text.replace('item:', '').trim().toLowerCase();
+                    const weapon = this.armoryCache.find(w => w.name.toLowerCase() === itemName);
+                    
+                    if (weapon) {
+                        const linkSpan = document.createElement('span');
+                        linkSpan.addClass('mythras-item-link');
+                        linkSpan.setText(weapon.name);
+                        
+                        // Create the popover
+                        const popover = renderItemStatblock(weapon, true);
+                        popover.addClass('mythras-item-popover');
+                        linkSpan.appendChild(popover);
+                        
+                        codeEl.replaceWith(linkSpan);
+                    }
+                }
+            });
+        });
+
+        // Block-level processor for ```item ... ```
+        this.registerMarkdownCodeBlockProcessor('item', (source, el, ctx) => {
+            const itemName = source.trim().toLowerCase();
+            const weapon = this.armoryCache.find(w => w.name.toLowerCase() === itemName);
+            
+            if (weapon) {
+                const block = renderItemStatblock(weapon, false);
+                block.addClass('mythras-item-block');
+                el.appendChild(block);
+            } else {
+                el.createEl('div', { text: `Item not found in Armory: ${source.trim()}` });
+            }
+        });
     }
 
     onunload() {
@@ -42,6 +93,19 @@ export default class MythrasEncounterPlugin extends Plugin {
 
     async saveSettings() {
         await this.saveData(this.settings);
+    }
+
+    async refreshArmoryCache() {
+        const baseFolder = normalizePath(this.settings.baseFolder);
+        const armoryPath = normalizePath(`${baseFolder}/Armory/armory.json`);
+        if (await this.app.vault.adapter.exists(armoryPath)) {
+            try {
+                const content = await this.app.vault.adapter.read(armoryPath);
+                this.armoryCache = JSON.parse(content) as MythrasWeapon[];
+            } catch (e) {
+                console.error("Failed to parse armory.json", e);
+            }
+        }
     }
 
     async initArmory() {
