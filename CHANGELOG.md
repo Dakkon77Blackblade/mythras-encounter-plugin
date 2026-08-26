@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Restructured the plugin's file layout to use a single configurable `baseFolder` that automatically houses `Bestiary` and `Armory` subdirectories to prevent clutter (Fixes #7).
 - Introduced the **Local Bestiary Manager**, a full UI available from the plugin settings to list, view, and edit local templates.
 - Features dynamic editing views with Obsidian Vault image selection, custom vs. armory weapon handling, and automatic author tagging for manually customized creatures (Fixes #9).
+- Introduced **Inline Item Statblocks** via Obsidian's Live Preview mode. Typing \`item: Weapon Name\` automatically resolves into an interactive hover-link that displays a compact SVG-icon-based statblock popover (Fixes #13).
+- Added support for static block-level item statblocks using \`\`\`item\`\`\` codeblocks with a comprehensive grid layout.
+- Added an Editor Suggester for auto-completing weapon names while typing in the editor.
 
 ## [0.1.0] - 2026-08-24
 ### Added
