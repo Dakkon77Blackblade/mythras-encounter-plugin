@@ -411,7 +411,10 @@ export class RosterManagerUI {
         const btnAddEnemy = tableControls.createEl('button', { text: '+ Add Enemy', cls: 'mod-cta' });
         btnAddEnemy.onclick = () => {
             import('./modal-generate').then((m) => {
-                new m.MythrasGenerateModal(this.app, this.plugin, scenario.name, encounter.name).open();
+                new m.MythrasGenerateModal(this.app, this.plugin, scenario.name, encounter.name, async () => {
+                    await this.loadInstances();
+                    this.display();
+                }).open();
             });
         };
 

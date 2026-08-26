@@ -11,12 +11,14 @@ export class MythrasGenerateModal extends Modal {
     amount: number = 1;
     scenario: string = 'General';
     encounter: string = 'Random Encounter';
+    onComplete?: () => void;
 
-    constructor(app: App, plugin: MythrasEncounterPlugin, defaultScenario: string = 'General', defaultEncounter: string = 'Random Encounter') {
+    constructor(app: App, plugin: MythrasEncounterPlugin, defaultScenario: string = 'General', defaultEncounter: string = 'Random Encounter', onComplete?: () => void) {
         super(app);
         this.plugin = plugin;
         this.scenario = defaultScenario;
         this.encounter = defaultEncounter;
+        this.onComplete = onComplete;
     }
 
     async onOpen() {
@@ -133,6 +135,10 @@ export class MythrasGenerateModal extends Modal {
                 new Notice(`Generated ${this.amount}x ${template.name} in Roster and inserted into note!`);
             } else {
                 new Notice(`Generated ${this.amount}x ${template.name} in Roster! (No active note to insert into)`);
+            }
+
+            if (this.onComplete) {
+                this.onComplete();
             }
 
         } catch (e) {
