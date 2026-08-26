@@ -1,4 +1,4 @@
-import { App, Modal, Setting, Notice, TFile, TFolder, normalizePath } from 'obsidian';
+import { App, Modal, Setting, Notice, TFile, TFolder, normalizePath, setIcon } from 'obsidian';
 import MythrasEncounterPlugin from './main';
 import { MythrasInstance } from './mythras-api';
 import { ConfirmModal } from './ui-armory';
@@ -334,73 +334,7 @@ export class RosterManagerUI {
 
             const nameSpan = item.createEl('span', { text: sc.name });
             nameSpan.style.flex = '1';
-            
-            const btnWrap = item.createDiv();
-            btnWrap.style.display = 'flex';
-            btnWrap.style.gap = '4px';
 
-            const btnRename = btnWrap.createEl('button', { text: '✏️' });
-            btnRename.style.padding = '2px 6px';
-            btnRename.onclick = (e) => {
-                e.stopPropagation();
-                new PromptModal(this.app, 'Rename Scenario', 'Enter new name:', 'Name', sc.name, async (name) => {
-                    if (name && name !== sc.name) {
-                        const safeName = name.replace(/[^\p{L}\p{N} -]/gu, '').trim();
-                        const newPath = normalizePath(`${this.plugin.settings.baseFolder}/Roster/${safeName}`);
-                        if (!(await this.app.vault.adapter.exists(newPath))) {
-                            const folder = this.app.vault.getAbstractFileByPath(sc.path);
-                            if (folder) {
-                                await this.app.vault.rename(folder, newPath);
-                                const updateJsonRecursively = async (f: any) => {
-                                    if (f.children) {
-                                        for (const child of f.children) await updateJsonRecursively(child);
-                                    } else if (f instanceof TFile && f.extension === 'json') {
-                                        try {
-                                            const content = await this.app.vault.read(f);
-                                            const data = JSON.parse(content);
-                                            data.scenario = safeName;
-                                            await this.app.vault.modify(f, JSON.stringify(data, null, 2));
-                                        } catch(e){}
-                                    }
-                                };
-                                const newFolder = this.app.vault.getAbstractFileByPath(newPath);
-                                if (newFolder) await updateJsonRecursively(newFolder);
-                                
-                                if (this.selectedScenario === sc.name) this.selectedScenario = safeName;
-                                await this.loadInstances();
-                                this.display();
-                            }
-                        } else {
-                            new Notice("Scenario already exists!");
-                        }
-                    }
-                }).open();
-            };
-
-            const btnDel = btnWrap.createEl('button', { text: '🗑️', cls: 'mod-warning' });
-            btnDel.style.padding = '2px 6px';
-            btnDel.onclick = (e) => {
-                e.stopPropagation();
-                let encCount = sc.encounters.length;
-                let instCount = sc.encounters.reduce((sum, e) => sum + e.instances.length, 0);
-                const msg = `Are you sure you want to delete the Scenario '${sc.name}'? This will permanently delete ${encCount} Encounters and ${instCount} enemies!`;
-                new ConfirmModal(this.app, msg, async (result) => {
-                    if (result) {
-                        const folder = this.app.vault.getAbstractFileByPath(sc.path);
-                        if (folder) {
-                            await this.app.vault.trash(folder, true);
-                            new Notice(`Deleted Scenario ${sc.name}`);
-                            if (this.selectedScenario === sc.name) {
-                                this.selectedScenario = null;
-                                this.selectedEncounter = null;
-                                this.selectedInstancePaths.clear();
-                            }
-                            await this.loadInstances();
-                            this.display();
-                        }
-                    }
-                }).open();
-            };
         }
     }
 
@@ -417,8 +351,74 @@ export class RosterManagerUI {
         header.style.display = 'flex';
         header.style.justifyContent = 'space-between';
         header.style.alignItems = 'center';
+        
+        const titleWrap = header.createDiv();
+        titleWrap.style.display = 'flex';
+        titleWrap.style.alignItems = 'center';
+        titleWrap.style.gap = '8px';
 
-        header.createEl('h3', { text: `Scenario: ${scenario.name}`, cls: 'mythras-item-name-grid' });
+        titleWrap.createEl('h3', { text: `Scenario: ${scenario.name}`, cls: 'mythras-item-name-grid' });
+        
+        const btnRenameScen = titleWrap.createEl('button', { cls: 'clickable-icon' });
+        setIcon(btnRenameScen, 'pencil');
+        btnRenameScen.onclick = (e) => {
+            e.stopPropagation();
+            new PromptModal(this.app, 'Rename Scenario', 'Enter new name:', 'Name', scenario.name, async (name) => {
+                if (name && name !== scenario.name) {
+                    const safeName = name.replace(/[^\p{L}\p{N} -]/gu, '').trim();
+                    const newPath = normalizePath(`${this.plugin.settings.baseFolder}/Roster/${safeName}`);
+                    if (!(await this.app.vault.adapter.exists(newPath))) {
+                        const folder = this.app.vault.getAbstractFileByPath(scenario.path);
+                        if (folder) {
+                            await this.app.vault.rename(folder, newPath);
+                            const updateJsonRecursively = async (f: any) => {
+                                if (f.children) {
+                                    for (const child of f.children) await updateJsonRecursively(child);
+                                } else if (f instanceof TFile && f.extension === 'json') {
+                                    try {
+                                        const content = await this.app.vault.read(f);
+                                        const data = JSON.parse(content);
+                                        data.scenario = safeName;
+                                        await this.app.vault.modify(f, JSON.stringify(data, null, 2));
+                                    } catch(e){}
+                                }
+                            };
+                            const newFolder = this.app.vault.getAbstractFileByPath(newPath);
+                            if (newFolder) await updateJsonRecursively(newFolder);
+                            
+                            this.selectedScenario = safeName;
+                            await this.loadInstances();
+                            this.display();
+                        }
+                    } else {
+                        new Notice("Scenario already exists!");
+                    }
+                }
+            }).open();
+        };
+
+        const btnDelScen = titleWrap.createEl('button', { cls: 'clickable-icon mod-warning' });
+        setIcon(btnDelScen, 'trash-2');
+        btnDelScen.onclick = (e) => {
+            e.stopPropagation();
+            let encCount = scenario.encounters.length;
+            let instCount = scenario.encounters.reduce((sum, e) => sum + e.instances.length, 0);
+            const msg = `Are you sure you want to delete the Scenario '${scenario.name}'? This will permanently delete ${encCount} Encounters and ${instCount} enemies!`;
+            new ConfirmModal(this.app, msg, async (result) => {
+                if (result) {
+                    const folder = this.app.vault.getAbstractFileByPath(scenario.path);
+                    if (folder) {
+                        await this.app.vault.trash(folder, true);
+                        new Notice(`Deleted Scenario ${scenario.name}`);
+                        this.selectedScenario = null;
+                        this.selectedEncounter = null;
+                        this.selectedInstancePaths.clear();
+                        await this.loadInstances();
+                        this.display();
+                    }
+                }
+            }).open();
+        };
         
         const btnNewEnc = header.createEl('button', { text: '+ New Encounter', cls: 'mod-cta' });
         btnNewEnc.onclick = () => {
@@ -463,9 +463,8 @@ export class RosterManagerUI {
 
             const nameSpan = tag.createEl('span', { text: `${enc.name} (${enc.instances.length})` });
 
-            const btnRename = tag.createEl('button', { text: '✏️' });
-            btnRename.style.padding = '0 4px';
-            btnRename.style.fontSize = '0.8em';
+            const btnRename = tag.createEl('button', { cls: 'clickable-icon' });
+            setIcon(btnRename, 'pencil');
             btnRename.onclick = (e) => {
                 e.stopPropagation();
                 new PromptModal(this.app, 'Rename Encounter', 'Enter new name:', 'Name', enc.name, async (name) => {
@@ -502,9 +501,8 @@ export class RosterManagerUI {
                 }).open();
             };
 
-            const btnMove = tag.createEl('button', { text: '🚚' });
-            btnMove.style.padding = '0 4px';
-            btnMove.style.fontSize = '0.8em';
+            const btnMove = tag.createEl('button', { cls: 'clickable-icon' });
+            setIcon(btnMove, 'folder-output');
             btnMove.onclick = (e) => {
                 e.stopPropagation();
                 const otherScenarios = this.scenarios.filter(s => s.name !== scenario.name).map(s => s.name);
@@ -552,9 +550,8 @@ export class RosterManagerUI {
                 }).open();
             };
 
-            const btnDel = tag.createEl('button', { text: 'X', cls: 'mod-warning' });
-            btnDel.style.padding = '0 4px';
-            btnDel.style.fontSize = '0.8em';
+            const btnDel = tag.createEl('button', { cls: 'clickable-icon mod-warning' });
+            setIcon(btnDel, 'trash-2');
             btnDel.onclick = (e) => {
                 e.stopPropagation();
                 const instCount = enc.instances.length;
@@ -728,7 +725,8 @@ export class RosterManagerUI {
                 new Notice("Copied codeblock to clipboard!");
             };
 
-            const btnDelete = actionsTd.createEl('button', { text: '🗑️', cls: 'mod-warning' });
+            const btnDelete = actionsTd.createEl('button', { cls: 'clickable-icon mod-warning' });
+            setIcon(btnDelete, 'trash-2');
             btnDelete.onclick = (e) => {
                 e.stopPropagation();
                 new ConfirmModal(this.app, `Do you really want to delete ${inst.data.instanceName}?`, async (result) => {
@@ -963,7 +961,8 @@ export class RosterManagerUI {
                 wrap.style.borderRadius = '6px';
                 wrap.style.position = 'relative';
 
-                const btnDel = wrap.createEl('button', { text: '🗑️', cls: 'mod-warning' });
+                const btnDel = wrap.createEl('button', { cls: 'clickable-icon mod-warning' });
+                setIcon(btnDel, 'trash-2');
                 btnDel.style.position = 'absolute';
                 btnDel.style.top = '10px';
                 btnDel.style.right = '10px';
