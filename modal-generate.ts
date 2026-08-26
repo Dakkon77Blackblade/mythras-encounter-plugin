@@ -122,7 +122,7 @@ export class MythrasGenerateModal extends Modal {
                 const filePath = normalizePath(`${folderPath}/${instance.id}_${template.name.replace(/[^a-zA-Z0-9]/g, '')}.json`);
                 await this.app.vault.create(filePath, JSON.stringify(instance, null, 2));
                 
-                output += `\`\`\`enemy ${instance.id}\`\`\`\n\n`;
+                output += `\`\`\`enemy\n${instance.id}\n\`\`\`\n\n`;
             }
 
             if (activeView && activeView.editor) {

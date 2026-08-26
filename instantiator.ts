@@ -83,9 +83,13 @@ export async function instantiateEnemy(
     }
 
     const activeWeapons: MythrasWeapon[] = [];
-    activeWeapons.push(...(template.weapons || []).filter(w => !w.isOptional));
+    
+    // Deep copy weapons to avoid mutating the template object
+    const templateWeapons = JSON.parse(JSON.stringify(template.weapons || [])) as MythrasWeapon[];
+    
+    activeWeapons.push(...templateWeapons.filter(w => !w.isOptional));
 
-    const optionalWeapons = (template.weapons || []).filter(w => w.isOptional);
+    const optionalWeapons = templateWeapons.filter(w => w.isOptional);
     const optByCategory: Record<string, MythrasWeapon[]> = {};
     optionalWeapons.forEach(w => {
         const cat = w.category || 'Unknown';

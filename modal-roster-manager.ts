@@ -247,7 +247,7 @@ export class RosterManagerModal extends Modal {
             const btnCopy = actionsTd.createEl('button', { text: 'Copy ID' });
             btnCopy.onclick = (e) => {
                 e.stopPropagation();
-                navigator.clipboard.writeText(`\`\`\`enemy ${inst.data.id}\`\`\``);
+                navigator.clipboard.writeText(`\`\`\`enemy\n${inst.data.id}\n\`\`\``);
                 new Notice("Copied codeblock to clipboard!");
             };
 
@@ -439,10 +439,14 @@ export class RosterManagerModal extends Modal {
             renderDict(data.combatStyles, 'Combat Styles');
 
         } else if (this.editTab === 'weapons') {
-            const btnAdd = formArea.createEl('button', { text: '+ Add Blank Weapon', cls: 'mod-cta' });
+            const btnAdd = formArea.createEl('button', { text: '+ Add Weapon', cls: 'mod-cta' });
             btnAdd.style.width = '200px';
             btnAdd.onclick = () => {
-                data.weapons.push({ name: 'New Weapon', isOptional: false });
+                // Default to the first weapon in the armory if available, else a blank one
+                const defaultWeapon = this.plugin.armoryCache.length > 0 ? this.plugin.armoryCache[0] : { name: 'New Weapon' };
+                const newWeapon = JSON.parse(JSON.stringify(defaultWeapon));
+                newWeapon.isOptional = false;
+                data.weapons.push(newWeapon);
                 this.display(); // re-render
             };
 
@@ -468,25 +472,65 @@ export class RosterManagerModal extends Modal {
                 grid.style.gap = '10px';
                 grid.style.marginTop = '20px';
 
-                const createField = (label: string, field: keyof MythrasWeapon) => {
+                // Weapon Selection Dropdown
+                const selWrap = grid.createDiv();
+                selWrap.style.display = 'flex';
+                selWrap.style.flexDirection = 'column';
+                selWrap.createEl('label', { text: 'Select Weapon from Armory' }).style.fontSize = '0.85em';
+                const sel = selWrap.createEl('select');
+                
+                // If current weapon is not in armory, add it as an option so it doesn't disappear
+                const inArmory = this.plugin.armoryCache.some(aw => aw.name.toLowerCase() === w.name.toLowerCase());
+                if (!inArmory) {
+                    sel.createEl('option', { value: w.name, text: `${w.name} (Custom)` }).selected = true;
+                }
+
+                this.plugin.armoryCache.forEach(aw => {
+                    const opt = sel.createEl('option', { value: aw.name, text: aw.name });
+                    if (w.name.toLowerCase() === aw.name.toLowerCase()) {
+                        opt.selected = true;
+                    }
+                });
+
+                sel.onchange = (e) => {
+                    const selectedName = (e.target as HTMLSelectElement).value;
+                    const armoryWeapon = this.plugin.armoryCache.find(aw => aw.name === selectedName);
+                    if (armoryWeapon) {
+                        // Apply damage modifier if needed
+                        let newDamage = armoryWeapon.damage;
+                        const damageMod = data.attributes['Damage Mod'] as string;
+                        if (newDamage && armoryWeapon.damageModifier !== false && damageMod && damageMod !== '+0' && damageMod !== '0') {
+                            const mod = damageMod.startsWith('+') || damageMod.startsWith('-') ? damageMod : '+' + damageMod;
+                            newDamage += mod;
+                        }
+
+                        // We replace the current weapon object properties, but preserve nothing since it's a new weapon chosen
+                        Object.assign(w, armoryWeapon);
+                        w.damage = newDamage;
+                        this.display();
+                    }
+                };
+
+                // AP/HP Editable Fields
+                const createField = (label: string, field: 'ap' | 'hp') => {
                     const fWrap = grid.createDiv();
                     fWrap.style.display = 'flex';
                     fWrap.style.flexDirection = 'column';
                     fWrap.createEl('label', { text: label }).style.fontSize = '0.85em';
                     const inp = fWrap.createEl('input', { type: 'text' });
                     inp.value = (w[field] as string) || '';
-                    inp.onchange = (e) => w[field] = (e.target as HTMLInputElement).value as any;
+                    inp.onchange = (e) => w[field] = (e.target as HTMLInputElement).value;
                 };
 
-                createField('Name', 'name');
-                createField('Type (1h-melee/ranged/shield)', 'type');
-                createField('Damage', 'damage');
-                createField('Size/Force', 'size');
-                createField('Reach', 'reach');
-                createField('Range', 'range');
                 createField('AP', 'ap');
                 createField('HP', 'hp');
-                createField('Special Fx', 'specialFx');
+                
+                // Readonly displays for reference
+                const readWrap = wrap.createDiv();
+                readWrap.style.marginTop = '10px';
+                readWrap.style.fontSize = '0.85em';
+                readWrap.style.color = 'var(--text-muted)';
+                readWrap.setText(`Damage: ${w.damage || '-'} | Type: ${w.type || '-'} | Size/Force: ${w.size || '-'} | Reach/Range: ${w.reach || w.range || '-'} | Special: ${w.specialFx || 'None'}`);
             });
         }
     }
