@@ -831,6 +831,8 @@ export class RosterManagerUI {
             createTextField('Instance Name', data.instanceName, v => data.instanceName = v);
             createTextField('Scenario', data.scenario, v => data.scenario = v);
             createTextField('Encounter', data.encounter, v => data.encounter = v);
+            createTextField('Image (e.g. [[image.png]])', data.image || '', v => data.image = v);
+
             
             const notesWrap = formArea.createDiv();
             notesWrap.style.display = 'flex';
