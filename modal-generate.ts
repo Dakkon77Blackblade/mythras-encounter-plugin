@@ -12,9 +12,11 @@ export class MythrasGenerateModal extends Modal {
     scenario: string = 'General';
     encounter: string = 'Random Encounter';
 
-    constructor(app: App, plugin: MythrasEncounterPlugin) {
+    constructor(app: App, plugin: MythrasEncounterPlugin, defaultScenario: string = 'General', defaultEncounter: string = 'Random Encounter') {
         super(app);
         this.plugin = plugin;
+        this.scenario = defaultScenario;
+        this.encounter = defaultEncounter;
     }
 
     async onOpen() {

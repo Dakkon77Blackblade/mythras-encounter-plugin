@@ -1,13 +1,87 @@
-import { App, Notice, TFile, normalizePath } from 'obsidian';
+import { App, Modal, Setting, Notice, TFile, TFolder, normalizePath } from 'obsidian';
 import MythrasEncounterPlugin from './main';
-import { MythrasInstance, MythrasWeapon } from './mythras-api';
+import { MythrasInstance } from './mythras-api';
 import { ConfirmModal } from './ui-armory';
+
+export class PromptModal extends Modal {
+    title: string;
+    description: string;
+    placeholder: string;
+    defaultValue: string;
+    onSubmit: (result: string | null) => void;
+
+    constructor(app: App, title: string, description: string, placeholder: string, defaultValue: string, onSubmit: (result: string | null) => void) {
+        super(app);
+        this.title = title;
+        this.description = description;
+        this.placeholder = placeholder;
+        this.defaultValue = defaultValue;
+        this.onSubmit = onSubmit;
+    }
+
+    onOpen() {
+        const { contentEl } = this;
+        contentEl.createEl('h2', { text: this.title });
+        contentEl.createEl('p', { text: this.description });
+
+        const setting = new Setting(contentEl)
+            .addText((text) =>
+                text
+                    .setPlaceholder(this.placeholder)
+                    .setValue(this.defaultValue)
+            );
+
+        const inputEl = setting.controlEl.querySelector('input') as HTMLInputElement;
+
+        new Setting(contentEl)
+            .addButton((btn) =>
+                btn
+                    .setButtonText('Submit')
+                    .setCta()
+                    .onClick(() => {
+                        this.close();
+                        this.onSubmit(inputEl.value);
+                    }))
+            .addButton((btn) =>
+                btn
+                    .setButtonText('Cancel')
+                    .onClick(() => {
+                        this.close();
+                        this.onSubmit(null);
+                    }));
+
+        inputEl.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.close();
+                this.onSubmit(inputEl.value);
+            }
+        });
+        
+        setTimeout(() => inputEl.focus(), 100);
+    }
+
+    onClose() {
+        this.contentEl.empty();
+    }
+}
+
+interface RosterScenario {
+    name: string;
+    path: string;
+    encounters: RosterEncounter[];
+}
+
+interface RosterEncounter {
+    name: string;
+    path: string;
+    instances: { file: TFile, data: MythrasInstance }[];
+}
 
 export class RosterManagerUI {
     app: App;
     plugin: MythrasEncounterPlugin;
     containerEl: HTMLElement;
-    instances: { file: TFile, data: MythrasInstance }[] = [];
+    scenarios: RosterScenario[] = [];
     
     // UI State
     selectedScenario: string | null = null;
@@ -27,10 +101,10 @@ export class RosterManagerUI {
     async render() {
         await this.loadInstances();
         
-        if (!this.selectedScenario && this.instances.length > 0) {
-            const scenarios = Array.from(new Set(this.instances.map(i => i.data.scenario || 'General'))).sort();
-            if (scenarios.length > 0) {
-                this.selectedScenario = scenarios[0];
+        if (!this.selectedScenario && this.scenarios.length > 0) {
+            this.selectedScenario = this.scenarios[0].name;
+            if (this.scenarios[0].encounters.length > 0) {
+                this.selectedEncounter = this.scenarios[0].encounters[0].name;
             }
         }
 
@@ -38,36 +112,65 @@ export class RosterManagerUI {
     }
 
     async loadInstances() {
-        this.instances = [];
+        this.scenarios = [];
         const rosterPath = `${this.plugin.settings.baseFolder}/Roster`;
-        const folder = this.app.vault.getAbstractFileByPath(rosterPath);
+        const rootFolder = this.app.vault.getAbstractFileByPath(rosterPath);
         
-        if (!folder) return;
+        if (!rootFolder || !(rootFolder instanceof TFolder)) return;
 
-        const findJsonFiles = (f: any): TFile[] => {
-            let files: TFile[] = [];
-            if (f && 'children' in f) {
-                for (const child of f.children) {
-                    files = files.concat(findJsonFiles(child));
+        const generalScenario: RosterScenario = { name: 'General', path: rosterPath, encounters: [] };
+
+        for (const scenarioNode of rootFolder.children) {
+            if (scenarioNode instanceof TFile && scenarioNode.extension === 'json') {
+                let genEnc = generalScenario.encounters.find(e => e.name === 'Random Encounter');
+                if (!genEnc) {
+                    genEnc = { name: 'Random Encounter', path: rosterPath, instances: [] };
+                    generalScenario.encounters.push(genEnc);
                 }
-            } else if (f instanceof TFile && f.extension === 'json') {
-                files.push(f);
-            }
-            return files;
-        };
-
-        const jsonFiles = findJsonFiles(folder);
-        for (const file of jsonFiles) {
-            try {
-                const content = await this.app.vault.read(file);
-                const data: MythrasInstance = JSON.parse(content);
-                this.instances.push({ file, data });
-            } catch (e) {
-                console.error(`Failed to parse instance file ${file.path}`, e);
+                try {
+                    const content = await this.app.vault.read(scenarioNode);
+                    genEnc.instances.push({ file: scenarioNode, data: JSON.parse(content) });
+                } catch (e) {
+                    console.error(e);
+                }
+            } else if (scenarioNode instanceof TFolder) {
+                const scenario: RosterScenario = { name: scenarioNode.name, path: scenarioNode.path, encounters: [] };
+                
+                for (const encNode of scenarioNode.children) {
+                    if (encNode instanceof TFile && encNode.extension === 'json') {
+                        let genEnc = scenario.encounters.find(e => e.name === 'Random Encounter');
+                        if (!genEnc) {
+                            genEnc = { name: 'Random Encounter', path: scenarioNode.path, instances: [] };
+                            scenario.encounters.push(genEnc);
+                        }
+                        try {
+                            const content = await this.app.vault.read(encNode);
+                            genEnc.instances.push({ file: encNode, data: JSON.parse(content) });
+                        } catch (e) { console.error(e); }
+                    } else if (encNode instanceof TFolder) {
+                        const encounter: RosterEncounter = { name: encNode.name, path: encNode.path, instances: [] };
+                        for (const fileNode of encNode.children) {
+                            if (fileNode instanceof TFile && fileNode.extension === 'json') {
+                                try {
+                                    const content = await this.app.vault.read(fileNode);
+                                    encounter.instances.push({ file: fileNode, data: JSON.parse(content) });
+                                } catch (e) { console.error(e); }
+                            }
+                        }
+                        encounter.instances.sort((a, b) => b.data.lastModified - a.data.lastModified);
+                        scenario.encounters.push(encounter);
+                    }
+                }
+                scenario.encounters.sort((a, b) => a.name.localeCompare(b.name));
+                this.scenarios.push(scenario);
             }
         }
 
-        this.instances.sort((a, b) => b.data.lastModified - a.data.lastModified);
+        if (generalScenario.encounters.length > 0) {
+            this.scenarios.push(generalScenario);
+        }
+
+        this.scenarios.sort((a, b) => a.name.localeCompare(b.name));
     }
 
     async saveSelectedInstance() {
@@ -117,11 +220,6 @@ export class RosterManagerUI {
             this.renderEditView(containerEl);
             return;
         }
-        
-        if (this.instances.length === 0) {
-            containerEl.createEl("p", { text: "No active enemies found. Generate some first!" });
-            return;
-        }
 
         const layout = containerEl.createDiv('roster-layout');
         layout.style.display = 'flex';
@@ -145,18 +243,73 @@ export class RosterManagerUI {
 
     renderSidebar(sidebar: HTMLElement) {
         sidebar.createEl('h3', { text: 'Scenarios' });
-        const scenarios = Array.from(new Set(this.instances.map(i => i.data.scenario || 'General'))).sort();
         
-        for (const sc of scenarios) {
+        const btnNewScen = sidebar.createEl('button', { text: '+ New Scenario', cls: 'mod-cta' });
+        btnNewScen.style.width = '100%';
+        btnNewScen.style.marginBottom = '10px';
+        btnNewScen.onclick = () => {
+            new PromptModal(this.app, 'New Scenario', 'Enter the name of the new Scenario', 'Scenario Name', '', async (name) => {
+                if (name) {
+                    const safeName = name.replace(/[^a-zA-Z0-9 -]/g, '').trim();
+                    if (safeName) {
+                        const newPath = normalizePath(`${this.plugin.settings.baseFolder}/Roster/${safeName}`);
+                        if (!(await this.app.vault.adapter.exists(newPath))) {
+                            await this.app.vault.createFolder(newPath);
+                            await this.loadInstances();
+                            this.selectedScenario = safeName;
+                            this.selectedEncounter = null;
+                            this.display();
+                        } else {
+                            new Notice('Scenario already exists!');
+                        }
+                    }
+                }
+            }).open();
+        };
+
+        if (this.scenarios.length === 0) {
+            sidebar.createEl('p', { text: 'No Scenarios found.' });
+            return;
+        }
+
+        for (const sc of this.scenarios) {
             const item = sidebar.createDiv('roster-scenario-item');
-            if (this.selectedScenario === sc) item.addClass('is-active');
-            
-            const count = this.instances.filter(i => (i.data.scenario || 'General') === sc).length;
-            item.setText(`${sc} (${count})`);
-            item.onclick = () => {
-                this.selectedScenario = sc;
+            if (this.selectedScenario === sc.name) item.addClass('is-active');
+            item.style.display = 'flex';
+            item.style.justifyContent = 'space-between';
+            item.style.alignItems = 'center';
+
+            const nameSpan = item.createEl('span', { text: sc.name });
+            nameSpan.style.cursor = 'pointer';
+            nameSpan.style.flex = '1';
+            nameSpan.onclick = () => {
+                this.selectedScenario = sc.name;
                 this.selectedEncounter = null;
                 this.display();
+            };
+
+            const btnDel = item.createEl('button', { text: '🗑️', cls: 'mod-warning' });
+            btnDel.style.padding = '2px 6px';
+            btnDel.onclick = (e) => {
+                e.stopPropagation();
+                let encCount = sc.encounters.length;
+                let instCount = sc.encounters.reduce((sum, e) => sum + e.instances.length, 0);
+                const msg = `Are you sure you want to delete the Scenario '${sc.name}'? This will permanently delete ${encCount} Encounters and ${instCount} enemies!`;
+                new ConfirmModal(this.app, msg, async (result) => {
+                    if (result) {
+                        const folder = this.app.vault.getAbstractFileByPath(sc.path);
+                        if (folder) {
+                            await this.app.vault.trash(folder, true);
+                            new Notice(`Deleted Scenario ${sc.name}`);
+                            if (this.selectedScenario === sc.name) {
+                                this.selectedScenario = null;
+                                this.selectedEncounter = null;
+                            }
+                            await this.loadInstances();
+                            this.display();
+                        }
+                    }
+                }).open();
             };
         }
     }
@@ -167,37 +320,105 @@ export class RosterManagerUI {
             return;
         }
 
-        const header = mainArea.createDiv('roster-header');
-        header.createEl('h3', { text: `Scenario: ${this.selectedScenario}`, cls: 'mythras-item-name-grid' });
-        
-        const scenarioInstances = this.instances.filter(i => (i.data.scenario || 'General') === this.selectedScenario);
-        const encounters = Array.from(new Set(scenarioInstances.map(i => i.data.encounter || 'Random Encounter'))).sort();
+        const scenario = this.scenarios.find(s => s.name === this.selectedScenario);
+        if (!scenario) return;
 
-        const tagCloud = header.createDiv('roster-tag-cloud');
-        const allTag = tagCloud.createDiv('roster-tag');
-        allTag.setText(`All Encounters (${scenarioInstances.length})`);
-        if (this.selectedEncounter === null) allTag.addClass('is-active');
-        allTag.onclick = () => {
-            this.selectedEncounter = null;
-            this.display();
+        const header = mainArea.createDiv('roster-header');
+        header.style.display = 'flex';
+        header.style.justifyContent = 'space-between';
+        header.style.alignItems = 'center';
+
+        header.createEl('h3', { text: `Scenario: ${scenario.name}`, cls: 'mythras-item-name-grid' });
+        
+        const btnNewEnc = header.createEl('button', { text: '+ New Encounter', cls: 'mod-cta' });
+        btnNewEnc.onclick = () => {
+            new PromptModal(this.app, 'New Encounter', 'Enter the name of the new Encounter', 'Encounter Name', '', async (name) => {
+                if (name) {
+                    const safeName = name.replace(/[^a-zA-Z0-9 -]/g, '').trim();
+                    if (safeName) {
+                        const newPath = normalizePath(`${scenario.path}/${safeName}`);
+                        if (!(await this.app.vault.adapter.exists(newPath))) {
+                            await this.app.vault.createFolder(newPath);
+                            await this.loadInstances();
+                            this.selectedEncounter = safeName;
+                            this.display();
+                        } else {
+                            new Notice('Encounter already exists!');
+                        }
+                    }
+                }
+            }).open();
         };
 
-        for (const enc of encounters) {
-            const count = scenarioInstances.filter(i => (i.data.encounter || 'Random Encounter') === enc).length;
+        const tagCloud = mainArea.createDiv('roster-tag-cloud');
+        tagCloud.style.display = 'flex';
+        tagCloud.style.flexWrap = 'wrap';
+        tagCloud.style.gap = '8px';
+        tagCloud.style.marginTop = '15px';
+        tagCloud.style.marginBottom = '20px';
+
+        for (const enc of scenario.encounters) {
             const tag = tagCloud.createDiv('roster-tag');
-            tag.setText(`${enc} (${count})`);
-            if (this.selectedEncounter === enc) tag.addClass('is-active');
-            tag.onclick = () => {
-                this.selectedEncounter = enc;
+            if (this.selectedEncounter === enc.name) tag.addClass('is-active');
+            tag.style.display = 'flex';
+            tag.style.alignItems = 'center';
+            tag.style.gap = '8px';
+
+            const nameSpan = tag.createEl('span', { text: `${enc.name} (${enc.instances.length})` });
+            nameSpan.style.cursor = 'pointer';
+            nameSpan.onclick = () => {
+                this.selectedEncounter = enc.name;
                 this.display();
+            };
+
+            const btnDel = tag.createEl('button', { text: 'X', cls: 'mod-warning' });
+            btnDel.style.padding = '0 4px';
+            btnDel.style.fontSize = '0.8em';
+            btnDel.onclick = (e) => {
+                e.stopPropagation();
+                const instCount = enc.instances.length;
+                const msg = `Are you sure you want to delete the Encounter '${enc.name}'? This will permanently delete ${instCount} enemies!`;
+                new ConfirmModal(this.app, msg, async (result) => {
+                    if (result) {
+                        const folder = this.app.vault.getAbstractFileByPath(enc.path);
+                        if (folder) {
+                            await this.app.vault.trash(folder, true);
+                            new Notice(`Deleted Encounter ${enc.name}`);
+                            if (this.selectedEncounter === enc.name) this.selectedEncounter = null;
+                            await this.loadInstances();
+                            this.display();
+                        }
+                    }
+                }).open();
             };
         }
 
-        const displayInstances = this.selectedEncounter === null 
-            ? scenarioInstances 
-            : scenarioInstances.filter(i => (i.data.encounter || 'Random Encounter') === this.selectedEncounter);
+        if (!this.selectedEncounter) {
+            mainArea.createEl('p', { text: 'Select an Encounter from the tags above to view enemies.' });
+            return;
+        }
 
-        if (displayInstances.length === 0) return;
+        const encounter = scenario.encounters.find(e => e.name === this.selectedEncounter);
+        if (!encounter) return;
+
+        const tableControls = mainArea.createDiv();
+        tableControls.style.display = 'flex';
+        tableControls.style.justifyContent = 'space-between';
+        tableControls.style.alignItems = 'center';
+
+        tableControls.createEl('h4', { text: `Enemies in ${encounter.name}` });
+
+        const btnAddEnemy = tableControls.createEl('button', { text: '+ Add Enemy', cls: 'mod-cta' });
+        btnAddEnemy.onclick = () => {
+            import('./modal-generate').then((m) => {
+                new m.MythrasGenerateModal(this.app, this.plugin, scenario.name, encounter.name).open();
+            });
+        };
+
+        if (encounter.instances.length === 0) {
+            mainArea.createEl('p', { text: 'This encounter is empty. Add some enemies!' });
+            return;
+        }
 
         const table = mainArea.createEl('table', { cls: 'armory-table' });
         table.style.width = '100%';
@@ -206,7 +427,7 @@ export class RosterManagerUI {
         table.style.marginTop = '15px';
 
         const tr = table.createEl('thead').createEl('tr');
-        ['Instance Name', 'Template', 'Encounter', 'HP', 'Actions'].forEach(h => {
+        ['Instance Name', 'Template', 'HP', 'Actions'].forEach(h => {
             const th = tr.createEl('th', { text: h });
             th.style.padding = '8px';
             th.style.borderBottom = '1px solid var(--background-modifier-border)';
@@ -214,7 +435,7 @@ export class RosterManagerUI {
 
         const tbody = table.createEl('tbody');
 
-        for (const inst of displayInstances) {
+        for (const inst of encounter.instances) {
             const row = tbody.createEl('tr');
             row.style.borderBottom = '1px solid var(--background-modifier-border-alt)';
             row.onmouseenter = () => row.style.backgroundColor = 'var(--background-modifier-hover)';
@@ -222,7 +443,6 @@ export class RosterManagerUI {
 
             row.createEl('td', { text: inst.data.instanceName }).style.padding = '8px';
             row.createEl('td', { text: inst.data.templateName }).style.padding = '8px';
-            row.createEl('td', { text: inst.data.encounter || 'Random Encounter' }).style.padding = '8px';
             
             const hpTd = row.createEl('td');
             hpTd.style.padding = '8px';
@@ -261,7 +481,7 @@ export class RosterManagerUI {
                 e.stopPropagation();
                 new ConfirmModal(this.app, `Do you really want to delete ${inst.data.instanceName}?`, async (result) => {
                     if (result) {
-                        await this.app.vault.delete(inst.file);
+                        await this.app.vault.trash(inst.file, true);
                         new Notice(`Deleted ${inst.data.instanceName}`);
                         await this.loadInstances();
                         this.display();
