@@ -373,10 +373,13 @@ export function renderEnemyStatblock(instance: MythrasInstance, mode: 'short' | 
         const weaponsDiv = container.createDiv('mythras-enemy-weapons');
         instance.weapons.forEach(w => {
             const wLine = weaponsDiv.createDiv('mythras-weapon-line');
-            const reachRange = w.reach || w.range || '-';
+            let reachRange = '';
+            if (w.reach) reachRange = `, Reach ${w.reach}`;
+            else if (w.range) reachRange = `, Range ${w.range}`;
+
             const fx = w.specialFx && w.specialFx !== 'None' ? `, ${w.specialFx}` : '';
             wLine.createSpan({ text: `⚔️ ${w.name}: `, cls: 'mythras-label-bold' });
-            wLine.createSpan({ text: `${w.damage || '-'}, Size ${w.size || '-'}, Reach/Range ${reachRange}${fx}` });
+            wLine.createSpan({ text: `${w.damage || '-'}, Size ${w.size || '-'}${reachRange}${fx}` });
         });
     }
 
