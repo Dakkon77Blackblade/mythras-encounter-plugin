@@ -292,6 +292,20 @@ export class RosterManagerModal extends Modal {
 
         const btnSave = btnGroup.createEl('button', { text: 'Save & Return', cls: 'mod-cta' });
         btnSave.onclick = async () => {
+            // Scrub weapon damage based on current Damage Mod before saving
+            const dmgMod = data.attributes['Damage Mod'] as string;
+            data.weapons.forEach(w => {
+                const aw = this.plugin.armoryCache.find(a => a.name.toLowerCase() === w.name.toLowerCase());
+                if (aw && aw.damageModifier !== false) {
+                    let baseDmg = aw.damage;
+                    if (dmgMod && dmgMod !== '+0' && dmgMod !== '0') {
+                        const mod = dmgMod.startsWith('+') || dmgMod.startsWith('-') ? dmgMod : '+' + dmgMod;
+                        baseDmg += mod;
+                    }
+                    w.damage = baseDmg;
+                }
+            });
+
             await this.saveSelectedInstance();
             this.selectedInstance = null;
             this.currentView = 'list';
@@ -408,9 +422,24 @@ export class RosterManagerModal extends Modal {
                     const inp = field.createEl('input', { type: typeof obj[k] === 'number' ? 'number' : 'text' });
                     inp.value = obj[k].toString();
                     inp.oninput = (e) => {
-                        obj[k] = typeof obj[k] === 'number' 
+                        const val = typeof obj[k] === 'number' 
                             ? parseInt((e.target as HTMLInputElement).value) || 0 
                             : (e.target as HTMLInputElement).value;
+                        obj[k] = val;
+
+                        if (k === 'Damage Mod') {
+                            data.weapons.forEach(w => {
+                                const aw = this.plugin.armoryCache.find(a => a.name.toLowerCase() === w.name.toLowerCase());
+                                if (aw && aw.damageModifier !== false) {
+                                    let baseDmg = aw.damage;
+                                    if (val && val !== '+0' && val !== '0') {
+                                        const mod = (val as string).startsWith('+') || (val as string).startsWith('-') ? val : '+' + val;
+                                        baseDmg += mod;
+                                    }
+                                    w.damage = baseDmg;
+                                }
+                            });
+                        }
                     };
                 });
             };

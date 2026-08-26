@@ -125,19 +125,17 @@ export async function instantiateEnemy(
 
     const damageModifier = attributes['Damage Mod'] as string;
     activeWeapons.forEach(w => {
-        if (!w.damage) {
-            const armoryWeapon = armory.find(aw => aw.name.toLowerCase() === w.name.toLowerCase());
-            if (armoryWeapon) {
-                w.type = armoryWeapon.type;
-                w.damage = armoryWeapon.damage;
-                w.size = armoryWeapon.size;
-                w.reach = armoryWeapon.reach;
-                w.range = armoryWeapon.range;
-                w.ap = armoryWeapon.ap;
-                w.hp = armoryWeapon.hp;
-                w.damageModifier = armoryWeapon.damageModifier;
-                w.specialFx = armoryWeapon.specialFx;
-            }
+        const armoryWeapon = armory.find(aw => aw.name.toLowerCase() === w.name.toLowerCase());
+        if (armoryWeapon) {
+            w.type = armoryWeapon.type;
+            w.damage = armoryWeapon.damage;
+            w.size = armoryWeapon.size;
+            w.reach = armoryWeapon.reach;
+            w.range = armoryWeapon.range;
+            w.ap = armoryWeapon.ap;
+            w.hp = armoryWeapon.hp;
+            w.damageModifier = armoryWeapon.damageModifier;
+            w.specialFx = armoryWeapon.specialFx;
         }
 
         if (w.damage && w.damageModifier !== false && damageModifier !== "+0" && damageModifier !== "0") {
