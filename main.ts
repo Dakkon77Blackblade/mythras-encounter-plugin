@@ -6,6 +6,9 @@ import { MythrasWeapon } from './mythras-api';
 import { renderItemStatblock } from './item-formatter';
 import { ItemSuggester } from './item-suggester';
 import { buildItemLivePreviewPlugin } from './live-preview';
+import { formatInstanceAsMarkdown } from './statblock-formatter';
+import { MythrasInstance } from './mythras-api';
+import { MarkdownRenderer, TFile } from 'obsidian';
 
 export default class MythrasEncounterPlugin extends Plugin {
     settings: MythrasEncounterSettings;
@@ -80,6 +83,58 @@ export default class MythrasEncounterPlugin extends Plugin {
                 el.appendChild(block);
             } else {
                 el.createEl('div', { text: `Item not found in Armory: ${source.trim()}` });
+            }
+        });
+
+        // Block-level processor for ```enemy <ID> ```
+        this.registerMarkdownCodeBlockProcessor('enemy', async (source, el, ctx) => {
+            const enemyId = source.trim();
+            if (!enemyId) return;
+
+            const rosterPath = `${this.settings.baseFolder}/Roster`;
+            const folder = this.app.vault.getAbstractFileByPath(rosterPath);
+            if (!folder) {
+                el.createEl('div', { text: `Roster folder not found. Cannot load enemy ${enemyId}` });
+                return;
+            }
+
+            // Find the JSON file that contains this ID in its name (we saved it as <ID>_<Name>.json)
+            const findJsonFile = (f: any): TFile | null => {
+                if (f && 'children' in f) {
+                    for (const child of f.children) {
+                        const found = findJsonFile(child);
+                        if (found) return found;
+                    }
+                } else if (f instanceof TFile && f.extension === 'json' && f.name.startsWith(enemyId)) {
+                    return f;
+                }
+                return null;
+            };
+
+            const file = findJsonFile(folder);
+            if (!file) {
+                el.createEl('div', { text: `Enemy instance not found in Roster: ${enemyId}` });
+                return;
+            }
+
+            try {
+                const content = await this.app.vault.read(file);
+                const instance: MythrasInstance = JSON.parse(content);
+                const md = formatInstanceAsMarkdown(instance);
+                
+                // Wrap in a custom div for styling if needed
+                const container = el.createDiv('mythras-enemy-statblock-container');
+                container.style.border = '1px solid var(--background-modifier-border)';
+                container.style.padding = '15px';
+                container.style.borderRadius = '8px';
+                container.style.backgroundColor = 'var(--background-secondary)';
+                container.style.marginTop = '10px';
+                container.style.marginBottom = '10px';
+                
+                await MarkdownRenderer.renderMarkdown(md, container, ctx.sourcePath, this);
+            } catch (e) {
+                el.createEl('div', { text: `Failed to load enemy: ${e}` });
+                console.error(e);
             }
         });
     }

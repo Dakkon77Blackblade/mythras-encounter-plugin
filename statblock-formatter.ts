@@ -1,5 +1,5 @@
 import { App, normalizePath } from 'obsidian';
-import { MythrasTemplate, MythrasWeapon } from './mythras-api';
+import { MythrasTemplate, MythrasWeapon, MythrasInstance } from './mythras-api';
 import { DiceRoller } from './dice-roller';
 
 export async function generateStatblock(app: App, armoryFile: string, template: MythrasTemplate, index: number): Promise<string> {
@@ -219,6 +219,104 @@ export async function generateStatblock(app: App, armoryFile: string, template: 
     // Notes
     if (template.notes) {
         md += `> **Notes:**\n> ${template.notes.replace(/\n/g, '\n> ')}\n`;
+    }
+
+    return md;
+}
+
+export function formatInstanceAsMarkdown(instance: MythrasInstance): string {
+    let md = `### ${instance.instanceName}\n`;
+    
+    // Core Stats Table
+    md += `| STR | CON | SIZ | DEX | INT | POW | CHA |\n`;
+    md += `|:---:|:---:|:---:|:---:|:---:|:---:|:---:|\n`;
+    const STR = instance.stats['STR'] || 10;
+    const CON = instance.stats['CON'] || 10;
+    const SIZ = instance.stats['SIZ'] || 10;
+    const DEX = instance.stats['DEX'] || 10;
+    const INT = instance.stats['INT'] || 10;
+    const POW = instance.stats['POW'] || 10;
+    const CHA = instance.stats['CHA'] || 10;
+    md += `| ${STR} | ${CON} | ${SIZ} | ${DEX} | ${INT} | ${POW} | ${CHA} |\n\n`;
+
+    // Attributes Table
+    md += `| Action Points | Damage Mod | Magic Points | Strike Rank | Movement |\n`;
+    md += `|:---:|:---:|:---:|:---:|:---:|\n`;
+    const ap = instance.attributes['Action Points'] || '-';
+    const dm = instance.attributes['Damage Mod'] || '-';
+    const mp = instance.attributes['Magic Points'] || '-';
+    const sr = instance.attributes['Strike Rank'] || '-';
+    const mov = instance.attributes['Movement'] || '6m';
+    md += `| ${ap} | ${dm} | ${mp} | ${sr} | ${mov} |\n\n`;
+
+    // Hit Locations Table
+    if (instance.hitLocations && instance.hitLocations.length > 0) {
+        md += `| D20 | Hit Location | AP | HP |\n`;
+        md += `|:---:|:---|:---:|:---:|\n`;
+        for (const hl of instance.hitLocations) {
+            md += `| ${hl.range} | ${hl.name} | ${hl.ap} | ${hl.currentHp} / ${hl.hp} |\n`;
+        }
+        md += `\n`;
+    }
+
+    // Weapons
+    if (instance.weapons && instance.weapons.length > 0) {
+        md += `**Weapons:**\n`;
+        instance.weapons.forEach(w => {
+            const typeLower = (w.type || '').toLowerCase();
+            const apHpStr = w.ap && w.hp ? `AP/HP ${w.ap}/${w.hp}` : '';
+            const specialFxStr = w.specialFx || 'None';
+            const sizeStr = w.size ? `Size ${w.size}` : '';
+
+            let weaponDesc = `- **${w.name}** (${w.type || '-'}): `;
+
+            if (typeLower === 'ranged') {
+                const dmgStr = w.damage ? `Damage ${w.damage}` : '';
+                const rangeStr = w.range ? `Range ${w.range}` : '';
+                weaponDesc += [dmgStr, rangeStr, sizeStr, apHpStr, `Special: ${specialFxStr}`].filter(Boolean).join(', ');
+            } else if (typeLower === 'shield') {
+                const dmgStr = w.damage ? `Damage ${w.damage} (bash)` : '';
+                weaponDesc += [dmgStr, sizeStr, apHpStr, `Special: ${specialFxStr}`].filter(Boolean).join(', ');
+            } else {
+                // Default to Melee
+                const dmgStr = w.damage ? `Damage ${w.damage}` : '';
+                const reachStr = w.reach ? `Reach ${w.reach}` : '';
+                weaponDesc += [dmgStr, sizeStr, reachStr, apHpStr, `Special: ${specialFxStr}`].filter(Boolean).join(', ');
+            }
+            
+            md += `${weaponDesc}\n`;
+        });
+        md += `\n`;
+    }
+
+    // Features
+    if (instance.features && instance.features.length > 0) {
+        md += `**Features:**\n`;
+        instance.features.forEach(f => {
+            md += `- **${f.name}:** ${f.description}\n`;
+        });
+        md += `\n`;
+    }
+
+    // Combat Styles
+    if (instance.combatStyles && Object.keys(instance.combatStyles).length > 0) {
+        const styles = Object.entries(instance.combatStyles).map(([k, v]) => `**${k}:** ${v}%`);
+        md += `**Combat Styles:** ${styles.join(' | ')}\n\n`;
+    }
+
+    // Skills
+    if (instance.standardSkills && Object.keys(instance.standardSkills).length > 0) {
+        const standard = Object.entries(instance.standardSkills).map(([k, v]) => `**${k}:** ${v}%`);
+        md += `**Standard Skills:** ${standard.join(' | ')}\n\n`;
+    }
+    if (instance.customSkills && Object.keys(instance.customSkills).length > 0) {
+        const custom = Object.entries(instance.customSkills).map(([k, v]) => `**${k}:** ${v}%`);
+        md += `**Custom Skills:** ${custom.join(' | ')}\n\n`;
+    }
+
+    // Notes
+    if (instance.notes) {
+        md += `> **Notes:**\n> ${instance.notes.replace(/\n/g, '\n> ')}\n`;
     }
 
     return md;

@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Enemy Live Rendering:** Obsidian now natively renders \`\`\`enemy <ID>\`\`\` codeblocks as beautiful, formatted Mythras statblocks directly inside your notes!
+- **Roster Editor (Full UI):** You can now fully edit instantiated enemies directly from the Roster Manager. Easily tweak names, move them between encounters, track Hit Points (wounds), or deeply customize their attributes, skills, and weapons.
 - **Roster UI Overhaul:** Redesigned the Roster Manager interface to feature a two-pane layout with a scrollable Scenario sidebar and an Encounter Tag-Cloud for filtering active enemies.
 - Templates saved to the Bestiary now include the author's name in the filename to prevent overwriting templates with the same name from different authors (Fixes #1).
 - Complete data model overhaul for Bestiary templates. The scraper now extracts `attributes`, `features`, `standardSkills`, `customSkills`, `combatStyles`, and detailed `weapons` profiles (Fixes #4).
