@@ -1,10 +1,12 @@
-import { App, Modal, Setting, Notice, TFile, normalizePath } from 'obsidian';
+import { App, Notice, TFile, normalizePath } from 'obsidian';
 import MythrasEncounterPlugin from './main';
-import { MythrasInstance, HitLocationInstance, MythrasWeapon } from './mythras-api';
-import { ConfirmModal } from './modal-armory-manager';
+import { MythrasInstance, MythrasWeapon } from './mythras-api';
+import { ConfirmModal } from './ui-armory';
 
-export class RosterManagerModal extends Modal {
+export class RosterManagerUI {
+    app: App;
     plugin: MythrasEncounterPlugin;
+    containerEl: HTMLElement;
     instances: { file: TFile, data: MythrasInstance }[] = [];
     
     // UI State
@@ -16,18 +18,13 @@ export class RosterManagerModal extends Modal {
     // Edit View Tabs
     editTab: 'general' | 'stats' | 'hitlocations' | 'skills' | 'weapons' = 'general';
 
-    constructor(app: App, plugin: MythrasEncounterPlugin) {
-        super(app);
+    constructor(app: App, plugin: MythrasEncounterPlugin, containerEl: HTMLElement) {
+        this.app = app;
         this.plugin = plugin;
+        this.containerEl = containerEl;
     }
 
-    async onOpen() {
-        this.titleEl.setText('Roster Manager (Active Enemies)');
-        this.modalEl.addClass('mythras-bestiary-modal');
-        this.modalEl.style.width = '80vw';
-        this.modalEl.style.maxWidth = '1200px';
-        this.modalEl.style.height = '80vh';
-
+    async render() {
         await this.loadInstances();
         
         if (!this.selectedScenario && this.instances.length > 0) {
@@ -86,11 +83,9 @@ export class RosterManagerModal extends Modal {
         const oldScenario = oldFile.path.split('/')[2];
         const oldEncounter = oldFile.path.split('/')[3];
         
-        // If scenario or encounter changed, we might need to move the file
         if (safeScenario !== oldScenario || safeEncounter !== oldEncounter) {
             const newFolderPath = normalizePath(`${this.plugin.settings.baseFolder}/Roster/${safeScenario}/${safeEncounter}`);
             
-            // Ensure new folder exists
             const parts = newFolderPath.split('/');
             let currentPath = '';
             for (const part of parts) {
@@ -105,7 +100,6 @@ export class RosterManagerModal extends Modal {
             await this.app.vault.create(newFilePath, dataStr);
             await this.app.vault.delete(oldFile);
             
-            // Reload and reselect
             await this.loadInstances();
             new Notice(`Saved and moved to ${safeScenario}/${safeEncounter}`);
         } else {
@@ -116,22 +110,34 @@ export class RosterManagerModal extends Modal {
     }
 
     display() {
-        const { contentEl } = this;
-        contentEl.empty();
+        const { containerEl } = this;
+        containerEl.empty();
         
         if (this.currentView === 'edit' && this.selectedInstance) {
-            this.renderEditView(contentEl);
+            this.renderEditView(containerEl);
             return;
         }
         
         if (this.instances.length === 0) {
-            contentEl.createEl("p", { text: "No active enemies found. Generate some first!" });
+            containerEl.createEl("p", { text: "No active enemies found. Generate some first!" });
             return;
         }
 
-        const layout = contentEl.createDiv('roster-layout');
+        const layout = containerEl.createDiv('roster-layout');
+        layout.style.display = 'flex';
+        layout.style.height = '100%';
+        layout.style.gap = '20px';
+
         const sidebar = layout.createDiv('roster-sidebar');
+        sidebar.style.flex = '0 0 250px';
+        sidebar.style.borderRight = '1px solid var(--background-modifier-border)';
+        sidebar.style.paddingRight = '15px';
+        sidebar.style.overflowY = 'auto';
+
         const mainArea = layout.createDiv('roster-main');
+        mainArea.style.flex = '1';
+        mainArea.style.overflowY = 'auto';
+        mainArea.style.paddingRight = '15px';
 
         this.renderSidebar(sidebar);
         this.renderMainArea(mainArea);
@@ -236,7 +242,6 @@ export class RosterManagerModal extends Modal {
             const btnEdit = actionsTd.createEl('button', { text: 'Edit' });
             btnEdit.onclick = (e) => {
                 e.stopPropagation();
-                // Deep copy so we can cancel
                 const copyData = JSON.parse(JSON.stringify(inst.data));
                 this.selectedInstance = { file: inst.file, data: copyData };
                 this.currentView = 'edit';
@@ -270,7 +275,6 @@ export class RosterManagerModal extends Modal {
         if (!this.selectedInstance) return;
         const data = this.selectedInstance.data;
 
-        // Top bar
         const topBar = container.createDiv();
         topBar.style.display = 'flex';
         topBar.style.justifyContent = 'space-between';
@@ -292,7 +296,6 @@ export class RosterManagerModal extends Modal {
 
         const btnSave = btnGroup.createEl('button', { text: 'Save & Return', cls: 'mod-cta' });
         btnSave.onclick = async () => {
-            // Scrub weapon damage based on current Damage Mod before saving
             const dmgMod = data.attributes['Damage Mod'] as string;
             data.weapons.forEach(w => {
                 const aw = this.plugin.armoryCache.find(a => a.name.toLowerCase() === w.name.toLowerCase());
@@ -312,7 +315,6 @@ export class RosterManagerModal extends Modal {
             this.display();
         };
 
-        // Tabs
         const tabsDiv = container.createDiv('armory-tabs');
         tabsDiv.style.display = 'flex';
         tabsDiv.style.gap = '10px';
@@ -474,7 +476,6 @@ export class RosterManagerModal extends Modal {
             const btnAdd = formArea.createEl('button', { text: '+ Add Weapon', cls: 'mod-cta' });
             btnAdd.style.width = '200px';
             btnAdd.onclick = () => {
-                // Default to the first weapon in the armory if available, else a blank one
                 const defaultWeapon = this.plugin.armoryCache.length > 0 ? this.plugin.armoryCache[0] : { name: 'New Weapon' };
                 const newWeapon = JSON.parse(JSON.stringify(defaultWeapon));
                 newWeapon.isOptional = false;
@@ -504,14 +505,12 @@ export class RosterManagerModal extends Modal {
                 grid.style.gap = '10px';
                 grid.style.marginTop = '20px';
 
-                // Weapon Selection Dropdown
                 const selWrap = grid.createDiv();
                 selWrap.style.display = 'flex';
                 selWrap.style.flexDirection = 'column';
                 selWrap.createEl('label', { text: 'Select Weapon from Armory' }).style.fontSize = '0.85em';
                 const sel = selWrap.createEl('select');
                 
-                // If current weapon is not in armory, add it as an option so it doesn't disappear
                 const inArmory = this.plugin.armoryCache.some(aw => aw.name.toLowerCase() === w.name.toLowerCase());
                 if (!inArmory) {
                     sel.createEl('option', { value: w.name, text: `${w.name} (Custom)` }).selected = true;
@@ -528,7 +527,6 @@ export class RosterManagerModal extends Modal {
                     const selectedName = (e.target as HTMLSelectElement).value;
                     const armoryWeapon = this.plugin.armoryCache.find(aw => aw.name === selectedName);
                     if (armoryWeapon) {
-                        // Apply damage modifier if needed
                         let newDamage = armoryWeapon.damage;
                         const damageMod = data.attributes['Damage Mod'] as string;
                         if (newDamage && armoryWeapon.damageModifier !== false && damageMod && damageMod !== '+0' && damageMod !== '0') {
@@ -536,14 +534,12 @@ export class RosterManagerModal extends Modal {
                             newDamage += mod;
                         }
 
-                        // We replace the current weapon object properties, but preserve nothing since it's a new weapon chosen
                         Object.assign(w, armoryWeapon);
                         w.damage = newDamage;
                         this.display();
                     }
                 };
 
-                // AP/HP Editable Fields
                 const createField = (label: string, field: 'ap' | 'hp') => {
                     const fWrap = grid.createDiv();
                     fWrap.style.display = 'flex';
@@ -557,7 +553,6 @@ export class RosterManagerModal extends Modal {
                 createField('AP', 'ap');
                 createField('HP', 'hp');
                 
-                // Readonly displays for reference
                 const readWrap = wrap.createDiv();
                 readWrap.style.marginTop = '10px';
                 readWrap.style.fontSize = '0.85em';
@@ -565,10 +560,5 @@ export class RosterManagerModal extends Modal {
                 readWrap.setText(`Damage: ${w.damage || '-'} | Type: ${w.type || '-'} | Size/Force: ${w.size || '-'} | Reach/Range: ${w.reach || w.range || '-'} | Special: ${w.specialFx || 'None'}`);
             });
         }
-    }
-
-    onClose() {
-        const { contentEl } = this;
-        contentEl.empty();
     }
 }

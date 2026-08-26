@@ -42,8 +42,10 @@ export class ConfirmModal extends Modal {
     }
 }
 
-export class ArmoryManagerModal extends Modal {
+export class ArmoryManagerUI {
+    app: App;
     plugin: MythrasEncounterPlugin;
+    containerEl: HTMLElement;
     weapons: MythrasWeapon[] = [];
     currentTab: 'melee' | 'ranged' | 'shields' = 'melee';
     currentView: 'list' | 'edit' = 'list';
@@ -52,32 +54,15 @@ export class ArmoryManagerModal extends Modal {
     sortAscending: boolean = true;
     sortField: 'name' | 'type' | 'damage' = 'name';
 
-    constructor(app: App, plugin: MythrasEncounterPlugin) {
-        super(app);
+    constructor(app: App, plugin: MythrasEncounterPlugin, containerEl: HTMLElement) {
+        this.app = app;
         this.plugin = plugin;
+        this.containerEl = containerEl;
     }
 
-    async onOpen() {
-        this.titleEl.setText('Armory Manager');
-        this.modalEl.addClass('mythras-bestiary-modal');
-        this.modalEl.style.width = '80vw';
-        this.modalEl.style.maxWidth = '1200px';
-        this.modalEl.style.height = '80vh';
+    async render() {
         await this.loadArmory();
         this.renderView();
-    }
-
-    close() {
-        if (this.currentView === 'edit') {
-            this.currentView = 'list';
-            this.renderView();
-            return;
-        }
-        super.close();
-    }
-
-    onClose() {
-        this.contentEl.empty();
     }
 
     async loadArmory() {
@@ -135,7 +120,7 @@ export class ArmoryManagerModal extends Modal {
     }
 
     renderView() {
-        this.contentEl.empty();
+        this.containerEl.empty();
         if (this.currentView === 'list') {
             this.renderListView();
         } else if (this.currentView === 'edit' && this.selectedWeapon) {
@@ -144,7 +129,7 @@ export class ArmoryManagerModal extends Modal {
     }
 
     renderListView() {
-        const container = this.contentEl.createDiv('armory-list-container');
+        const container = this.containerEl.createDiv('armory-list-container');
         
         // Header Controls
         const headerDiv = container.createDiv('armory-header-controls');
@@ -293,7 +278,7 @@ export class ArmoryManagerModal extends Modal {
         if (!this.selectedWeapon) return;
         const weapon = this.selectedWeapon;
 
-        const container = this.contentEl.createDiv('armory-edit-container');
+        const container = this.containerEl.createDiv('armory-edit-container');
         
         // Buttons
         const buttonDiv = container.createDiv('armory-edit-buttons');
@@ -338,7 +323,6 @@ export class ArmoryManagerModal extends Modal {
         form.style.flexDirection = 'column';
         form.style.gap = '15px';
         
-        // Template Loader (only if new)
         if (this.isNewWeapon) {
             const templateWrap = form.createDiv();
             templateWrap.style.display = 'flex';
@@ -387,7 +371,7 @@ export class ArmoryManagerModal extends Modal {
             });
             sel.onchange = (e) => {
                 weapon.type = (e.target as HTMLSelectElement).value;
-                this.renderView(); // Re-render to show/hide dynamic fields
+                this.renderView();
             };
         });
 

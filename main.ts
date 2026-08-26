@@ -2,6 +2,7 @@ import { Plugin, normalizePath } from 'obsidian';
 import { MythrasEncounterSettings, DEFAULT_SETTINGS, MythrasEncounterSettingTab } from './settings';
 import { MythrasSearchModal } from './modal-search';
 import { MythrasGenerateModal } from './modal-generate';
+import { MYTHRAS_MANAGER_VIEW, MythrasManagerView } from './view-mythras-manager';
 import { MythrasWeapon } from './mythras-api';
 import { renderItemStatblock } from './item-formatter';
 import { ItemSuggester } from './item-suggester';
@@ -22,6 +23,17 @@ export default class MythrasEncounterPlugin extends Plugin {
 
         // This adds a settings tab so the user can configure various aspects of the plugin
         this.addSettingTab(new MythrasEncounterSettingTab(this.app, this));
+
+        // Register the new Workspace Leaf View
+        this.registerView(
+            MYTHRAS_MANAGER_VIEW,
+            (leaf) => new MythrasManagerView(leaf, this)
+        );
+
+        // Add a ribbon icon to open the Manager
+        this.addRibbonIcon('swords', 'Open Mythras Manager', () => {
+            this.activateManagerView();
+        });
 
         // Command to search and import templates
         this.addCommand({
@@ -137,6 +149,25 @@ export default class MythrasEncounterPlugin extends Plugin {
                 console.error(e);
             }
         });
+    }
+
+    async activateManagerView() {
+        const { workspace } = this.app;
+
+        let leaf: any = null;
+        const leaves = workspace.getLeavesOfType(MYTHRAS_MANAGER_VIEW);
+
+        if (leaves.length > 0) {
+            // A leaf with our view already exists, focus it
+            leaf = leaves[0];
+        } else {
+            // Our view could not be found in the workspace, create a new leaf
+            leaf = workspace.getLeaf('tab');
+            await leaf.setViewState({ type: MYTHRAS_MANAGER_VIEW, active: true });
+        }
+
+        // "Reveal" the leaf in case it is in a collapsed sidebar
+        workspace.revealLeaf(leaf);
     }
 
     onunload() {

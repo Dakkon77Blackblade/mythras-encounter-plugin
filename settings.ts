@@ -1,8 +1,5 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
 import MythrasEncounterPlugin from './main';
-import { BestiaryManagerModal } from './modal-bestiary-manager';
-import { ArmoryManagerModal } from './modal-armory-manager';
-import { RosterManagerModal } from './modal-roster-manager';
 
 export interface MythrasEncounterSettings {
     baseFolder: string;
@@ -38,40 +35,14 @@ export class MythrasEncounterSettingTab extends PluginSettingTab {
             );
 
         new Setting(containerEl)
-            .setName('Bestiary Manager')
-            .setDesc('Manage your locally saved Mythras templates (view, edit, delete).')
+            .setName('Mythras Manager')
+            .setDesc('Open the integrated workspace view for Bestiary, Armory, and Roster management.')
             .addButton((btn) =>
                 btn
                     .setButtonText('Open Manager')
                     .setCta()
                     .onClick(() => {
-                        new BestiaryManagerModal(this.app, this.plugin).open();
-                    })
-            );
-
-        new Setting(containerEl)
-            .setName('Roster Manager')
-            .setDesc('View and manage your instantiated enemies (Roster).')
-            .addButton((btn) =>
-                btn
-                    .setButtonText('Open Roster')
-                    .setCta()
-                    .onClick(() => {
-                        new RosterManagerModal(this.app, this.plugin).open();
-                    })
-            );
-
-        new Setting(containerEl)
-            .setName('Armory Manager')
-            .setDesc('Manage your locally saved Mythras weapons and shields.')
-            .addButton((btn) =>
-                btn
-                    .setButtonText('Open Armory')
-                    .setCta()
-                    .onClick(() => {
-                        import('./modal-armory-manager').then((m) => {
-                            new m.ArmoryManagerModal(this.app, this.plugin).open();
-                        });
+                        this.plugin.activateManagerView();
                     })
             );
     }
