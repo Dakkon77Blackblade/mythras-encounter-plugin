@@ -263,3 +263,23 @@
     border-color: var(--interactive-accent);
     font-weight: bold;
 }
+
+.roster-tag .clickable-icon {
+    padding: 2px;
+    height: 20px;
+    width: 20px;
+    opacity: 0.5;
+}
+
+.roster-tag .clickable-icon:hover {
+    opacity: 1;
+}
+
+.roster-tag.is-active .clickable-icon {
+    color: var(--text-on-accent);
+    opacity: 0.8;
+}
+
+.roster-tag.is-active .clickable-icon:hover {
+    opacity: 1;
+}
