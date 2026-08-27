@@ -30,11 +30,14 @@ export default class MythrasEncounterPlugin extends Plugin {
             (leaf) => new MythrasManagerView(leaf, this)
         );
 
-        const ribbonIcon = this.addRibbonIcon('swords', 'Open Mythras Manager', () => {
+        const ribbonIcon = this.addRibbonIcon('swords', 'Open Mythras Manager', (evt: MouseEvent) => {
+            if (evt.button === 2) return; // Ignore right-clicks
             this.activateManagerView('tab');
         });
 
         ribbonIcon.addEventListener('contextmenu', (evt: MouseEvent) => {
+            evt.preventDefault();
+            evt.stopPropagation();
             const menu = new Menu();
             menu.addItem((item) =>
                 item
