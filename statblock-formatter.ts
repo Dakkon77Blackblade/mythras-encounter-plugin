@@ -218,21 +218,21 @@ export async function generateStatblock(app: App, armoryFile: string, template: 
 
     // Combat Styles
     if (rolledStyles.length > 0) {
-        md += `**Combat Styles:** ${rolledStyles.join(' | ')}\n\n`;
+        md += `**Combat Styles:** ${rolledStyles.join(', ')}\n\n`;
     }
 
     // Skills
     if (rolledStandardSkills.length > 0) {
-        md += `**Standard Skills:** ${rolledStandardSkills.join(' | ')}\n\n`;
+        md += `**Standard Skills:** ${rolledStandardSkills.join(', ')}\n\n`;
     }
     if (rolledMagicSkills.length > 0) {
-        md += `**Magic Skills:** ${rolledMagicSkills.join(' | ')}\n\n`;
+        md += `**Magic Skills:** ${rolledMagicSkills.join(', ')}\n\n`;
     }
     if (rolledProfessionalSkills.length > 0) {
-        md += `**Professional Skills:** ${rolledProfessionalSkills.join(' | ')}\n\n`;
+        md += `**Professional Skills:** ${rolledProfessionalSkills.join(', ')}\n\n`;
     }
     if (rolledCustomSkills.length > 0) {
-        md += `**Custom Skills:** ${rolledCustomSkills.join(' | ')}\n\n`;
+        md += `**Custom Skills:** ${rolledCustomSkills.join(', ')}\n\n`;
     }
 
     // Notes
@@ -320,25 +320,25 @@ export function formatInstanceAsMarkdown(instance: MythrasInstance): string {
     // Combat Styles
     if (instance.combatStyles && Object.keys(instance.combatStyles).length > 0) {
         const styles = Object.entries(instance.combatStyles).map(([k, v]) => `**${k}:** ${v}%`);
-        md += `**Combat Styles:** ${styles.join(' | ')}\n\n`;
+        md += `**Combat Styles:** ${styles.join(', ')}\n\n`;
     }
 
     // Skills
     if (instance.standardSkills && Object.keys(instance.standardSkills).length > 0) {
         const standard = Object.entries(instance.standardSkills).map(([k, v]) => `**${k}:** ${v}%`);
-        md += `**Standard Skills:** ${standard.join(' | ')}\n\n`;
+        md += `**Standard Skills:** ${standard.join(', ')}\n\n`;
     }
     if (instance.magicSkills && Object.keys(instance.magicSkills).length > 0) {
         const magic = Object.entries(instance.magicSkills).map(([k, v]) => `**${k}:** ${v}%`);
-        md += `**Magic Skills:** ${magic.join(' | ')}\n\n`;
+        md += `**Magic Skills:** ${magic.join(', ')}\n\n`;
     }
     if (instance.professionalSkills && Object.keys(instance.professionalSkills).length > 0) {
         const prof = Object.entries(instance.professionalSkills).map(([k, v]) => `**${k}:** ${v}%`);
-        md += `**Professional Skills:** ${prof.join(' | ')}\n\n`;
+        md += `**Professional Skills:** ${prof.join(', ')}\n\n`;
     }
     if (instance.customSkills && Object.keys(instance.customSkills).length > 0) {
         const custom = Object.entries(instance.customSkills).map(([k, v]) => `**${k}:** ${v}%`);
-        md += `**Custom Skills:** ${custom.join(' | ')}\n\n`;
+        md += `**Custom Skills:** ${custom.join(', ')}\n\n`;
     }
 
     // Notes
@@ -414,7 +414,7 @@ export function renderEnemyStatblock(instance: MythrasInstance, mode: 'short' | 
             
             wrap.createSpan({ text: ` ${v}%`, cls: 'mythras-skill-val' });
             if (idx < entries.length - 1) {
-                wrap.createSpan({ text: ' | ', cls: 'mythras-skill-sep' });
+                wrap.createSpan({ text: ', ', cls: 'mythras-skill-sep' });
             }
         });
     };
