@@ -646,7 +646,8 @@ export class RosterManagerUI {
             const msg = `Are you sure you want to delete the Scenario '${scenario.name}'? This will permanently delete ${encCount} Encounters and ${instCount} enemies! Markdown notes will NOT be deleted, but will be disconnected from the roster.`;
             new ConfirmModal(this.app, msg, async (result) => {
                 if (result) {
-                    const folder = this.app.vault.getAbstractFileByPath(`${this.plugin.settings.baseFolder}/Roster/${scenario.name}`);
+                    const safeScenario = scenario.name.replace(/[^\p{L}\p{N} -]/gu, '').trim() || 'Uncategorized';
+                    const folder = this.app.vault.getAbstractFileByPath(`${this.plugin.settings.baseFolder}/Roster/${safeScenario}`);
                     if (folder) {
                         await this.app.vault.trash(folder, true);
                     }
