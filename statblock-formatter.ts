@@ -455,9 +455,20 @@ export function renderEnemyStatblock(
                     const roll = Math.floor(Math.random() * 100) + 1;
                     let sl = "Failure";
                     const critical = Math.ceil(target / 10);
-                    if (roll <= critical) sl = "Critical";
-                    else if (roll >= 99) sl = "Fumble";
-                    else if (roll <= target) sl = "Success";
+                    
+                    if (roll <= critical) {
+                        sl = "Critical";
+                    } else if (roll <= 5) {
+                        sl = "Success";
+                    } else if (roll >= 96) {
+                        if (target >= 100) {
+                            sl = (roll === 100) ? "Fumble" : "Failure";
+                        } else {
+                            sl = (roll >= 99) ? "Fumble" : "Failure";
+                        }
+                    } else if (roll <= target) {
+                        sl = "Success";
+                    }
                     
                     plugin.combatLogService.addEntry({
                         actor: instance.instanceName || instance.templateName || "Unknown",
