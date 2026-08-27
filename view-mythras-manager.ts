@@ -7,6 +7,7 @@ import { BestiaryManagerUI } from './ui-bestiary';
 export const MYTHRAS_MANAGER_VIEW = "mythras-manager-view";
 
 export class MythrasManagerView extends ItemView {
+    navigation = true;
     plugin: MythrasEncounterPlugin;
     currentTab: 'roster' | 'armory' | 'bestiary' = 'roster';
 

@@ -1,4 +1,4 @@
-import { Plugin, normalizePath } from 'obsidian';
+import { Plugin, normalizePath, Menu, TFile } from 'obsidian';
 import { MythrasEncounterSettings, DEFAULT_SETTINGS, MythrasEncounterSettingTab } from './settings';
 import { MythrasSearchModal } from './modal-search';
 import { MythrasGenerateModal } from './modal-generate';
@@ -30,9 +30,37 @@ export default class MythrasEncounterPlugin extends Plugin {
             (leaf) => new MythrasManagerView(leaf, this)
         );
 
-        // Add a ribbon icon to open the Manager
-        this.addRibbonIcon('swords', 'Open Mythras Manager', () => {
-            this.activateManagerView();
+        const ribbonIcon = this.addRibbonIcon('swords', 'Open Mythras Manager', () => {
+            this.activateManagerView('tab');
+        });
+
+        ribbonIcon.addEventListener('contextmenu', (evt: MouseEvent) => {
+            const menu = new Menu();
+            menu.addItem((item) =>
+                item
+                    .setTitle('Open in New Tab')
+                    .setIcon('file-plus')
+                    .onClick(() => this.activateManagerView('tab'))
+            );
+            menu.addItem((item) =>
+                item
+                    .setTitle('Open to the Right')
+                    .setIcon('split')
+                    .onClick(() => this.activateManagerView('split-right'))
+            );
+            menu.addItem((item) =>
+                item
+                    .setTitle('Open Below')
+                    .setIcon('split')
+                    .onClick(() => this.activateManagerView('split-down'))
+            );
+            menu.addItem((item) =>
+                item
+                    .setTitle('Open in Current Tab')
+                    .setIcon('file')
+                    .onClick(() => this.activateManagerView('current'))
+            );
+            menu.showAtMouseEvent(evt);
         });
 
         // Command to search and import templates
@@ -166,22 +194,31 @@ export default class MythrasEncounterPlugin extends Plugin {
         });
     }
 
-    async activateManagerView() {
+    async activateManagerView(mode: 'tab' | 'split-right' | 'split-down' | 'current' = 'tab') {
         const { workspace } = this.app;
-
-        let leaf: any = null;
         const leaves = workspace.getLeavesOfType(MYTHRAS_MANAGER_VIEW);
 
         if (leaves.length > 0) {
-            // A leaf with our view already exists, focus it
-            leaf = leaves[0];
-        } else {
-            // Our view could not be found in the workspace, create a new leaf
-            leaf = workspace.getLeaf('tab');
-            await leaf.setViewState({ type: MYTHRAS_MANAGER_VIEW, active: true });
+            if (mode === 'tab') {
+                workspace.revealLeaf(leaves[0]);
+                return;
+            }
+            // If they explicitly requested a layout via context menu, close old instances
+            leaves.forEach(l => l.detach());
         }
 
-        // "Reveal" the leaf in case it is in a collapsed sidebar
+        let leaf: any = null;
+        if (mode === 'split-right') {
+            leaf = workspace.getLeaf('split', 'vertical');
+        } else if (mode === 'split-down') {
+            leaf = workspace.getLeaf('split', 'horizontal');
+        } else if (mode === 'current') {
+            leaf = workspace.getLeaf(false);
+        } else {
+            leaf = workspace.getLeaf('tab');
+        }
+        
+        await leaf.setViewState({ type: MYTHRAS_MANAGER_VIEW, active: true });
         workspace.revealLeaf(leaf);
     }
 
