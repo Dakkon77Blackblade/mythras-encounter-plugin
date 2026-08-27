@@ -197,13 +197,14 @@ export class BestiaryManagerUI {
             };
 
             const tdImage = row.createEl('td', { cls: 'mythras-manager-td' });
-            if (entry.template.image) {
-                const resolvedUrl = this.resolveImagePath(entry.template.image);
-                if (resolvedUrl) {
-                    const img = tdImage.createEl('img', { cls: 'mythras-manager-avatar' });
-                    img.src = resolvedUrl;
-                }
-            }
+        const resolvedUrl = entry.template.image ? this.resolveImagePath(entry.template.image) : null;
+        if (resolvedUrl) {
+            const img = tdImage.createEl('img', { cls: 'mythras-manager-avatar' });
+            img.src = resolvedUrl;
+        } else {
+            const dummy = tdImage.createDiv('mythras-manager-avatar dummy');
+            setIcon(dummy, 'image');
+        }
 
             row.createEl('td', { text: entry.template.name, cls: 'mythras-manager-td' });
             row.createEl('td', { text: entry.template.author || '-', cls: 'mythras-manager-td' });

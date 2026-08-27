@@ -920,6 +920,24 @@
     font-size: 3em;
 }
 
+.mythras-manager-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 4px;
+    object-fit: cover;
+    background-color: var(--background-modifier-form-field);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.mythras-manager-avatar.dummy {
+    border: 1px dashed var(--background-modifier-border);
+    color: var(--text-muted);
+    font-size: 1.5em;
+}
+
 .mythras-manager-form-scrollable {
     overflow-y: auto;
     max-height: calc(100vh - 150px);
