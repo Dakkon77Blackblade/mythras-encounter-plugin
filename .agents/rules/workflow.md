@@ -24,7 +24,7 @@ Whenever the user asks you to implement a new feature or fix a bug in this proje
 ## 4. Building and Verification
 - Always run `npm run build` to verify the code compiles without TypeScript errors.
 - Ensure the Obsidian plugin's `main.js` is up to date (we use a symlink for local development, so the build output immediately reflects in the Obsidian vault).
-- **User Testing:** Wait for the user to test and verify the new functionality in Obsidian before proceeding to the merge step.
+- **USER TESTING IS MANDATORY:** You MUST STOP and wait for the user to explicitly confirm that they have tested the changes and that everything works flawlessly in Obsidian. DO NOT proceed to the merge step until the user gives explicit approval.
 
 ## 5. Versioning
 - Before committing your final changes on the feature branch, always bump the version if the changes warrant it.
@@ -32,6 +32,7 @@ Whenever the user asks you to implement a new feature or fix a bug in this proje
 - This will automatically run `version-bump.mjs` and sync `manifest.json` and `versions.json`.
 
 ## 6. Merge and Push (No Pull Request)
+- **CRITICAL**: ONLY perform this step AFTER the user has explicitly confirmed successful testing of the feature branch.
 - Add all files, commit with a descriptive message referencing the issue number (e.g., `git commit -m "Implement spells system (#8)"`).
 - Push the feature branch to `origin` for backup.
 - Since we are doing local feature development, do not use Pull Requests. Instead, merge the feature branch directly into `main` locally and push:

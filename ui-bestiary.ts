@@ -1,4 +1,4 @@
-import { App, Notice, TFile, FuzzySuggestModal } from 'obsidian';
+import { App, Notice, TFile, FuzzySuggestModal, setIcon } from 'obsidian';
 import MythrasEncounterPlugin from './main';
 import { MythrasTemplate, MythrasWeapon } from './mythras-api';
 
@@ -236,12 +236,13 @@ export class BestiaryManagerUI {
 
         const header = container.createDiv('bestiary-detail-header mythras-detail-header');
 
-        if (entry.image) {
-            const resolvedUrl = this.resolveImagePath(entry.image);
-            if (resolvedUrl) {
-                const img = header.createEl('img', { cls: 'mythras-detail-avatar' });
-                img.src = resolvedUrl;
-            }
+        const resolvedUrl = entry.image ? this.resolveImagePath(entry.image) : null;
+        if (resolvedUrl) {
+            const img = header.createEl('img', { cls: 'mythras-detail-avatar' });
+            img.src = resolvedUrl;
+        } else {
+            const dummy = header.createDiv('mythras-detail-avatar dummy');
+            setIcon(dummy, 'image');
         }
 
         const infoDiv = header.createDiv();
@@ -254,33 +255,40 @@ export class BestiaryManagerUI {
             infoDiv.createEl('p', { text: `Notes: ${entry.notes}` });
         }
 
-        const grid = container.createDiv('mythras-detail-grid');
+        const grid = container.createDiv('mythras-manager-grid');
 
-        const statsDiv = grid.createDiv();
-        statsDiv.createEl('h3', { text: 'Stats & Attributes' });
-        const statsStr = Object.entries(entry.stats || {}).map(([k, v]) => `${k}: ${v}`).join(', ');
-        const attrsStr = Object.entries(entry.attributes || {}).map(([k, v]) => `${k}: ${v}`).join(', ');
-        statsDiv.createEl('p', { text: `Stats: ${statsStr}` });
-        statsDiv.createEl('p', { text: `Attributes: ${attrsStr}` });
+        const createCard = (title: string, data: { [key: string]: string }, isSkills: boolean = false) => {
+            if (!data || Object.keys(data).length === 0) return;
+            const card = grid.createDiv('mythras-manager-card');
+            card.createEl('h4', { text: title });
+            const list = card.createDiv(isSkills ? 'mythras-manager-list' : 'mythras-detail-list');
+            if (isSkills) {
+                list.style.display = 'flex';
+                list.style.flexWrap = 'wrap';
+                list.style.gap = '8px';
+            }
+            Object.entries(data).forEach(([k, v]) => {
+                if (isSkills) {
+                    list.createEl('span', { text: `${k} ${v}`, cls: 'mythras-rollable-pill' });
+                } else {
+                    list.createEl('div', { text: `${k}: ${v}` });
+                }
+            });
+        };
 
-        const skillsDiv = grid.createDiv();
-        skillsDiv.createEl('h3', { text: 'Skills' });
-        const stdSkills = Object.entries(entry.standardSkills || {}).map(([k, v]) => `${k} ${v}`).join(', ');
-        const magSkills = Object.entries(entry.magicSkills || {}).map(([k, v]) => `${k} ${v}`).join(', ');
-        const proSkills = Object.entries(entry.professionalSkills || {}).map(([k, v]) => `${k} ${v}`).join(', ');
-        const cstSkills = Object.entries(entry.customSkills || {}).map(([k, v]) => `${k} ${v}`).join(', ');
-        const cbtStyles = Object.entries(entry.combatStyles || {}).map(([k, v]) => `${k} ${v}`).join(', ');
+        createCard('Stats', entry.stats || {});
+        createCard('Attributes', entry.attributes || {});
+        createCard('Standard Skills', entry.standardSkills || {}, true);
+        createCard('Professional Skills', entry.professionalSkills || {}, true);
+        createCard('Magic Skills', entry.magicSkills || {}, true);
+        createCard('Custom Skills', entry.customSkills || {}, true);
+        createCard('Combat Styles', entry.combatStyles || {}, true);
 
-        if (stdSkills) skillsDiv.createEl('p', { text: `Standard: ${stdSkills}` });
-        if (magSkills) skillsDiv.createEl('p', { text: `Magic: ${magSkills}` });
-        if (proSkills) skillsDiv.createEl('p', { text: `Professional: ${proSkills}` });
-        if (cstSkills) skillsDiv.createEl('p', { text: `Custom: ${cstSkills}` });
-        if (cbtStyles) skillsDiv.createEl('p', { text: `Combat: ${cbtStyles}` });
-
-        const weaponsDiv = container.createDiv('mythras-detail-weapons');
-        weaponsDiv.createEl('h3', { text: 'Weapons' });
+        const weaponsCard = container.createDiv('mythras-manager-card');
+        weaponsCard.style.marginTop = '15px';
+        weaponsCard.createEl('h4', { text: 'Weapons' });
         if (entry.weapons && entry.weapons.length > 0) {
-            const ul = weaponsDiv.createEl('ul');
+            const ul = weaponsCard.createEl('ul');
             entry.weapons.forEach(w => {
                 const parts = [
                     w.damage ? `Damage ${w.damage}` : null,
@@ -292,7 +300,7 @@ export class BestiaryManagerUI {
                 ul.createEl('li', { text: `${w.name} (${w.type || '-'}) - ${parts}` });
             });
         } else {
-            weaponsDiv.createEl('p', { text: 'No weapons' });
+            weaponsCard.createEl('p', { text: 'No weapons' });
         }
     }
 
@@ -325,7 +333,7 @@ export class BestiaryManagerUI {
             await this.saveEditedTemplate();
         };
 
-        const form = container.createDiv('bestiary-form mythras-manager-form');
+        const form = container.createDiv('bestiary-form mythras-manager-form mythras-manager-form-scrollable');
 
         const createTextField = (label: string, value: string, onChange: (v: string) => void) => {
             const wrap = form.createDiv('mythras-manager-form-group');
