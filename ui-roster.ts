@@ -688,6 +688,18 @@ export class RosterManagerUI {
                 }).open();
             };
 
+            const btnCopyEnc = tag.createEl('button', { cls: 'clickable-icon' });
+            setIcon(btnCopyEnc, 'copy');
+            btnCopyEnc.onclick = (e) => {
+                e.stopPropagation();
+                const codeBlock = `\`\`\`mythras-encounter\nid: ${enc.id}\n\`\`\``;
+                navigator.clipboard.writeText(codeBlock).then(() => {
+                    new Notice("Copied encounter block to clipboard!");
+                }).catch(() => {
+                    new Notice("Failed to copy to clipboard.");
+                });
+            };
+
             const btnMove = tag.createEl('button', { cls: 'clickable-icon' });
             setIcon(btnMove, 'folder-output');
             btnMove.onclick = (e) => {
