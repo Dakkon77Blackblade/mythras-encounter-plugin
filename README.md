@@ -6,7 +6,7 @@
 
 A complete encounter, bestiary, armory, and combat management suite for Game Masters running **Mythras** (and d100 / BRP systems) in [Obsidian](https://obsidian.md).
 
-This plugin bridges the gap between the fan-project online [Mythras Encounter Generator](https://mythras.skoll.xyz/about/) and your local Obsidian Vault. It enables offline template management, authentic local dice rolling, dynamic encounter building, live interactive statblocks, real-time Hit Location wound tracking, one-click d100 skill checks, a dedicated GM Combat Log, and seamless inline weapon references directly inside your campaign notes.
+This plugin bridges the gap between the fan-project online [Mythras Encounter Generator](https://mythras.skoll.xyz/about/) and your local Obsidian Vault. It enables offline template management, authentic local dice rolling, dynamic encounter building, live interactive statblocks, real-time Hit Location wound tracking, one-click d100 skill checks, interactive weapon damage rolls with full dice breakdown, a dedicated GM Combat Log, and seamless inline weapon references directly inside your campaign notes.
 
 ---
 
@@ -48,7 +48,7 @@ flowchart TD
     Instantiator -->|Generate Rolled Combatants| Roster["3. Roster Manager\n(Active Instances with Live HP/AP)"]
     Roster -->|Render Codeblocks| Notes["Obsidian Campaign Notes\n(Interactive Statblocks & Live Combat)"]
     Notes -->|Click Hit Location / Edit| Roster
-    Notes -->|Click-to-Roll Skills & Styles| CombatLog["Native GM Combat Log\n(D100 vs Target % & Success Levels)"]
+    Notes -->|Click Skills & Weapon Damage| CombatLog["Native GM Combat Log\n(D100 Skills & Itemized Weapon Damage)"]
 ```
 
 ### 1. The Bestiary
@@ -200,7 +200,7 @@ Whether embedded via ````enemy <id>```` or rendered as part of a ````mythras-enc
 - **Header:** Instance Name, Template Name, and linked Portrait/Image.
 - **Top Bar:** Characteristics grid (STR, CON, SIZ, DEX, INT, POW, CHA) and Derived Attributes (AP, Dmg Mod, Init/SR, Move, MP).
 - **Hit Location Pills:** Compact badges showing D20 range, body zone name, and `(Current AP / Current HP)`.
-- **Combat Styles & Weapons:** Displays active weapons, damage with calculated damage modifiers, size, reach/range, and special effects.
+- **Combat Styles & Weapons:** Displays active weapons, damage with calculated damage modifiers, size, reach/range, special effects, and **interactive rollable damage pills**.
 - **Standard & Magic Skills:** Formatted percentages with internal Obsidian links for skill lookups.
 - **Pencil Icon:** Instant shortcut to open and edit the full instance in the Roster Manager.
 
@@ -221,14 +221,20 @@ During fast-paced combat, you do not need to open side panels to record wounds o
 
 ### Step 5: Native GM Combat Log & Click-to-Roll
 
-The plugin features a native dice roller and dedicated **GM Combat Log** directly inside Obsidian's right sidebar.
+The plugin features a native dice roller, interactive damage calculations, and a dedicated **GM Combat Log** directly inside Obsidian's right sidebar.
 
 ```
 ┌────────────────────────────────────────────────────────┐
 │ COMBAT LOG                                 [Clear Log] │
 ├────────────────────────────────────────────────────────┤
+│ [19:42:20] Goblin Archer #1 attacked with Shortbow     │
+│ Damage: 1d6 [4] - 1d4 [1] = 3                          │
+├────────────────────────────────────────────────────────┤
 │ Goblin Archer #1                            [19:42:15] │
 │ Bow & Arrow (65%) → Roll: 04 → [CRITICAL]              │
+├────────────────────────────────────────────────────────┤
+│ [19:42:10] Cave Troll #2 attacked with Great Club      │
+│ Damage: 2d8 [5+7] + 1d12 [11] = 23                     │
 ├────────────────────────────────────────────────────────┤
 │ Cave Troll #2                               [19:42:08] │
 │ Club (58%) → Roll: 42 → [SUCCESS]                      │
@@ -241,7 +247,7 @@ The plugin features a native dice roller and dedicated **GM Combat Log** directl
 └────────────────────────────────────────────────────────┘
 ```
 
-#### 1. Click-to-Roll on Statblocks
+#### 1. Click-to-Roll Skill & Combat Style Checks
 Every skill percentage in your statblocks—including **Combat Styles**, **Standard Skills**, **Magic Skills**, **Professional Skills**, and **Custom Skills**—is rendered as an interactive roll button (e.g., `Brawn: 62%`, `Spear & Shield: 74%`).
 
 - **Click the percentage pill** to roll a `1d100` skill check for that combatant.
@@ -251,18 +257,23 @@ Every skill percentage in your statblocks—including **Combat Styles**, **Stand
   - 🔴 **Failure:** Roll $> \text{Skill Target}$ (and $< 99$).
   - 🟣 **Fumble:** Roll $\ge 99$ (99 or 100).
 
-#### 2. The Combat Log View
-- Whenever a roll is made, the **Combat Log** view in the right sidebar is automatically brought into focus.
-- Each entry displays:
-  - **Actor Name:** The instance or template name of the combatant.
-  - **Timestamp:** Exact time of the roll (`[HH:MM:SS]`).
-  - **Action & Target:** Name of the skill/style with the target percentage (e.g., `Broadsword (65%)`).
-  - **D100 Roll Value:** The exact number rolled.
-  - **Success Level Badge:** Color-coded status badge with distinct borders and glow effects:
-    - **Critical:** Light blue background, blue border badge.
-    - **Success:** Soft green background, green border badge.
-    - **Failure:** Soft red background, red border badge.
-    - **Fumble:** Soft purple background, purple border badge.
+#### 2. Click-to-Roll Weapon Damage & Itemized Dice Breakdown
+Every weapon listed in an encounter or enemy statblock features an interactive damage pill (e.g., `1d8+1d2`, `1d6-1d4`, `2d8+1d12`).
+
+- **Click the weapon damage pill** to roll damage directly during combat.
+- **Damage Modifier Factoring:** The plugin automatically incorporates the combatant's Damage Modifier into the weapon's formula based on their $\text{STR} + \text{SIZ}$ (unless the weapon specifically does not use damage modifiers).
+- **Rules-Compliant Minimum Flooring:** If a character with a negative damage modifier rolls poorly, the total damage is automatically floored to a minimum of **0** ($\max(0, \text{Total})$), preventing negative damage values.
+- **Itemized Visual Breakdown:** The GM Combat Log UI renders a beautifully styled breakdown displaying:
+  - Individual dice rolled and their face results in badges (e.g., `2d8 [5+7]`, `1d12 [11]`).
+  - Mathematical operators (`+`, `-`) and numeric constants.
+  - A distinct, highlighted total damage badge (e.g., `= 23`).
+- **Instant Focus:** Rolling damage automatically switches focus to the GM Combat Log sidebar so you can review rolls in real time.
+
+#### 3. The GM Combat Log View & Management
+- Whenever a skill check or weapon damage roll is clicked, the **Combat Log** view in the right sidebar is automatically brought into focus.
+- Entries are organized chronologically with latest actions on top:
+  - **Skill Check Entries:** Displays Actor Name, Timestamp (`[HH:MM:SS]`), Action & Target %, Rolled D100 Value, and a Color-Coded Success Level Badge (Critical, Success, Failure, Fumble).
+  - **Weapon Damage Entries:** Displays Actor Name, Timestamp, Weapon Name, the itemized Dice Breakdown badges, and final Total Damage badge.
 - **Clear Log Button:** Click the "Clear Log" button in the header at any time to clear history between rounds or encounters.
 
 ---
@@ -292,6 +303,9 @@ The plugin strictly implements official Mythras Core Rules:
   - **Arms / Wings / Forelegs / Tentacles:** $\text{Base HP} - 1$
 - **Action Points (AP):** Calculated from $\text{INT} + \text{DEX}$ (e.g., $\le 12 \rightarrow 1\text{ AP}$, $13\text{--}24 \rightarrow 2\text{ AP}$, $25\text{--}36 \rightarrow 3\text{ AP}$, $37\text{--}48 \rightarrow 4\text{ AP}$).
 - **Damage Modifier:** Calculated from $\text{STR} + \text{SIZ}$ progression ($-1\text{d8}$ up to $+2\text{d12}$ and beyond).
+- **Weapon Damage Resolution:**
+  $$\text{Damage} = \max(0, \text{Weapon Base Dice} \pm \text{Damage Modifier})$$
+  Evaluates compound dice formulas (e.g., `2d8+1d12+2`), tracks individual die roll components, and clamps negative sums to 0.
 - **Strike Rank / Initiative:** $\left\lceil \frac{\text{INT} + \text{DEX}}{2} \right\rceil$.
 - **Magic Points:** Equal to current $\text{POW}$.
 - **Skill Checks & Success Levels:**

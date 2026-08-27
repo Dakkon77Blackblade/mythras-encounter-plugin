@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- **Interactive Weapon Damage Rolls & Dice Breakdown:**
+  - Weapon damage values in encounter and enemy statblocks are now interactive "Click-to-Roll" pills (`mythras-rollable-pill`).
+  - Automatically incorporates the combatant's Damage Modifier (e.g., `+1d2`, `-1d4`) into the roll expression based on official Mythras rules.
+  - Automatically floors total damage results to a minimum of 0 (preventing negative net damage from penalties).
+  - Generates an itemized visual dice breakdown in the GM Combat Log view (`combat-log-breakdown`), displaying individual dice rolls (e.g., `1d8 [5]`), operators, constants, and highlighted total damage badges.
+  - Automatically focuses and scrolls to the GM Combat Log sidebar when a damage roll is triggered.
+
 
 ## [0.8.0] - 2026-08-27
 ### Added
