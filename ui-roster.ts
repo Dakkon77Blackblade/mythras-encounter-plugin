@@ -108,6 +108,70 @@ export class MoveModal extends Modal {
     }
 }
 
+export class NewEncounterModal extends Modal {
+    scenarios: string[];
+    defaultScenario: string;
+    onSubmit: (scenario: string | null, encounter: string | null) => void;
+
+    constructor(app: App, scenarios: string[], defaultScenario: string, onSubmit: (scenario: string | null, encounter: string | null) => void) {
+        super(app);
+        this.scenarios = scenarios;
+        this.defaultScenario = defaultScenario;
+        this.onSubmit = onSubmit;
+    }
+
+    onOpen() {
+        const { contentEl } = this;
+        contentEl.createEl('h2', { text: 'New Encounter' });
+        contentEl.createEl('p', { text: 'Create a new encounter. You can select an existing scenario or type a new one.' });
+
+        let scenarioValue = this.defaultScenario || (this.scenarios.length > 0 ? this.scenarios[0] : '');
+        let encounterValue = '';
+
+        const scenarioSetting = new Setting(contentEl)
+            .setName('Scenario')
+            .addText(text => {
+                text.setValue(scenarioValue);
+                text.onChange(val => scenarioValue = val);
+                
+                const datalistId = 'scenario-list-' + Math.random().toString(36).substring(7);
+                const inputEl = text.inputEl;
+                inputEl.setAttribute('list', datalistId);
+                
+                const datalist = document.createElement('datalist');
+                datalist.id = datalistId;
+                this.scenarios.forEach(scen => {
+                    const option = document.createElement('option');
+                    option.value = scen;
+                    datalist.appendChild(option);
+                });
+                inputEl.parentElement?.appendChild(datalist);
+            });
+
+        const encounterSetting = new Setting(contentEl)
+            .setName('Encounter Name')
+            .addText(text => {
+                text.onChange(val => encounterValue = val);
+            });
+
+        new Setting(contentEl)
+            .addButton(btn => btn.setButtonText('Create').setCta().onClick(() => {
+                this.close();
+                this.onSubmit(scenarioValue.trim(), encounterValue.trim());
+            }))
+            .addButton(btn => btn.setButtonText('Cancel').onClick(() => {
+                this.close();
+                this.onSubmit(null, null);
+            }));
+            
+        setTimeout(() => encounterSetting.controlEl.querySelector('input')?.focus(), 100);
+    }
+
+    onClose() {
+        this.contentEl.empty();
+    }
+}
+
 interface RosterScenario {
     name: string;
     path: string;
@@ -384,24 +448,44 @@ export class RosterManagerUI {
     renderSidebar(sidebar: HTMLElement) {
         sidebar.createEl('h3', { text: 'Scenarios' });
         
-        const btnNewScen = sidebar.createEl('button', { text: '+ New Scenario', cls: 'mod-cta' });
-        btnNewScen.style.width = '100%';
-        btnNewScen.style.marginBottom = '10px';
-        btnNewScen.onclick = () => {
-            new PromptModal(this.app, 'New Scenario', 'Enter the name of the new Scenario', 'Scenario Name', '', async (name) => {
-                if (name) {
-                    const safeName = name.replace(/[^\p{L}\p{N} -]/gu, '').trim();
+        const btnNewEnc = sidebar.createEl('button', { text: '+ New Encounter', cls: 'mod-cta' });
+        btnNewEnc.style.width = '100%';
+        btnNewEnc.style.marginBottom = '10px';
+        btnNewEnc.onclick = () => {
+            const allScenarios = this.scenarios.map(s => s.name);
+            new NewEncounterModal(this.app, allScenarios, this.selectedScenario || '', async (scenarioName, encounterName) => {
+                if (scenarioName && encounterName) {
+                    const safeScenario = scenarioName.replace(/[^\p{L}\p{N} -]/gu, '').trim() || 'Uncategorized';
+                    const safeName = encounterName.replace(/[^\p{L}\p{N} -]/gu, '').trim();
                     if (safeName) {
-                        const newPath = normalizePath(`${this.plugin.settings.baseFolder}/Roster/${safeName}`);
-                        if (!(await this.app.vault.adapter.exists(newPath))) {
-                            await this.app.vault.createFolder(newPath);
-                            await this.loadInstances();
-                            this.selectedScenario = safeName;
-                            this.selectedEncounter = null;
-                            this.selectedInstancePaths.clear();
-                            this.display();
+                        const newFolderPath = normalizePath(`${this.plugin.settings.baseFolder}/Roster/${safeScenario}`);
+                        if (!(await this.app.vault.adapter.exists(newFolderPath))) {
+                            const parts = newFolderPath.split('/');
+                            let currentPath = '';
+                            for (const part of parts) {
+                                if (part === '') continue;
+                                currentPath = currentPath === '' ? part : `${currentPath}/${part}`;
+                                if (!await this.app.vault.adapter.exists(currentPath)) {
+                                    await this.app.vault.createFolder(currentPath);
+                                }
+                            }
+                        }
+                        
+                        const newFilePath = normalizePath(`${newFolderPath}/${safeName}.md`);
+                        if (!(await this.app.vault.adapter.exists(newFilePath))) {
+                            const content = `---\ntype: mythras-encounter\nscenario: "${safeScenario}"\n---\n\n`;
+                            await this.app.vault.create(newFilePath, content);
+                            
+                            // Let the metadata cache catch up
+                            setTimeout(async () => {
+                                await this.loadInstances();
+                                this.selectedScenario = safeScenario;
+                                this.selectedEncounter = safeName;
+                                this.selectedInstancePaths.clear();
+                                this.display();
+                            }, 300);
                         } else {
-                            new Notice('Scenario already exists!');
+                            new Notice('Encounter already exists!');
                         }
                     }
                 }
@@ -462,33 +546,30 @@ export class RosterManagerUI {
             new PromptModal(this.app, 'Rename Scenario', 'Enter new name:', 'Name', scenario.name, async (name) => {
                 if (name && name !== scenario.name) {
                     const safeName = name.replace(/[^\p{L}\p{N} -]/gu, '').trim();
+                    if (!safeName) return;
+                    
+                    const oldPath = normalizePath(`${this.plugin.settings.baseFolder}/Roster/${scenario.name}`);
                     const newPath = normalizePath(`${this.plugin.settings.baseFolder}/Roster/${safeName}`);
-                    if (!(await this.app.vault.adapter.exists(newPath))) {
-                        const folder = this.app.vault.getAbstractFileByPath(scenario.path);
-                        if (folder) {
-                            await this.app.vault.rename(folder, newPath);
-                            const updateJsonRecursively = async (f: any) => {
-                                if (f.children) {
-                                    for (const child of f.children) await updateJsonRecursively(child);
-                                } else if (f instanceof TFile && f.extension === 'json') {
-                                    try {
-                                        const content = await this.app.vault.read(f);
-                                        const data = JSON.parse(content);
-                                        data.scenario = safeName;
-                                        await this.app.vault.modify(f, JSON.stringify(data, null, 2));
-                                    } catch(e){}
-                                }
-                            };
-                            const newFolder = this.app.vault.getAbstractFileByPath(newPath);
-                            if (newFolder) await updateJsonRecursively(newFolder);
-                            
-                            this.selectedScenario = safeName;
-                            await this.loadInstances();
-                            this.display();
-                        }
-                    } else {
-                        new Notice("Scenario already exists!");
+                    const folder = this.app.vault.getAbstractFileByPath(oldPath);
+                    if (folder && !(await this.app.vault.adapter.exists(newPath))) {
+                        await this.app.vault.rename(folder, newPath);
                     }
+                    
+                    for (const enc of scenario.encounters) {
+                        const mdFile = this.app.vault.getAbstractFileByPath(enc.path);
+                        if (mdFile instanceof TFile && mdFile.extension === 'md') {
+                            await this.app.fileManager.processFrontMatter(mdFile, (fm) => {
+                                if (fm.scenario === scenario.name) fm.scenario = safeName;
+                            });
+                        }
+                    }
+                    
+                    setTimeout(async () => {
+                        this.selectedScenario = safeName;
+                        await this.loadInstances();
+                        this.display();
+                        new Notice(`Scenario renamed to ${safeName}`);
+                    }, 500);
                 }
             }).open();
         };
@@ -499,40 +580,32 @@ export class RosterManagerUI {
             e.stopPropagation();
             let encCount = scenario.encounters.length;
             let instCount = scenario.encounters.reduce((sum, e) => sum + e.instances.length, 0);
-            const msg = `Are you sure you want to delete the Scenario '${scenario.name}'? This will permanently delete ${encCount} Encounters and ${instCount} enemies!`;
+            const msg = `Are you sure you want to delete the Scenario '${scenario.name}'? This will permanently delete ${encCount} Encounters and ${instCount} enemies! Markdown notes will NOT be deleted, but will be disconnected from the roster.`;
             new ConfirmModal(this.app, msg, async (result) => {
                 if (result) {
-                    const folder = this.app.vault.getAbstractFileByPath(scenario.path);
+                    const folder = this.app.vault.getAbstractFileByPath(`${this.plugin.settings.baseFolder}/Roster/${scenario.name}`);
                     if (folder) {
                         await this.app.vault.trash(folder, true);
-                        new Notice(`Deleted Scenario ${scenario.name}`);
-                        this.selectedScenario = null;
-                        this.selectedEncounter = null;
-                        this.selectedInstancePaths.clear();
-                        await this.loadInstances();
-                        this.display();
                     }
-                }
-            }).open();
-        };
-        
-        const btnNewEnc = header.createEl('button', { text: '+ New Encounter', cls: 'mod-cta' });
-        btnNewEnc.onclick = () => {
-            new PromptModal(this.app, 'New Encounter', 'Enter the name of the new Encounter', 'Encounter Name', '', async (name) => {
-                if (name) {
-                    const safeName = name.replace(/[^\p{L}\p{N} -]/gu, '').trim();
-                    if (safeName) {
-                        const newPath = normalizePath(`${scenario.path}/${safeName}`);
-                        if (!(await this.app.vault.adapter.exists(newPath))) {
-                            await this.app.vault.createFolder(newPath);
-                            await this.loadInstances();
-                            this.selectedEncounter = safeName;
-                            this.selectedInstancePaths.clear();
-                            this.display();
-                        } else {
-                            new Notice('Encounter already exists!');
+                    
+                    for (const enc of scenario.encounters) {
+                        const mdFile = this.app.vault.getAbstractFileByPath(enc.path);
+                        if (mdFile instanceof TFile && mdFile.extension === 'md') {
+                            await this.app.fileManager.processFrontMatter(mdFile, (fm) => {
+                                delete fm.scenario;
+                            });
                         }
                     }
+                    
+                    new Notice(`Deleted Scenario ${scenario.name}`);
+                    this.selectedScenario = null;
+                    this.selectedEncounter = null;
+                    this.selectedInstancePaths.clear();
+                    
+                    setTimeout(async () => {
+                        await this.loadInstances();
+                        this.display();
+                    }, 500);
                 }
             }).open();
         };
@@ -566,32 +639,24 @@ export class RosterManagerUI {
                 new PromptModal(this.app, 'Rename Encounter', 'Enter new name:', 'Name', enc.name, async (name) => {
                     if (name && name !== enc.name) {
                         const safeName = name.replace(/[^\p{L}\p{N} -]/gu, '').trim();
-                        const newPath = normalizePath(`${scenario.path}/${safeName}`);
-                        if (!(await this.app.vault.adapter.exists(newPath))) {
-                            const folder = this.app.vault.getAbstractFileByPath(enc.path);
-                            if (folder) {
-                                await this.app.vault.rename(folder, newPath);
-                                const updateJsonRecursively = async (f: any) => {
-                                    if (f.children) {
-                                        for (const child of f.children) await updateJsonRecursively(child);
-                                    } else if (f instanceof TFile && f.extension === 'json') {
-                                        try {
-                                            const content = await this.app.vault.read(f);
-                                            const data = JSON.parse(content);
-                                            data.encounter = safeName;
-                                            await this.app.vault.modify(f, JSON.stringify(data, null, 2));
-                                        } catch(e){}
-                                    }
-                                };
-                                const newFolder = this.app.vault.getAbstractFileByPath(newPath);
-                                if (newFolder) await updateJsonRecursively(newFolder);
+                        if (!safeName) return;
+                        
+                        const mdFile = this.app.vault.getAbstractFileByPath(enc.path);
+                        if (mdFile instanceof TFile && mdFile.extension === 'md') {
+                            const newPath = normalizePath(`${mdFile.parent?.path}/${safeName}.md`);
+                            if (!(await this.app.vault.adapter.exists(newPath))) {
+                                await this.app.fileManager.renameFile(mdFile, newPath);
                                 
-                                if (this.selectedEncounter === enc.name) this.selectedEncounter = safeName;
-                                await this.loadInstances();
-                                this.display();
+                                setTimeout(async () => {
+                                    if (this.selectedEncounter === enc.name) this.selectedEncounter = safeName;
+                                    await this.loadInstances();
+                                    this.display();
+                                }, 500);
+                            } else {
+                                new Notice("A note with this name already exists!");
                             }
                         } else {
-                            new Notice("Encounter already exists!");
+                            new Notice("Encounter note not found!");
                         }
                     }
                 }).open();
@@ -603,34 +668,18 @@ export class RosterManagerUI {
                 e.stopPropagation();
                 const otherScenarios = this.scenarios.filter(s => s.name !== scenario.name).map(s => s.name);
                 if (otherScenarios.length === 0) {
-                    new Notice("No other scenarios to move to.");
+                    new Notice("No other scenarios available to move to.");
                     return;
                 }
                 new MoveModal(this.app, 'Move Encounter', 'Select target Scenario', otherScenarios, async (target) => {
                     if (target) {
-                        const targetScen = this.scenarios.find(s => s.name === target);
-                        if (!targetScen) return;
-                        
-                        const newPath = normalizePath(`${targetScen.path}/${enc.name}`);
-                        if (!(await this.app.vault.adapter.exists(newPath))) {
-                            const folder = this.app.vault.getAbstractFileByPath(enc.path);
-                            if (folder) {
-                                await this.app.vault.rename(folder, newPath);
-                                const newFolder = this.app.vault.getAbstractFileByPath(newPath);
-                                const updateJsonRecursively = async (f: any) => {
-                                    if (f.children) {
-                                        for (const child of f.children) await updateJsonRecursively(child);
-                                    } else if (f instanceof TFile && f.extension === 'json') {
-                                        try {
-                                            const content = await this.app.vault.read(f);
-                                            const data = JSON.parse(content);
-                                            data.scenario = target;
-                                            await this.app.vault.modify(f, JSON.stringify(data, null, 2));
-                                        } catch(e){}
-                                    }
-                                };
-                                if (newFolder) await updateJsonRecursively(newFolder);
-                                
+                        const mdFile = this.app.vault.getAbstractFileByPath(enc.path);
+                        if (mdFile instanceof TFile && mdFile.extension === 'md') {
+                            await this.app.fileManager.processFrontMatter(mdFile, (fm) => {
+                                fm.scenario = target;
+                            });
+                            
+                            setTimeout(async () => {
                                 if (this.selectedEncounter === enc.name) {
                                     this.selectedEncounter = null;
                                     this.selectedInstancePaths.clear();
@@ -638,9 +687,7 @@ export class RosterManagerUI {
                                 await this.loadInstances();
                                 this.display();
                                 new Notice(`Moved encounter to ${target}`);
-                            }
-                        } else {
-                            new Notice("Encounter with this name already exists in target scenario.");
+                            }, 500);
                         }
                     }
                 }).open();
@@ -651,20 +698,25 @@ export class RosterManagerUI {
             btnDel.onclick = (e) => {
                 e.stopPropagation();
                 const instCount = enc.instances.length;
-                const msg = `Are you sure you want to delete the Encounter '${enc.name}'? This will permanently delete ${instCount} enemies!`;
+                const msg = `Are you sure you want to delete the Encounter '${enc.name}'? This will permanently delete the Markdown note and ${instCount} enemies!`;
                 new ConfirmModal(this.app, msg, async (result) => {
                     if (result) {
-                        const folder = this.app.vault.getAbstractFileByPath(enc.path);
-                        if (folder) {
-                            await this.app.vault.trash(folder, true);
-                            new Notice(`Deleted Encounter ${enc.name}`);
-                            if (this.selectedEncounter === enc.name) {
-                                this.selectedEncounter = null;
-                                this.selectedInstancePaths.clear();
-                            }
+                        const backendPath = normalizePath(`${this.plugin.settings.baseFolder}/Roster/${scenario.name}/${enc.id}`);
+                        const folder = this.app.vault.getAbstractFileByPath(backendPath);
+                        if (folder) await this.app.vault.trash(folder, true);
+                        
+                        const mdFile = this.app.vault.getAbstractFileByPath(enc.path);
+                        if (mdFile) await this.app.vault.trash(mdFile, true);
+                        
+                        new Notice(`Deleted Encounter ${enc.name}`);
+                        if (this.selectedEncounter === enc.name) {
+                            this.selectedEncounter = null;
+                            this.selectedInstancePaths.clear();
+                        }
+                        setTimeout(async () => {
                             await this.loadInstances();
                             this.display();
-                        }
+                        }, 500);
                     }
                 }).open();
             };
