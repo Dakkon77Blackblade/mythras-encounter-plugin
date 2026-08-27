@@ -286,6 +286,7 @@
 
 /* Enemy Live Rendering - Short Form */
 .mythras-enemy-short {
+    position: relative;
     border: 1px solid var(--background-modifier-border);
     padding: 15px;
     border-radius: 8px;
@@ -293,6 +294,21 @@
     margin: 10px 0;
     font-size: 0.9em;
     max-width: 600px;
+}
+
+.mythras-enemy-edit-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    opacity: 0.4;
+    transition: opacity 0.2s;
+    color: var(--text-muted);
+}
+
+.mythras-enemy-edit-btn:hover {
+    opacity: 1;
+    color: var(--text-accent);
 }
 
 .mythras-enemy-short::after {

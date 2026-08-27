@@ -258,6 +258,23 @@ export class RosterManagerUI {
         }
     }
 
+    openEditView(instanceId: string) {
+        for (const scenario of this.scenarios) {
+            for (const encounter of scenario.encounters) {
+                for (const inst of encounter.instances) {
+                    if (inst.data.id === instanceId) {
+                        this.selectedInstance = { file: inst.file, data: JSON.parse(JSON.stringify(inst.data)) };
+                        this.currentView = 'edit';
+                        this.editTab = 'general';
+                        this.render();
+                        return;
+                    }
+                }
+            }
+        }
+        new Notice(`Enemy not found: ${instanceId}`);
+    }
+
     display() {
         const { containerEl } = this;
         containerEl.empty();

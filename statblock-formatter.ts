@@ -1,4 +1,4 @@
-import { App, normalizePath } from 'obsidian';
+import { App, normalizePath, setIcon } from 'obsidian';
 import { MythrasTemplate, MythrasWeapon, MythrasInstance } from './mythras-api';
 import { DiceRoller } from './dice-roller';
 
@@ -349,9 +349,15 @@ export function formatInstanceAsMarkdown(instance: MythrasInstance): string {
     return md;
 }
 
-export function renderEnemyStatblock(instance: MythrasInstance, mode: 'short' | 'long'): HTMLElement {
+export function renderEnemyStatblock(instance: MythrasInstance, mode: 'short' | 'long', onEdit?: () => void): HTMLElement {
     const container = document.createElement('div');
     container.addClass('mythras-enemy-short');
+
+    if (onEdit) {
+        const editBtn = container.createDiv('mythras-enemy-edit-btn');
+        setIcon(editBtn, 'pencil');
+        editBtn.onclick = onEdit;
+    }
 
     if (instance.image) {
         const imgContainer = container.createDiv('mythras-enemy-image');

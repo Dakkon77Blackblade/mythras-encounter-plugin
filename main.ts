@@ -168,7 +168,16 @@ export default class MythrasEncounterPlugin extends Plugin {
             try {
                 const content = await this.app.vault.read(file);
                 const instance: MythrasInstance = JSON.parse(content);
-                const statblock = renderEnemyStatblock(instance, isLong ? 'long' : 'short');
+                const onEdit = async () => {
+                    const leaf = this.app.workspace.getLeaf(false);
+                    await leaf.setViewState({ type: MYTHRAS_MANAGER_VIEW, active: true });
+                    const view = leaf.view as any;
+                    if (view && view.rosterUI) {
+                        view.currentTab = 'roster';
+                        view.rosterUI.openEditView(instance.id);
+                    }
+                };
+                const statblock = renderEnemyStatblock(instance, isLong ? 'long' : 'short', onEdit);
                 el.appendChild(statblock);
 
                 // Render image if present
@@ -255,7 +264,16 @@ export default class MythrasEncounterPlugin extends Plugin {
             });
 
             for (const instance of matchingInstances) {
-                const statblock = renderEnemyStatblock(instance, isLong ? 'long' : 'short');
+                const onEdit = async () => {
+                    const leaf = this.app.workspace.getLeaf(false);
+                    await leaf.setViewState({ type: MYTHRAS_MANAGER_VIEW, active: true });
+                    const view = leaf.view as any;
+                    if (view && view.rosterUI) {
+                        view.currentTab = 'roster';
+                        view.rosterUI.openEditView(instance.id);
+                    }
+                };
+                const statblock = renderEnemyStatblock(instance, isLong ? 'long' : 'short', onEdit);
                 gridWrapper.appendChild(statblock);
 
                 // Render image if present
