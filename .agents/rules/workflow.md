@@ -31,14 +31,20 @@ Whenever the user asks you to implement a new feature or fix a bug in this proje
 - Run `npm version patch` (for bug fixes), `npm version minor` (for new features), or `npm version major` (for breaking changes).
 - This will automatically run `version-bump.mjs` and sync `manifest.json` and `versions.json`.
 
-## 6. Pull Request and Merge
-- Add all files, commit with a descriptive message referencing the issue number (e.g., `git commit -m "Implement spells system (fixes #8)"`).
-- Push the feature branch to `origin`.
-- Use the GitHub CLI to create and merge a Pull Request automatically:
+## 6. Merge and Push (No Pull Request)
+- Add all files, commit with a descriptive message referencing the issue number (e.g., `git commit -m "Implement spells system (#8)"`).
+- Push the feature branch to `origin` for backup.
+- Since we are doing local feature development, do not use Pull Requests. Instead, merge the feature branch directly into `main` locally and push:
   ```bash
-  gh pr create --title "Short summary" --body "Fixes #<number>"
-  gh pr merge --merge --delete-branch
+  git checkout main
+  git merge feature/issue-<number>-<short-description>
+  git push origin main
   ```
-- Switch back to `main` (`git checkout main`) and pull the latest changes (`git pull`).
+- Delete the feature branch locally and remotely, and close the issue:
+  ```bash
+  git branch -d feature/issue-<number>-<short-description>
+  git push origin --delete feature/issue-<number>-<short-description>
+  gh issue close <number>
+  ```
 
 Follow this workflow rigorously to keep the repository history clean and traceable.
