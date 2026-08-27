@@ -390,9 +390,6 @@ export default class MythrasEncounterPlugin extends Plugin {
                 return (a.instanceName || '').localeCompare(b.instanceName || '');
             });
 
-            // Debug
-            gridWrapper.createEl('div', { text: `Debug: Found ${matchingInstances.length} instances.`, cls: 'mythras-debug' });
-
             for (const instance of matchingInstances) {
                 try {
                     const onEdit = async () => {
@@ -404,7 +401,7 @@ export default class MythrasEncounterPlugin extends Plugin {
                             view.rosterUI.openEditView(instance.id);
                         }
                     };
-                    const statblock = renderEnemyStatblock(instance, 'short', onEdit);
+                    const statblock = renderEnemyStatblock(instance, isLong ? 'long' : 'short', onEdit);
                     gridWrapper.appendChild(statblock);
 
                     // Render image if present
