@@ -374,8 +374,9 @@ export function renderEnemyStatblock(instance: MythrasInstance, mode: 'short' | 
         wrap.createSpan({ text: label + ' ', cls: 'mythras-label-bold' });
         const entries = Object.entries(skillsMap);
         entries.forEach(([k, v], idx) => {
-            wrap.createSpan({ text: k + ' ', cls: 'mythras-skill-name' });
-            wrap.createSpan({ text: `${v}%`, cls: 'mythras-skill-val' });
+            const nameWrap = wrap.createSpan({ cls: 'mythras-skill-name' });
+            nameWrap.createEl('a', { cls: 'internal-link', href: k, text: k });
+            wrap.createSpan({ text: ` ${v}%`, cls: 'mythras-skill-val' });
             if (idx < entries.length - 1) {
                 wrap.createSpan({ text: ' | ', cls: 'mythras-skill-sep' });
             }
