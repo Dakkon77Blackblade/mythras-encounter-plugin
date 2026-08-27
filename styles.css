@@ -391,6 +391,11 @@
     gap: 6px;
 }
 
+.mythras-hl-range {
+    color: var(--text-muted);
+    font-size: 0.9em;
+}
+
 .mythras-hl-name {
     color: var(--text-normal);
 }

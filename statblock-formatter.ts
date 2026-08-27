@@ -389,6 +389,7 @@ export function renderEnemyStatblock(instance: MythrasInstance, mode: 'short' | 
     const hlContainer = container.createDiv('mythras-hl-container');
     instance.hitLocations.forEach(hl => {
         const pill = hlContainer.createDiv('mythras-hl-compact');
+        pill.createSpan({ text: hl.range, cls: 'mythras-hl-range' });
         pill.createSpan({ text: hl.name, cls: 'mythras-hl-name' });
         pill.createSpan({ text: `(${hl.ap}/${hl.hp})`, cls: 'mythras-hl-vals' });
     });
