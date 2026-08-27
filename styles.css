@@ -431,8 +431,10 @@
     border-top: 1px dashed var(--background-modifier-border);
 }
 
-.mythras-skill-name a.internal-link {
+.mythras-skill-name {
     font-weight: 600;
+}
+.mythras-skill-name a.internal-link {
     text-decoration: none;
 }
 .mythras-skill-name a.internal-link:hover {
