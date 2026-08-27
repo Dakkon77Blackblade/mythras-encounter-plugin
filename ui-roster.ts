@@ -1077,21 +1077,45 @@ export class RosterManagerUI {
 
         } else if (this.editTab === 'skills') {
             const renderDict = (obj: Record<string, number>, label: string) => {
-                formArea.createEl('h3', { text: label });
-                const table = formArea.createEl('table');
-                table.style.width = '100%';
-                table.style.maxWidth = '600px';
-                const tbody = table.createEl('tbody');
-                
-                Object.keys(obj).forEach(k => {
-                    const tr = tbody.createEl('tr');
-                    tr.createEl('td', { text: k }).style.padding = '4px';
-                    const tdInp = tr.createEl('td');
-                    tdInp.style.padding = '4px';
-                    const inp = tdInp.createEl('input', { type: 'number' });
-                    inp.value = obj[k].toString();
-                    inp.oninput = (e) => obj[k] = parseInt((e.target as HTMLInputElement).value) || 0;
-                });
+                const wrap = formArea.createDiv('mythras-manager-form-group');
+                wrap.createEl('h3', { text: label });
+                const listDiv = wrap.createDiv('mythras-manager-list');
+
+                const redraw = () => {
+                    listDiv.empty();
+                    Object.keys(obj).forEach(key => {
+                        const row = listDiv.createDiv('mythras-manager-list-row');
+                        const kInput = row.createEl('input', { type: 'text' });
+                        kInput.value = key;
+                        const vInput = row.createEl('input', { type: 'number', cls: 'mythras-manager-input' });
+                        vInput.value = obj[key].toString();
+                        
+                        const btnDel = row.createEl('button', { text: 'X', cls: 'mythras-btn-icon mythras-btn-danger' });
+                        btnDel.onclick = () => {
+                            delete obj[key];
+                            redraw();
+                        };
+
+                        const update = () => {
+                            if (kInput.value !== key) {
+                                delete obj[key];
+                            }
+                            if (kInput.value) {
+                                obj[kInput.value] = parseInt(vInput.value) || 0;
+                            }
+                        };
+                        kInput.onchange = update;
+                        vInput.onchange = update;
+                    });
+
+                    const btnAdd = listDiv.createEl('button', { text: '+ Add', cls: 'mythras-btn-secondary' });
+                    btnAdd.style.alignSelf = 'flex-start';
+                    btnAdd.onclick = () => {
+                        obj['New Skill'] = 0;
+                        redraw();
+                    };
+                };
+                redraw();
             };
             if (!data.magicSkills) data.magicSkills = {};
             if (!data.professionalSkills) data.professionalSkills = {};

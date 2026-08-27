@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Refactored Bestiary, Armory, and Roster interfaces to use a cohesive semantic CSS design system instead of hardcoded inline styles.
   - Aligned visuals with native Obsidian styling and variables to maintain theme harmony (e.g., rounded inputs, responsive grids, hover effects, native-looking buttons).
   - Centralized manager UI tokens in `styles.css` to allow for future Style Settings integration.
+- **Roster Manager Skill Editing (Issue #30):**
+  - Added the ability to dynamically add, edit, and remove Standard, Professional, Magic, Custom Skills, and Combat Styles directly in the Roster Manager for individual enemy instances.
 
 
 ## [0.8.0] - 2026-08-27
