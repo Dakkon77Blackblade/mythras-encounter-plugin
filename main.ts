@@ -100,7 +100,12 @@ export default class MythrasEncounterPlugin extends Plugin {
 
         // Block-level processor for ```enemy <ID> ```
         this.registerMarkdownCodeBlockProcessor('enemy', async (source, el, ctx) => {
-            const enemyId = source.trim();
+            const lines = source.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            if (lines.length === 0) return;
+            
+            const isLong = lines.some(l => l.toLowerCase() === 'long');
+            const enemyId = lines.find(l => l.toLowerCase() !== 'long') || lines[0];
+
             if (!enemyId) return;
 
             const rosterPath = `${this.settings.baseFolder}/Roster`;
@@ -132,7 +137,7 @@ export default class MythrasEncounterPlugin extends Plugin {
             try {
                 const content = await this.app.vault.read(file);
                 const instance: MythrasInstance = JSON.parse(content);
-                const statblock = renderEnemyStatblock(instance, 'short');
+                const statblock = renderEnemyStatblock(instance, isLong ? 'long' : 'short');
                 el.appendChild(statblock);
 
                 // Render image if present

@@ -420,5 +420,27 @@
     color: var(--text-muted);
 }
 
+.mythras-enemy-skills {
+    margin-top: 8px;
+    padding-top: 4px;
+    border-top: 1px dashed var(--background-modifier-border);
+}
+
+.mythras-enemy-notes {
+    margin-top: 12px;
+    padding: 10px;
+    background-color: var(--background-primary);
+    border-left: 3px solid var(--interactive-accent);
+    border-radius: 4px;
+}
+
+.mythras-note-content {
+    margin-top: 4px;
+    font-style: italic;
+    white-space: pre-wrap;
+    color: var(--text-muted);
+}
+
+
 
 

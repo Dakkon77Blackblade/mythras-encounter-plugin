@@ -395,5 +395,28 @@ export function renderEnemyStatblock(instance: MythrasInstance, mode: 'short' | 
         });
     }
 
+    if (mode === 'long') {
+        if (instance.standardSkills && Object.keys(instance.standardSkills).length > 0) {
+            const skillsDiv = container.createDiv('mythras-enemy-skills');
+            const skills = Object.entries(instance.standardSkills).map(([k, v]) => `${k} ${v}%`).join(', ');
+            skillsDiv.createSpan({ text: 'Standard Skills: ', cls: 'mythras-label-bold' });
+            skillsDiv.createSpan({ text: skills });
+        }
+
+        if (instance.customSkills && Object.keys(instance.customSkills).length > 0) {
+            const cSkillsDiv = container.createDiv('mythras-enemy-skills');
+            const cSkills = Object.entries(instance.customSkills).map(([k, v]) => `${k} ${v}%`).join(', ');
+            cSkillsDiv.createSpan({ text: 'Professional Skills: ', cls: 'mythras-label-bold' });
+            cSkillsDiv.createSpan({ text: cSkills });
+        }
+
+        if (instance.notes) {
+            const notesDiv = container.createDiv('mythras-enemy-notes');
+            notesDiv.createEl('div', { text: 'Notes:', cls: 'mythras-label-bold' });
+            const noteContent = notesDiv.createDiv('mythras-note-content');
+            noteContent.innerText = instance.notes; // handles newlines better if CSS white-space is pre-wrap
+        }
+    }
+
     return container;
 }
