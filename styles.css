@@ -400,6 +400,22 @@
     border-color: var(--text-accent);
 }
 
+.mythras-rollable-pill {
+    cursor: pointer;
+    background-color: var(--background-modifier-form-field);
+    padding: 1px 6px;
+    border-radius: 12px;
+    border: 1px solid var(--background-modifier-border);
+    transition: background-color 0.1s ease;
+    font-size: 0.9em;
+    margin-left: 2px;
+}
+
+.mythras-rollable-pill:hover {
+    background-color: var(--background-modifier-hover);
+    border-color: var(--text-accent);
+}
+
 .mythras-hl-vals.is-modified {
     color: var(--text-error);
     font-weight: bold;

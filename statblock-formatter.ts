@@ -442,35 +442,38 @@ export function renderEnemyStatblock(
                 if (k.includes('(')) {
                     href = k.substring(0, k.indexOf('(')).trim();
                 }
-                const link = nameWrap.createEl('a', { cls: 'internal-link mythras-rollable', href: '#', text: k });
-                link.onclick = (e) => {
-                    e.preventDefault();
-                    if (plugin && plugin.combatLogService) {
-                        const target = parseInt(String(v)) || 0;
-                        const roll = Math.floor(Math.random() * 100) + 1;
-                        let sl = "Failure";
-                        const critical = Math.ceil(target / 10);
-                        if (roll <= critical) sl = "Critical";
-                        else if (roll >= 99) sl = "Fumble";
-                        else if (roll <= target) sl = "Success";
-                        
-                        plugin.combatLogService.addEntry({
-                            actor: instance.instanceName || instance.templateName || "Unknown",
-                            action: k,
-                            roll: roll,
-                            target: target,
-                            successLevel: sl
-                        });
-                        
-                        // Optionally open combat log if it's not visible
-                        if (plugin.activateCombatLogView) {
-                            plugin.activateCombatLogView();
-                        }
-                    }
-                };
+                nameWrap.createEl('a', { cls: 'internal-link', href: href, text: k });
             }
             
-            wrap.createSpan({ text: ` ${v}%`, cls: 'mythras-skill-val' });
+            // Render the clickable % pill
+            const valSpan = wrap.createSpan({ text: `${v}%`, cls: 'mythras-skill-val mythras-rollable-pill' });
+            
+            valSpan.onclick = (e) => {
+                e.preventDefault();
+                if (plugin && plugin.combatLogService) {
+                    const target = parseInt(String(v)) || 0;
+                    const roll = Math.floor(Math.random() * 100) + 1;
+                    let sl = "Failure";
+                    const critical = Math.ceil(target / 10);
+                    if (roll <= critical) sl = "Critical";
+                    else if (roll >= 99) sl = "Fumble";
+                    else if (roll <= target) sl = "Success";
+                    
+                    plugin.combatLogService.addEntry({
+                        actor: instance.instanceName || instance.templateName || "Unknown",
+                        action: k,
+                        roll: roll,
+                        target: target,
+                        successLevel: sl
+                    });
+                    
+                    // Optionally open combat log if it's not visible
+                    if (plugin.activateCombatLogView) {
+                        plugin.activateCombatLogView();
+                    }
+                }
+            };
+            
             if (idx < entries.length - 1) {
                 wrap.createSpan({ text: ', ', cls: 'mythras-skill-sep' });
             }
