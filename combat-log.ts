@@ -104,10 +104,6 @@ export class CombatLogView extends ItemView {
                 } else {
                     resultEl.createSpan({ text: `${entry.damageTotal} (Rolled: ${entry.roll})`, cls: 'combat-log-damage-info' });
                 }
-                
-                if (entry.specialFx) {
-                    el.createDiv({ text: `Effects: ${entry.specialFx}`, cls: 'combat-log-fx' });
-                }
             } else {
                 headerEl.createDiv({ text: entry.actor, cls: 'combat-log-actor' });
                 headerEl.createDiv({ text: `[${timeStr}]`, cls: 'combat-log-time' });

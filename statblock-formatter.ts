@@ -518,10 +518,9 @@ export function renderEnemyStatblock(
                         actor: instance.instanceName || instance.templateName || "Unknown",
                         action: w.name,
                         type: 'damage',
-                        damageTotal: calculatedDamage.total,
-                        roll: calculatedDamage.total,
-                        rollBreakdown: calculatedDamage.breakdown,
-                        specialFx: allFx.length > 0 ? allFx.join(', ') : undefined
+                        damageTotal: Math.max(0, calculatedDamage.total),
+                        roll: Math.max(0, calculatedDamage.total),
+                        rollBreakdown: calculatedDamage.breakdown
                     });
                     
                     if (plugin.activateCombatLogView) {
