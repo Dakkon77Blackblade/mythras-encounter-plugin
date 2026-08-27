@@ -393,7 +393,7 @@ export function renderEnemyStatblock(instance: MythrasInstance, mode: 'short' | 
         pill.createSpan({ text: `(${hl.ap}/${hl.hp})`, cls: 'mythras-hl-vals' });
     });
 
-    const renderSkills = (label: string, skillsMap: Record<string, number | string>, addTopBorder: boolean) => {
+    const renderSkills = (label: string, skillsMap: Record<string, number | string>, addTopBorder: boolean, disableLinks: boolean = false) => {
         const wrap = container.createDiv('mythras-skill-line');
         if (addTopBorder) wrap.addClass('mythras-skill-group-start');
         
@@ -402,7 +402,7 @@ export function renderEnemyStatblock(instance: MythrasInstance, mode: 'short' | 
         entries.forEach(([k, v], idx) => {
             const nameWrap = wrap.createSpan({ cls: 'mythras-skill-name' });
             
-            if (k.includes(':')) {
+            if (disableLinks || k.includes(':')) {
                 nameWrap.createSpan({ text: k });
             } else {
                 let href = k;
@@ -463,7 +463,7 @@ export function renderEnemyStatblock(instance: MythrasInstance, mode: 'short' | 
         }
 
         if (instance.customSkills && Object.keys(instance.customSkills).length > 0) {
-            renderSkills('Custom Skills:', instance.customSkills, firstSkillGroup);
+            renderSkills('Custom Skills:', instance.customSkills, firstSkillGroup, true);
             firstSkillGroup = false;
         }
 
