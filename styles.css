@@ -580,3 +580,172 @@
     width: 100%;
 }
 
+/* Combat Log View */
+.combat-log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.combat-log-header h3 {
+    margin: 0;
+    font-size: 1.1em;
+    color: var(--text-normal);
+}
+
+.combat-log-clear-btn {
+    font-size: 0.8em;
+    padding: 3px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: var(--background-modifier-form-field);
+    border: 1px solid var(--background-modifier-border);
+    color: var(--text-muted);
+    transition: all 0.15s ease;
+}
+
+.combat-log-clear-btn:hover {
+    background-color: var(--background-modifier-hover);
+    color: var(--text-normal);
+    border-color: var(--text-muted);
+}
+
+.combat-log-empty {
+    text-align: center;
+    padding: 24px 12px;
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 0.9em;
+}
+
+.combat-log-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 4px 0 16px 0;
+    overflow-y: auto;
+}
+
+.combat-log-entry {
+    background-color: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-left: 4px solid var(--background-modifier-border-hover);
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: transform 0.1s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.combat-log-entry:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    filter: brightness(1.03);
+}
+
+/* Success Level Specific Themes */
+.combat-log-entry.combat-log-success,
+.combat-log-success {
+    background-color: rgba(46, 160, 67, 0.12);
+    border-color: rgba(46, 160, 67, 0.25);
+    border-left: 4px solid rgba(46, 160, 67, 0.85);
+}
+
+.combat-log-entry.combat-log-critical,
+.combat-log-critical {
+    background-color: rgba(56, 139, 253, 0.14);
+    border-color: rgba(56, 139, 253, 0.3);
+    border-left: 4px solid rgba(56, 139, 253, 0.9);
+}
+
+.combat-log-entry.combat-log-failure,
+.combat-log-failure {
+    background-color: rgba(248, 81, 73, 0.12);
+    border-color: rgba(248, 81, 73, 0.25);
+    border-left: 4px solid rgba(248, 81, 73, 0.85);
+}
+
+.combat-log-entry.combat-log-fumble,
+.combat-log-fumble {
+    background-color: rgba(168, 85, 247, 0.16);
+    border-color: rgba(168, 85, 247, 0.3);
+    border-left: 4px solid rgba(168, 85, 247, 0.95);
+}
+
+/* Entry Internal Typography & Elements */
+.combat-log-entry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 0.9em;
+}
+
+.combat-log-actor {
+    font-weight: 600;
+    color: var(--text-normal);
+}
+
+.combat-log-time {
+    font-size: 0.8em;
+    color: var(--text-muted);
+}
+
+.combat-log-result {
+    font-size: 0.85em;
+    color: var(--text-normal);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+}
+
+.combat-log-action {
+    font-weight: 500;
+    color: var(--text-accent);
+}
+
+.combat-log-roll-info {
+    color: var(--text-muted);
+}
+
+.combat-log-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 0.8em;
+    font-weight: 600;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.combat-log-badge-success {
+    background-color: rgba(46, 160, 67, 0.2);
+    color: var(--text-normal);
+    border: 1px solid rgba(46, 160, 67, 0.4);
+}
+
+.combat-log-badge-critical {
+    background-color: rgba(56, 139, 253, 0.22);
+    color: var(--text-normal);
+    border: 1px solid rgba(56, 139, 253, 0.45);
+}
+
+.combat-log-badge-failure {
+    background-color: rgba(248, 81, 73, 0.2);
+    color: var(--text-normal);
+    border: 1px solid rgba(248, 81, 73, 0.4);
+}
+
+.combat-log-badge-fumble {
+    background-color: rgba(168, 85, 247, 0.22);
+    color: var(--text-normal);
+    border: 1px solid rgba(168, 85, 247, 0.45);
+}
+
+

@@ -48,9 +48,10 @@ export class CombatLogView extends ItemView {
         const container = this.containerEl.children[1];
         container.empty();
 
-        const header = container.createEl('h3', { text: 'Combat Log' });
+        const headerContainer = container.createDiv('combat-log-header');
+        headerContainer.createEl('h3', { text: 'Combat Log' });
         
-        const clearBtn = container.createEl('button', { text: 'Clear' });
+        const clearBtn = headerContainer.createEl('button', { text: 'Clear Log', cls: 'combat-log-clear-btn' });
         clearBtn.onclick = () => {
             this.service.clear();
         };
@@ -58,11 +59,27 @@ export class CombatLogView extends ItemView {
         const logContainer = container.createDiv('combat-log-container');
         
         const entries = this.service.getEntries();
+        if (entries.length === 0) {
+            logContainer.createDiv({ text: 'No combat actions logged yet.', cls: 'combat-log-empty' });
+            return;
+        }
+
         for (const entry of entries) {
-            const el = logContainer.createDiv('combat-log-entry');
+            const levelClass = entry.successLevel ? `combat-log-${entry.successLevel.toLowerCase()}` : '';
+            const el = logContainer.createDiv(`combat-log-entry ${levelClass}`.trim());
             const timeStr = new Date(entry.timestamp).toLocaleTimeString();
-            el.createDiv({ text: `[${timeStr}] ${entry.actor}`, cls: 'combat-log-actor' });
-            el.createDiv({ text: `Rolled on "${entry.action} (${entry.target}%)" --> ${entry.roll} --> ${entry.successLevel}`, cls: 'combat-log-result' });
+            
+            const headerEl = el.createDiv('combat-log-entry-header');
+            headerEl.createDiv({ text: entry.actor, cls: 'combat-log-actor' });
+            headerEl.createDiv({ text: `[${timeStr}]`, cls: 'combat-log-time' });
+
+            const resultEl = el.createDiv('combat-log-result');
+            resultEl.createSpan({ text: `${entry.action} (${entry.target}%)`, cls: 'combat-log-action' });
+            resultEl.createSpan({ text: ` → Roll: ${entry.roll} → `, cls: 'combat-log-roll-info' });
+            resultEl.createSpan({ 
+                text: entry.successLevel, 
+                cls: `combat-log-badge combat-log-badge-${(entry.successLevel || '').toLowerCase()}` 
+            });
         }
     }
 }
