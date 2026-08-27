@@ -112,16 +112,12 @@ export class BestiaryManagerUI {
     }
 
     renderListView() {
-        const container = this.containerEl.createDiv('bestiary-list-container');
+        const container = this.containerEl.createDiv('bestiary-list-container mythras-manager-container');
         
         // Header / Controls
-        const headerDiv = container.createDiv('bestiary-header-controls');
-        headerDiv.style.display = 'flex';
-        headerDiv.style.justifyContent = 'space-between';
-        headerDiv.style.alignItems = 'center';
-        headerDiv.style.marginBottom = '15px';
+        const headerDiv = container.createDiv('bestiary-header-controls mythras-manager-header');
 
-        const filterInput = headerDiv.createEl('input', { type: 'text', placeholder: 'Filter by tags...' });
+        const filterInput = headerDiv.createEl('input', { type: 'text', placeholder: 'Filter by tags...', cls: 'mythras-manager-input' });
         filterInput.value = this.tagFilter;
         filterInput.oninput = (e) => {
             this.tagFilter = (e.target as HTMLInputElement).value.toLowerCase();
@@ -129,10 +125,7 @@ export class BestiaryManagerUI {
         };
 
         // Table
-        const table = container.createEl('table', { cls: 'bestiary-table' });
-        table.style.width = '100%';
-        table.style.textAlign = 'left';
-        table.style.borderCollapse = 'collapse';
+        const table = container.createEl('table', { cls: 'bestiary-table mythras-manager-table' });
 
         const thead = table.createEl('thead');
         const tr = thead.createEl('tr');
@@ -146,11 +139,9 @@ export class BestiaryManagerUI {
         ];
 
         headers.forEach(h => {
-            const th = tr.createEl('th', { text: h.label });
-            th.style.padding = '8px';
-            th.style.borderBottom = '1px solid var(--background-modifier-border)';
+            const th = tr.createEl('th', { text: h.label, cls: 'mythras-manager-th' });
             if (h.sortable) {
-                th.style.cursor = 'pointer';
+                th.addClass('sortable');
                 if (this.sortField === h.id) {
                     th.setText(`${h.label} ${this.sortAscending ? '▲' : '▼'}`);
                 }
@@ -198,37 +189,28 @@ export class BestiaryManagerUI {
         });
 
         for (const entry of displayEntries) {
-            const row = tbody.createEl('tr');
-            row.style.cursor = 'pointer';
-            row.style.borderBottom = '1px solid var(--background-modifier-border-alt)';
-            row.onmouseenter = () => row.style.backgroundColor = 'var(--background-modifier-hover)';
-            row.onmouseleave = () => row.style.backgroundColor = 'transparent';
+            const row = tbody.createEl('tr', { cls: 'mythras-manager-tr' });
             row.onclick = () => {
                 this.selectedEntry = entry;
                 this.currentView = 'detail';
                 this.renderView();
             };
 
-            const tdImage = row.createEl('td');
-            tdImage.style.padding = '8px';
+            const tdImage = row.createEl('td', { cls: 'mythras-manager-td' });
             if (entry.template.image) {
                 const resolvedUrl = this.resolveImagePath(entry.template.image);
                 if (resolvedUrl) {
-                    const img = tdImage.createEl('img');
+                    const img = tdImage.createEl('img', { cls: 'mythras-manager-avatar' });
                     img.src = resolvedUrl;
-                    img.style.maxWidth = '40px';
-                    img.style.maxHeight = '40px';
-                    img.style.borderRadius = '4px';
-                    img.style.objectFit = 'cover';
                 }
             }
 
-            row.createEl('td', { text: entry.template.name }).style.padding = '8px';
-            row.createEl('td', { text: entry.template.author || '-' }).style.padding = '8px';
-            row.createEl('td', { text: entry.template.rank || '-' }).style.padding = '8px';
+            row.createEl('td', { text: entry.template.name, cls: 'mythras-manager-td' });
+            row.createEl('td', { text: entry.template.author || '-', cls: 'mythras-manager-td' });
+            row.createEl('td', { text: entry.template.rank || '-', cls: 'mythras-manager-td' });
             
             const mtime = new Date(entry.file.stat.mtime);
-            row.createEl('td', { text: mtime.toLocaleString() }).style.padding = '8px';
+            row.createEl('td', { text: mtime.toLocaleString(), cls: 'mythras-manager-td' });
         }
     }
 
@@ -236,39 +218,29 @@ export class BestiaryManagerUI {
         if (!this.selectedEntry) return;
         const entry = this.selectedEntry.template;
 
-        const container = this.containerEl.createDiv('bestiary-detail-container');
+        const container = this.containerEl.createDiv('bestiary-detail-container mythras-manager-container');
         
-        const buttonDiv = container.createDiv('bestiary-detail-buttons');
-        buttonDiv.style.display = 'flex';
-        buttonDiv.style.gap = '10px';
-        buttonDiv.style.marginBottom = '20px';
+        const buttonDiv = container.createDiv('bestiary-detail-buttons mythras-manager-actions');
 
-        const btnBack = buttonDiv.createEl('button', { text: 'Back to List' });
+        const btnBack = buttonDiv.createEl('button', { text: 'Back to List', cls: 'mythras-btn-secondary' });
         btnBack.onclick = () => {
             this.currentView = 'list';
             this.renderView();
         };
 
-        const btnEdit = buttonDiv.createEl('button', { text: 'Edit', cls: 'mod-cta' });
+        const btnEdit = buttonDiv.createEl('button', { text: 'Edit Template', cls: 'mythras-btn-primary' });
         btnEdit.onclick = () => {
             this.currentView = 'edit';
             this.renderView();
         };
 
-        const header = container.createDiv('bestiary-detail-header');
-        header.style.display = 'flex';
-        header.style.gap = '20px';
-        header.style.marginBottom = '20px';
+        const header = container.createDiv('bestiary-detail-header mythras-detail-header');
 
         if (entry.image) {
             const resolvedUrl = this.resolveImagePath(entry.image);
             if (resolvedUrl) {
-                const img = header.createEl('img');
+                const img = header.createEl('img', { cls: 'mythras-detail-avatar' });
                 img.src = resolvedUrl;
-                img.style.maxWidth = '150px';
-                img.style.maxHeight = '150px';
-                img.style.borderRadius = '8px';
-                img.style.objectFit = 'cover';
             }
         }
 
@@ -282,10 +254,7 @@ export class BestiaryManagerUI {
             infoDiv.createEl('p', { text: `Notes: ${entry.notes}` });
         }
 
-        const grid = container.createDiv();
-        grid.style.display = 'grid';
-        grid.style.gridTemplateColumns = '1fr 1fr';
-        grid.style.gap = '20px';
+        const grid = container.createDiv('mythras-detail-grid');
 
         const statsDiv = grid.createDiv();
         statsDiv.createEl('h3', { text: 'Stats & Attributes' });
@@ -308,8 +277,7 @@ export class BestiaryManagerUI {
         if (cstSkills) skillsDiv.createEl('p', { text: `Custom: ${cstSkills}` });
         if (cbtStyles) skillsDiv.createEl('p', { text: `Combat: ${cbtStyles}` });
 
-        const weaponsDiv = container.createDiv();
-        weaponsDiv.style.marginTop = '20px';
+        const weaponsDiv = container.createDiv('mythras-detail-weapons');
         weaponsDiv.createEl('h3', { text: 'Weapons' });
         if (entry.weapons && entry.weapons.length > 0) {
             const ul = weaponsDiv.createEl('ul');
@@ -345,44 +313,37 @@ export class BestiaryManagerUI {
         buttonDiv.style.gap = '10px';
         buttonDiv.style.marginBottom = '20px';
 
-        const btnCancel = buttonDiv.createEl('button', { text: 'Cancel' });
+        const btnCancel = buttonDiv.createEl('button', { text: 'Cancel', cls: 'mythras-btn-secondary' });
         btnCancel.onclick = () => {
             this.editTemplate = null; 
             this.currentView = 'detail';
             this.renderView();
         };
 
-        const btnSave = buttonDiv.createEl('button', { text: 'Save', cls: 'mod-cta' });
+        const btnSave = buttonDiv.createEl('button', { text: 'Save', cls: 'mythras-btn-primary' });
         btnSave.onclick = async () => {
             await this.saveEditedTemplate();
         };
 
-        const form = container.createDiv('bestiary-form');
-        form.style.display = 'flex';
-        form.style.flexDirection = 'column';
-        form.style.gap = '15px';
+        const form = container.createDiv('bestiary-form mythras-manager-form');
 
         const createTextField = (label: string, value: string, onChange: (v: string) => void) => {
-            const wrap = form.createDiv();
-            wrap.createEl('label', { text: label }).style.display = 'block';
-            const input = wrap.createEl('input', { type: 'text' });
+            const wrap = form.createDiv('mythras-manager-form-group');
+            wrap.createEl('label', { text: label });
+            const input = wrap.createEl('input', { type: 'text', cls: 'mythras-manager-input' });
             input.value = value || '';
-            input.style.width = '100%';
             input.onchange = (e) => onChange((e.target as HTMLInputElement).value);
         };
 
         createTextField('Name', entry.name, v => entry.name = v);
         
-        const imgWrap = form.createDiv();
-        imgWrap.createEl('label', { text: 'Image URL or Vault Path' }).style.display = 'block';
-        const imgInputContainer = imgWrap.createDiv();
-        imgInputContainer.style.display = 'flex';
-        imgInputContainer.style.gap = '10px';
-        const imgInput = imgInputContainer.createEl('input', { type: 'text' });
+        const imgWrap = form.createDiv('mythras-manager-form-group');
+        imgWrap.createEl('label', { text: 'Image URL or Vault Path' });
+        const imgInputContainer = imgWrap.createDiv('mythras-manager-input-group');
+        const imgInput = imgInputContainer.createEl('input', { type: 'text', cls: 'mythras-manager-input' });
         imgInput.value = entry.image || '';
-        imgInput.style.flexGrow = '1';
         imgInput.onchange = (e) => entry.image = (e.target as HTMLInputElement).value;
-        const btnBrowse = imgInputContainer.createEl('button', { text: 'Browse' });
+        const btnBrowse = imgInputContainer.createEl('button', { text: 'Browse', cls: 'mythras-btn-secondary' });
         btnBrowse.onclick = () => {
             new ImageSuggestModal(this.app, (file: TFile) => {
                 entry.image = file.path;
@@ -397,11 +358,10 @@ export class BestiaryManagerUI {
             entry.tags = v.split(',').map(t => t.trim()).filter(t => t.length > 0);
         });
 
-        const notesWrap = form.createDiv();
-        notesWrap.createEl('label', { text: 'Notes' }).style.display = 'block';
-        const notesInput = notesWrap.createEl('textarea');
+        const notesWrap = form.createDiv('mythras-manager-form-group');
+        notesWrap.createEl('label', { text: 'Notes' });
+        const notesInput = notesWrap.createEl('textarea', { cls: 'mythras-manager-input' });
         notesInput.value = entry.notes || '';
-        notesInput.style.width = '100%';
         notesInput.rows = 4;
         notesInput.onchange = (e) => entry.notes = (e.target as HTMLTextAreaElement).value;
 
@@ -422,37 +382,29 @@ export class BestiaryManagerUI {
     }
 
     renderDictionaryEditor(container: HTMLElement, title: string, dict: { [key: string]: string }, readonlyKeys: boolean = false) {
-        const wrap = container.createDiv();
+        const wrap = container.createDiv('mythras-manager-form-group');
         wrap.createEl('h3', { text: title });
-        const listDiv = wrap.createDiv();
-        listDiv.style.display = 'flex';
-        listDiv.style.flexDirection = 'column';
-        listDiv.style.gap = '5px';
+        const listDiv = wrap.createDiv('mythras-manager-list');
 
         const redraw = () => {
             listDiv.empty();
             Object.keys(dict).forEach(key => {
-                const row = listDiv.createDiv();
-                row.style.display = 'flex';
-                row.style.gap = '10px';
-                row.style.alignItems = 'center';
+                const row = listDiv.createDiv('mythras-manager-list-row');
 
                 let kInput: HTMLInputElement | null = null;
                 
                 if (readonlyKeys) {
-                    const kLabel = row.createEl('span', { text: key });
-                    kLabel.style.width = '100px';
-                    kLabel.style.fontWeight = 'bold';
+                    const kLabel = row.createEl('span', { text: key, cls: 'mythras-manager-label-fixed' });
                 } else {
                     kInput = row.createEl('input', { type: 'text' });
                     kInput.value = key;
                 }
                 
-                const vInput = row.createEl('input', { type: 'text' });
+                const vInput = row.createEl('input', { type: 'text', cls: 'mythras-manager-input' });
                 vInput.value = dict[key];
 
                 if (!readonlyKeys) {
-                    const btnDel = row.createEl('button', { text: 'X' });
+                    const btnDel = row.createEl('button', { text: 'X', cls: 'mythras-btn-icon mythras-btn-danger' });
                     btnDel.onclick = () => {
                         delete dict[key];
                         redraw();
@@ -487,86 +439,71 @@ export class BestiaryManagerUI {
     }
 
     renderHitLocationsEditor(container: HTMLElement, list: any[]) {
-        const wrap = container.createDiv();
+        const wrap = container.createDiv('mythras-manager-form-group');
         wrap.createEl('h3', { text: 'Hit Locations' });
-        const listDiv = wrap.createDiv();
+        const listDiv = wrap.createDiv('mythras-manager-list');
         
         const redraw = () => {
             listDiv.empty();
             list.forEach((hl, i) => {
-                const row = listDiv.createDiv();
-                row.style.display = 'flex';
-                row.style.gap = '5px';
-                row.style.marginBottom = '5px';
+                const row = listDiv.createDiv('mythras-manager-list-row');
 
-                const iRange = row.createEl('input', { type: 'text', placeholder: 'D20' }); iRange.value = hl.range || '';
-                const iName = row.createEl('input', { type: 'text', placeholder: 'Name' }); iName.value = hl.name || '';
-                const iArmor = row.createEl('input', { type: 'text', placeholder: 'AP' }); iArmor.value = hl.armor || '';
+                const iRange = row.createEl('input', { type: 'text', placeholder: 'D20', cls: 'mythras-manager-input' }); iRange.value = hl.range || '';
+                const iName = row.createEl('input', { type: 'text', placeholder: 'Name', cls: 'mythras-manager-input' }); iName.value = hl.name || '';
+                const iArmor = row.createEl('input', { type: 'text', placeholder: 'AP', cls: 'mythras-manager-input' }); iArmor.value = hl.armor || '';
 
-                const btnDel = row.createEl('button', { text: 'X' });
+                const btnDel = row.createEl('button', { text: 'X', cls: 'mythras-btn-icon mythras-btn-danger' });
                 btnDel.onclick = () => { list.splice(i, 1); redraw(); };
 
                 const update = () => { hl.range = iRange.value; hl.name = iName.value; hl.armor = iArmor.value; };
                 iRange.onchange = update; iName.onchange = update; iArmor.onchange = update;
             });
-            const btnAdd = listDiv.createEl('button', { text: '+ Add' });
+            const btnAdd = listDiv.createEl('button', { text: '+ Add', cls: 'mythras-btn-secondary' });
             btnAdd.onclick = () => { list.push({ range: '1-3', name: 'Right Leg', armor: '0' }); redraw(); };
         };
         redraw();
     }
 
     renderFeaturesEditor(container: HTMLElement, list: any[]) {
-        const wrap = container.createDiv();
+        const wrap = container.createDiv('mythras-manager-form-group');
         wrap.createEl('h3', { text: 'Features' });
-        const listDiv = wrap.createDiv();
+        const listDiv = wrap.createDiv('mythras-manager-list');
         
         const redraw = () => {
             listDiv.empty();
             list.forEach((feat, i) => {
-                const row = listDiv.createDiv();
-                row.style.display = 'flex';
-                row.style.gap = '5px';
-                row.style.marginBottom = '5px';
+                const row = listDiv.createDiv('mythras-manager-list-row');
 
-                const iName = row.createEl('input', { type: 'text', placeholder: 'Name' }); iName.value = feat.name || '';
-                const iDesc = row.createEl('input', { type: 'text', placeholder: 'Description' }); iDesc.value = feat.description || '';
+                const iName = row.createEl('input', { type: 'text', placeholder: 'Name', cls: 'mythras-manager-input' }); iName.value = feat.name || '';
+                const iDesc = row.createEl('input', { type: 'text', placeholder: 'Description', cls: 'mythras-manager-input' }); iDesc.value = feat.description || '';
 
-                const btnDel = row.createEl('button', { text: 'X' });
+                const btnDel = row.createEl('button', { text: 'X', cls: 'mythras-btn-icon mythras-btn-danger' });
                 btnDel.onclick = () => { list.splice(i, 1); redraw(); };
 
                 const update = () => { feat.name = iName.value; feat.description = iDesc.value; };
                 iName.onchange = update; iDesc.onchange = update;
             });
-            const btnAdd = listDiv.createEl('button', { text: '+ Add' });
+            const btnAdd = listDiv.createEl('button', { text: '+ Add', cls: 'mythras-btn-secondary' });
             btnAdd.onclick = () => { list.push({ name: 'New Feature', description: '' }); redraw(); };
         };
         redraw();
     }
 
     renderWeaponsEditor(container: HTMLElement, list: any[]) {
-        const wrap = container.createDiv();
+        const wrap = container.createDiv('mythras-manager-form-group');
         wrap.createEl('h3', { text: 'Weapons' });
-        const listDiv = wrap.createDiv();
+        const listDiv = wrap.createDiv('mythras-manager-list');
         
         const redraw = () => {
             listDiv.empty();
             list.forEach((w, i) => {
-                const row = listDiv.createDiv();
-                row.style.display = 'flex';
-                row.style.flexDirection = 'column';
-                row.style.gap = '5px';
-                row.style.marginBottom = '15px';
-                row.style.border = '1px solid var(--background-modifier-border)';
-                row.style.padding = '10px';
-                row.style.borderRadius = '4px';
+                const row = listDiv.createDiv('mythras-manager-list-item mythras-manager-card');
 
-                const topBar = row.createDiv();
-                topBar.style.display = 'flex';
-                topBar.style.justifyContent = 'space-between';
+                const topBar = row.createDiv('mythras-manager-card-header');
                 
-                const modeDiv = topBar.createDiv();
+                const modeDiv = topBar.createDiv('mythras-manager-header-controls');
                 modeDiv.createEl('span', { text: 'Source: ' });
-                const modeSelect = modeDiv.createEl('select');
+                const modeSelect = modeDiv.createEl('select', { cls: 'mythras-manager-input' });
                 modeSelect.createEl('option', { value: 'natural', text: 'Natural (Custom)' });
                 modeSelect.createEl('option', { value: 'armory', text: 'Armory' });
                 
@@ -574,23 +511,14 @@ export class BestiaryManagerUI {
                 let currentMode = isArmory ? 'armory' : 'natural';
                 modeSelect.value = currentMode;
 
-                const btnDel = topBar.createEl('button', { text: 'X' });
+                const btnDel = topBar.createEl('button', { text: 'X', cls: 'mythras-btn-icon mythras-btn-danger' });
                 btnDel.onclick = () => { list.splice(i, 1); redraw(); };
 
-                const grid = row.createDiv();
-                grid.style.display = 'flex';
-                grid.style.flexWrap = 'wrap';
-                grid.style.gap = '10px';
-                grid.style.marginTop = '10px';
+                const grid = row.createDiv('mythras-manager-grid');
 
                 const createField = (label: string, renderInput: (wrapper: HTMLElement) => void) => {
-                    const fieldWrap = grid.createDiv();
-                    fieldWrap.style.display = 'flex';
-                    fieldWrap.style.flexDirection = 'column';
-                    fieldWrap.style.width = '120px';
+                    const fieldWrap = grid.createDiv('mythras-manager-field');
                     const lbl = fieldWrap.createEl('label', { text: label });
-                    lbl.style.fontSize = '0.8em';
-                    lbl.style.color = 'var(--text-muted)';
                     renderInput(fieldWrap);
                 };
 
@@ -599,8 +527,7 @@ export class BestiaryManagerUI {
 
                     if (currentMode === 'armory') {
                         createField('Weapon', wrap => {
-                            const sel = wrap.createEl('select');
-                            sel.style.width = '100%';
+                            const sel = wrap.createEl('select', { cls: 'mythras-manager-input' });
                             this.armoryWeapons.forEach(aw => {
                                 const opt = sel.createEl('option', { value: aw.name, text: aw.name });
                                 if (aw.name === w.name) opt.selected = true;
@@ -616,33 +543,28 @@ export class BestiaryManagerUI {
                         });
                     } else {
                         createField('Name', wrap => {
-                            const inp = wrap.createEl('input', { type: 'text' });
+                            const inp = wrap.createEl('input', { type: 'text', cls: 'mythras-manager-input' });
                             inp.value = w.name || '';
-                            inp.style.width = '100%';
                             inp.onchange = (e) => w.name = (e.target as HTMLInputElement).value;
                         });
                         createField('Type', wrap => {
-                            const inp = wrap.createEl('input', { type: 'text' });
+                            const inp = wrap.createEl('input', { type: 'text', cls: 'mythras-manager-input' });
                             inp.value = w.type || '';
-                            inp.style.width = '100%';
                             inp.onchange = (e) => w.type = (e.target as HTMLInputElement).value;
                         });
                         createField('Damage', wrap => {
-                            const inp = wrap.createEl('input', { type: 'text' });
+                            const inp = wrap.createEl('input', { type: 'text', cls: 'mythras-manager-input' });
                             inp.value = w.damage || '';
-                            inp.style.width = '100%';
                             inp.onchange = (e) => w.damage = (e.target as HTMLInputElement).value;
                         });
                         createField('Size', wrap => {
-                            const inp = wrap.createEl('input', { type: 'text' });
+                            const inp = wrap.createEl('input', { type: 'text', cls: 'mythras-manager-input' });
                             inp.value = w.size || '';
-                            inp.style.width = '100%';
                             inp.onchange = (e) => w.size = (e.target as HTMLInputElement).value;
                         });
                         createField('Reach/Range', wrap => {
-                            const inp = wrap.createEl('input', { type: 'text' });
+                            const inp = wrap.createEl('input', { type: 'text', cls: 'mythras-manager-input' });
                             inp.value = w.reach || w.range || '';
-                            inp.style.width = '100%';
                             inp.onchange = (e) => {
                                 const val = (e.target as HTMLInputElement).value;
                                 w.reach = val; w.range = val;
@@ -651,7 +573,7 @@ export class BestiaryManagerUI {
                     }
 
                     createField('Probability', wrap => {
-                        const inp = wrap.createEl('input', { type: 'number', cls: 'prob-input' });
+                        const inp = wrap.createEl('input', { type: 'number', cls: 'mythras-manager-input' });
                         inp.value = w.probability !== undefined ? w.probability.toString() : '';
                         inp.style.width = '100%';
                         inp.onchange = (e) => w.probability = parseFloat((e.target as HTMLInputElement).value);

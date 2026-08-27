@@ -129,18 +129,12 @@ export class ArmoryManagerUI {
     }
 
     renderListView() {
-        const container = this.containerEl.createDiv('armory-list-container');
+        const container = this.containerEl.createDiv('armory-list-container mythras-manager-container');
         
         // Header Controls
-        const headerDiv = container.createDiv('armory-header-controls');
-        headerDiv.style.display = 'flex';
-        headerDiv.style.justifyContent = 'space-between';
-        headerDiv.style.alignItems = 'center';
-        headerDiv.style.marginBottom = '15px';
+        const headerDiv = container.createDiv('armory-header-controls mythras-manager-header');
 
-        const tabsDiv = headerDiv.createDiv('armory-tabs');
-        tabsDiv.style.display = 'flex';
-        tabsDiv.style.gap = '10px';
+        const tabsDiv = headerDiv.createDiv('armory-tabs mythras-manager-header-controls');
 
         const createTabBtn = (id: 'melee' | 'ranged' | 'shields', label: string) => {
             const btn = tabsDiv.createEl('button', { text: label });
@@ -155,11 +149,9 @@ export class ArmoryManagerUI {
         createTabBtn('ranged', 'Ranged Weapons');
         createTabBtn('shields', 'Shields');
 
-        const actionsDiv = headerDiv.createDiv();
-        actionsDiv.style.display = 'flex';
-        actionsDiv.style.gap = '10px';
+        const actionsDiv = headerDiv.createDiv('mythras-manager-actions');
 
-        const btnAdd = actionsDiv.createEl('button', { text: '+ Add Weapon', cls: 'mod-cta' });
+        const btnAdd = actionsDiv.createEl('button', { text: '+ Add Weapon', cls: 'mythras-btn-primary' });
         btnAdd.onclick = () => {
             this.selectedWeapon = {
                 name: 'New Weapon',
@@ -171,16 +163,13 @@ export class ArmoryManagerUI {
             this.renderView();
         };
 
-        const btnRepopulate = actionsDiv.createEl('button', { text: 'Repopulate with SRD' });
+        const btnRepopulate = actionsDiv.createEl('button', { text: 'Repopulate with SRD', cls: 'mythras-btn-secondary' });
         btnRepopulate.onclick = async () => {
             await this.repopulateArmory();
         };
 
         // Table
-        const table = container.createEl('table', { cls: 'armory-table' });
-        table.style.width = '100%';
-        table.style.textAlign = 'left';
-        table.style.borderCollapse = 'collapse';
+        const table = container.createEl('table', { cls: 'armory-table mythras-manager-table' });
 
         const thead = table.createEl('thead');
         const tr = thead.createEl('tr');
@@ -195,11 +184,9 @@ export class ArmoryManagerUI {
         ];
 
         headers.forEach(h => {
-            const th = tr.createEl('th', { text: h.label });
-            th.style.padding = '8px';
-            th.style.borderBottom = '1px solid var(--background-modifier-border)';
+            const th = tr.createEl('th', { text: h.label, cls: 'mythras-manager-th' });
             if (h.sortable) {
-                th.style.cursor = 'pointer';
+                th.addClass('sortable');
                 if (this.sortField === h.id) {
                     th.setText(`${h.label} ${this.sortAscending ? '▲' : '▼'}`);
                 }
@@ -237,11 +224,7 @@ export class ArmoryManagerUI {
         });
 
         for (const w of displayWeapons) {
-            const row = tbody.createEl('tr');
-            row.style.cursor = 'pointer';
-            row.style.borderBottom = '1px solid var(--background-modifier-border-alt)';
-            row.onmouseenter = () => row.style.backgroundColor = 'var(--background-modifier-hover)';
-            row.onmouseleave = () => row.style.backgroundColor = 'transparent';
+            const row = tbody.createEl('tr', { cls: 'mythras-manager-tr' });
             row.onclick = () => {
                 this.selectedWeapon = w;
                 this.isNewWeapon = false;
@@ -249,17 +232,15 @@ export class ArmoryManagerUI {
                 this.renderView();
             };
 
-            row.createEl('td', { text: w.name }).style.padding = '8px';
-            row.createEl('td', { text: w.type || '-' }).style.padding = '8px';
-            row.createEl('td', { text: w.damage || '-' }).style.padding = '8px';
-            row.createEl('td', { text: w.size || '-' }).style.padding = '8px';
-            row.createEl('td', { text: `${w.ap || 0}/${w.hp || 0}` }).style.padding = '8px';
+            row.createEl('td', { text: w.name, cls: 'mythras-manager-td' });
+            row.createEl('td', { text: w.type || '-', cls: 'mythras-manager-td' });
+            row.createEl('td', { text: w.damage || '-', cls: 'mythras-manager-td' });
+            row.createEl('td', { text: w.size || '-', cls: 'mythras-manager-td' });
+            row.createEl('td', { text: `${w.ap || 0}/${w.hp || 0}`, cls: 'mythras-manager-td' });
             
-            const actionsTd = row.createEl('td');
-            actionsTd.style.padding = '8px';
+            const actionsTd = row.createEl('td', { cls: 'mythras-manager-td' });
             actionsTd.style.textAlign = 'right';
-            const btnDeleteList = actionsTd.createEl('button', { text: '🗑️', cls: 'mod-warning' });
-            btnDeleteList.style.padding = '4px 8px';
+            const btnDeleteList = actionsTd.createEl('button', { text: '🗑️', cls: 'mythras-btn-icon mythras-btn-danger' });
             btnDeleteList.onclick = (e) => {
                 e.stopPropagation(); // prevent row click
                 new ConfirmModal(this.app, `Do you really want to delete ${w.name}?`, async (result) => {
@@ -292,7 +273,7 @@ export class ArmoryManagerUI {
             this.renderView();
         };
 
-        const btnSave = buttonDiv.createEl('button', { text: 'Save', cls: 'mod-cta' });
+        const btnSave = buttonDiv.createEl('button', { text: 'Save', cls: 'mythras-btn-primary' });
         btnSave.onclick = async () => {
             if (this.isNewWeapon) {
                 this.weapons.push(weapon);
@@ -304,7 +285,7 @@ export class ArmoryManagerUI {
         };
 
         if (!this.isNewWeapon) {
-            const btnDelete = buttonDiv.createEl('button', { text: 'Delete', cls: 'mod-warning' });
+            const btnDelete = buttonDiv.createEl('button', { text: 'Delete', cls: 'mythras-btn-danger' });
             btnDelete.onclick = () => {
                 new ConfirmModal(this.app, `Do you really want to delete ${weapon.name}?`, async (result) => {
                     if (result) {
@@ -318,17 +299,12 @@ export class ArmoryManagerUI {
             };
         }
 
-        const form = container.createDiv('armory-form');
-        form.style.display = 'flex';
-        form.style.flexDirection = 'column';
-        form.style.gap = '15px';
+        const form = container.createDiv('armory-form mythras-manager-form');
         
         if (this.isNewWeapon) {
-            const templateWrap = form.createDiv();
-            templateWrap.style.display = 'flex';
-            templateWrap.style.flexDirection = 'column';
-            templateWrap.createEl('label', { text: 'Load Base Stats from...' }).style.fontWeight = 'bold';
-            const templateSelect = templateWrap.createEl('select');
+            const templateWrap = form.createDiv('mythras-manager-form-group');
+            templateWrap.createEl('label', { text: 'Load Base Stats from...' });
+            const templateSelect = templateWrap.createEl('select', { cls: 'mythras-manager-input' });
             templateSelect.createEl('option', { value: '', text: '-- Select a template --' });
             this.weapons.forEach(w => {
                 templateSelect.createEl('option', { value: w.name, text: w.name });
@@ -345,16 +321,14 @@ export class ArmoryManagerUI {
         }
 
         const createField = (label: string, renderInput: (wrapper: HTMLElement) => void) => {
-            const wrap = form.createDiv();
-            wrap.style.display = 'flex';
-            wrap.style.flexDirection = 'column';
-            wrap.createEl('label', { text: label }).style.fontWeight = 'bold';
+            const wrap = form.createDiv('mythras-manager-form-group');
+            wrap.createEl('label', { text: label });
             renderInput(wrap);
         };
 
         const createTextField = (label: string, val: string | undefined, onChange: (v: string) => void) => {
             createField(label, wrap => {
-                const inp = wrap.createEl('input', { type: 'text' });
+                const inp = wrap.createEl('input', { type: 'text', cls: 'mythras-manager-input' });
                 inp.value = val || '';
                 inp.onchange = (e) => onChange((e.target as HTMLInputElement).value);
             });
@@ -363,7 +337,7 @@ export class ArmoryManagerUI {
         createTextField('Name', weapon.name, v => weapon.name = v);
         
         createField('Type', wrap => {
-            const sel = wrap.createEl('select');
+            const sel = wrap.createEl('select', { cls: 'mythras-manager-input' });
             const types = ['1h-melee', '2h-melee', 'ranged', 'shield'];
             types.forEach(t => {
                 const opt = sel.createEl('option', { value: t, text: t });
@@ -390,19 +364,17 @@ export class ArmoryManagerUI {
             });
         }
 
-        const statsWrap = form.createDiv();
-        statsWrap.style.display = 'flex';
-        statsWrap.style.gap = '20px';
+        const statsWrap = form.createDiv('mythras-manager-grid');
         
-        const apWrap = statsWrap.createDiv();
-        apWrap.createEl('label', { text: 'AP' }).style.fontWeight = 'bold';
-        const apInp = apWrap.createEl('input', { type: 'number' });
+        const apWrap = statsWrap.createDiv('mythras-manager-field');
+        apWrap.createEl('label', { text: 'AP' });
+        const apInp = apWrap.createEl('input', { type: 'number', cls: 'mythras-manager-input' });
         apInp.value = weapon.ap || '0';
         apInp.onchange = (e) => weapon.ap = (e.target as HTMLInputElement).value;
         
-        const hpWrap = statsWrap.createDiv();
-        hpWrap.createEl('label', { text: 'HP' }).style.fontWeight = 'bold';
-        const hpInp = hpWrap.createEl('input', { type: 'number' });
+        const hpWrap = statsWrap.createDiv('mythras-manager-field');
+        hpWrap.createEl('label', { text: 'HP' });
+        const hpInp = hpWrap.createEl('input', { type: 'number', cls: 'mythras-manager-input' });
         hpInp.value = weapon.hp || '0';
         hpInp.onchange = (e) => weapon.hp = (e.target as HTMLInputElement).value;
 

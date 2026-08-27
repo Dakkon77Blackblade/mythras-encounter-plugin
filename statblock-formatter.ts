@@ -161,11 +161,13 @@ export async function generateStatblock(app: App, armoryFile: string, template: 
     md += `|:---:|:---:|:---:|:---:|:---:|:---:|:---:|\n`;
     md += `| ${STR} | ${CON} | ${SIZ} | ${DEX} | ${INT} | ${POW} | ${CHA} |\n\n`;
 
-    // Attributes Table
-    md += `| Action Points | Damage Mod | Initiative | Magic Points | Movement |
-| :---: | :---: | :---: | :---: | :---: |
-| ${actionPoints} | ${damageModifier} | ${initiative} | ${magicPoints} | ${movement} |
-\n\n`;
+    // Check if magic points should be displayed
+    const hasMagic = Object.keys(template.magicSkills || {}).length > 0;
+    const mpValue = hasMagic ? `${magicPoints}` : '-';
+
+    md += `| Action Points | Damage Modifier | Initiative | Magic Points | Movement |\n`;
+    md += `|:---:|:---:|:---:|:---:|:---:|\n`;
+    md += `| ${actionPoints} | ${damageModifier} | ${initiative} | ${mpValue} | ${movement} |\n\n`;
 
     // Hit Locations Table
     if (rolledHitLocations.length > 0) {
@@ -390,9 +392,11 @@ export function renderEnemyStatblock(
         { label: 'AP', val: instance.attributes['Action Points'] },
         { label: 'Dmg Mod', val: instance.attributes['Damage Mod'] },
         { label: 'Init', val: instance.attributes['Initiative'] || instance.attributes['Strike Rank'] },
-        { label: 'Move', val: instance.attributes['Movement'] },
-        { label: 'MP', val: instance.attributes['Magic Points'] }
+        { label: 'Move', val: instance.attributes['Movement'] }
     ];
+    if (Object.keys(instance.magicSkills || {}).length > 0) {
+        derived.push({ label: 'MP', val: instance.attributes['Magic Points'] });
+    }
     derived.forEach(d => {
         const box = derivedGrid.createDiv('mythras-derived-box');
         box.createDiv({ text: d.label, cls: 'mythras-derived-label' });

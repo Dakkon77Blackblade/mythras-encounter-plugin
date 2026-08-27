@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Automatically floors total damage results to a minimum of 0 (preventing negative net damage from penalties).
   - Generates an itemized visual dice breakdown in the GM Combat Log view (`combat-log-breakdown`), displaying individual dice rolls (e.g., `1d8 [5]`), operators, constants, and highlighted total damage badges.
   - Automatically focuses and scrolls to the GM Combat Log sidebar when a damage roll is triggered.
+- **UI/UX Overhaul of Mythras Manager (Issue #28):**
+  - Refactored Bestiary, Armory, and Roster interfaces to use a cohesive semantic CSS design system instead of hardcoded inline styles.
+  - Aligned visuals with native Obsidian styling and variables to maintain theme harmony (e.g., rounded inputs, responsive grids, hover effects, native-looking buttons).
+  - Centralized manager UI tokens in `styles.css` to allow for future Style Settings integration.
 
 
 ## [0.8.0] - 2026-08-27

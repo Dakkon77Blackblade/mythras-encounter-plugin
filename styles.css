@@ -826,3 +826,237 @@
     font-weight: 500;
     margin-right: 4px;
 }
+
+/* =========================================
+   MYTHRAS MANAGER GLOBAL UI SYSTEM
+   ========================================= */
+
+.mythras-manager-container {
+    padding: 10px;
+    color: var(--text-normal);
+}
+
+.mythras-manager-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    gap: 15px;
+}
+
+.mythras-manager-header-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.mythras-manager-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+/* Table System */
+.mythras-manager-table {
+    width: 100%;
+    text-align: left;
+    border-collapse: collapse;
+}
+
+.mythras-manager-th {
+    padding: 8px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    font-weight: 600;
+    color: var(--text-muted);
+}
+.mythras-manager-th.sortable {
+    cursor: pointer;
+}
+.mythras-manager-th.sortable:hover {
+    color: var(--text-normal);
+}
+
+.mythras-manager-tr {
+    cursor: pointer;
+    border-bottom: 1px solid var(--background-modifier-border-alt);
+    transition: background-color 0.15s ease;
+}
+.mythras-manager-tr:hover {
+    background-color: var(--background-modifier-hover);
+}
+
+.mythras-manager-td {
+    padding: 8px;
+}
+
+/* Detail View Layouts */
+.mythras-detail-header {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    align-items: flex-start;
+}
+
+.mythras-detail-avatar {
+    max-width: 150px;
+    max-height: 150px;
+    border-radius: 8px;
+    object-fit: cover;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.mythras-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.mythras-detail-weapons {
+    margin-top: 20px;
+    background-color: var(--background-secondary);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid var(--background-modifier-border);
+}
+
+/* Form & Input System */
+.mythras-manager-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.mythras-manager-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.mythras-manager-form-group > label {
+    font-weight: 500;
+    color: var(--text-muted);
+    font-size: 0.9em;
+}
+
+.mythras-manager-input-group {
+    display: flex;
+    gap: 10px;
+}
+
+.mythras-manager-input {
+    width: 100%;
+    background-color: var(--background-modifier-form-field);
+    border: 1px solid var(--background-modifier-border);
+    color: var(--text-normal);
+    padding: 6px 10px;
+    border-radius: 4px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.mythras-manager-input-group .mythras-manager-input {
+    flex-grow: 1;
+}
+.mythras-manager-input:focus {
+    border-color: var(--interactive-accent);
+    box-shadow: 0 0 0 2px rgba(var(--interactive-accent), 0.2);
+    outline: none;
+}
+
+/* List & Grid Builders */
+.mythras-manager-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.mythras-manager-list-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.mythras-manager-label-fixed {
+    width: 120px;
+    font-weight: bold;
+    color: var(--text-muted);
+}
+
+.mythras-manager-card {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 15px;
+    border: 1px solid var(--background-modifier-border);
+    padding: 15px;
+    border-radius: 8px;
+    background-color: var(--background-primary);
+}
+
+.mythras-manager-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--background-modifier-border-hover);
+    padding-bottom: 10px;
+    margin-bottom: 5px;
+}
+
+.mythras-manager-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.mythras-manager-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 120px;
+}
+.mythras-manager-field > label {
+    font-size: 0.8em;
+    color: var(--text-muted);
+}
+
+/* Buttons */
+.mythras-btn-primary {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border: none;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: filter 0.15s ease;
+}
+.mythras-btn-primary:hover {
+    filter: brightness(1.1);
+}
+
+.mythras-btn-secondary {
+    background-color: var(--background-modifier-border);
+    color: var(--text-normal);
+    border: none;
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+.mythras-btn-secondary:hover {
+    background-color: var(--background-modifier-border-hover);
+}
+
+.mythras-btn-danger {
+    background-color: var(--background-modifier-error);
+    color: var(--text-error);
+    border: 1px solid transparent;
+}
+.mythras-btn-danger:hover {
+    background-color: transparent;
+    border: 1px solid var(--background-modifier-error);
+}
+
+.mythras-btn-icon {
+    padding: 4px 8px;
+    font-weight: bold;
+}
