@@ -996,34 +996,33 @@ export class RosterManagerUI {
             ta.oninput = (e) => data.notes = (e.target as HTMLTextAreaElement).value;
 
         } else if (this.editTab === 'hitlocations') {
-            const table = formArea.createEl('table', { cls: 'armory-table' });
+            const table = formArea.createEl('table', { cls: 'mythras-manager-table' });
             table.style.width = '100%';
             const thead = table.createEl('thead').createEl('tr');
-            ['Location', 'Range', 'AP', 'Current HP', 'Max HP'].forEach(h => thead.createEl('th', { text: h }).style.padding = '8px');
+            ['Location', 'Range', 'AP', 'Current HP', 'Max HP'].forEach(h => {
+                thead.createEl('th', { text: h, cls: 'mythras-manager-th' });
+            });
             const tbody = table.createEl('tbody');
 
             data.hitLocations.forEach(hl => {
-                const tr = tbody.createEl('tr');
-                tr.createEl('td', { text: hl.name }).style.padding = '8px';
-                tr.createEl('td', { text: hl.range }).style.padding = '8px';
+                const tr = tbody.createEl('tr', { cls: 'mythras-manager-tr' });
+                tr.createEl('td', { text: hl.name, cls: 'mythras-manager-td' });
+                tr.createEl('td', { text: hl.range, cls: 'mythras-manager-td' });
                 
-                const apTd = tr.createEl('td');
-                apTd.style.padding = '8px';
-                const apInp = apTd.createEl('input', { type: 'text' });
+                const apTd = tr.createEl('td', { cls: 'mythras-manager-td' });
+                const apInp = apTd.createEl('input', { type: 'text', cls: 'mythras-manager-input' });
                 apInp.style.width = '60px';
                 apInp.value = hl.ap;
                 apInp.oninput = (e) => hl.ap = (e.target as HTMLInputElement).value;
 
-                const currTd = tr.createEl('td');
-                currTd.style.padding = '8px';
-                const currInp = currTd.createEl('input', { type: 'number' });
+                const currTd = tr.createEl('td', { cls: 'mythras-manager-td' });
+                const currInp = currTd.createEl('input', { type: 'number', cls: 'mythras-manager-input' });
                 currInp.style.width = '60px';
                 currInp.value = hl.currentHp.toString();
                 currInp.oninput = (e) => hl.currentHp = parseInt((e.target as HTMLInputElement).value) || 0;
 
-                const maxTd = tr.createEl('td');
-                maxTd.style.padding = '8px';
-                const maxInp = maxTd.createEl('input', { type: 'number' });
+                const maxTd = tr.createEl('td', { cls: 'mythras-manager-td' });
+                const maxInp = maxTd.createEl('input', { type: 'number', cls: 'mythras-manager-input' });
                 maxInp.style.width = '60px';
                 maxInp.value = hl.hp.toString();
                 maxInp.oninput = (e) => hl.hp = parseInt((e.target as HTMLInputElement).value) || 0;
