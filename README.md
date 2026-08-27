@@ -6,7 +6,7 @@
 
 A complete encounter, bestiary, armory, and combat management suite for Game Masters running **Mythras** (and d100 / BRP systems) in [Obsidian](https://obsidian.md).
 
-This plugin bridges the gap between the fan-project online [Mythras Encounter Generator](https://mythras.skoll.xyz/about/) and your local Obsidian Vault. It enables offline template management, authentic local dice rolling, dynamic encounter building, live interactive statblocks, real-time Hit Location wound tracking, and seamless inline weapon references directly inside your campaign notes.
+This plugin bridges the gap between the fan-project online [Mythras Encounter Generator](https://mythras.skoll.xyz/about/) and your local Obsidian Vault. It enables offline template management, authentic local dice rolling, dynamic encounter building, live interactive statblocks, real-time Hit Location wound tracking, one-click d100 skill checks, a dedicated GM Combat Log, and seamless inline weapon references directly inside your campaign notes.
 
 ---
 
@@ -21,9 +21,11 @@ This plugin bridges the gap between the fan-project online [Mythras Encounter Ge
    - [Step 2: Managing the Armory & In-Note Item Statblocks](#step-2-managing-the-armory--in-note-item-statblocks)
    - [Step 3: Creating Encounters & Instantiating Enemies](#step-3-creating-encounters--instantiating-enemies)
    - [Step 4: Running Combat & Interactive Hit Location Tracking](#step-4-running-combat--interactive-hit-location-tracking)
+   - [Step 5: Native GM Combat Log & Click-to-Roll](#step-5-native-gm-combat-log--click-to-roll)
 4. [Syntax & Codeblock Cheatsheet](#syntax--codeblock-cheatsheet)
 5. [The Mythras Rules & Math Engine](#the-mythras-rules--math-engine)
 6. [Commands & Navigation](#commands--navigation)
+7. [Attribution & Licenses](#attribution--licenses)
 
 ---
 
@@ -39,20 +41,21 @@ The plugin organizes Mythras combat management into three interconnected pillars
 ```
 
 ```mermaid
-flowchart LR
+flowchart TD
     Web["Mythras Encounter Generator\n(mythras.skoll.xyz)"] -->|Scrape & Import| Bestiary["1. Bestiary Templates\n(Dice Formulas & Weapon Pools)"]
     Armory["2. Armory\n(Classic Fantasy SRD\n& Custom Weapons)"] -->|Populate Weapon Stats| Instantiator["Dice & Stat Instantiator Engine"]
     Bestiary -->|Instantiate Encounter| Instantiator
     Instantiator -->|Generate Rolled Combatants| Roster["3. Roster Manager\n(Active Instances with Live HP/AP)"]
     Roster -->|Render Codeblocks| Notes["Obsidian Campaign Notes\n(Interactive Statblocks & Live Combat)"]
-    Notes -->|Click Hit Location / Pencil Edit| Roster
+    Notes -->|Click Hit Location / Edit| Roster
+    Notes -->|Click-to-Roll Skills & Styles| CombatLog["Native GM Combat Log\n(D100 vs Target % & Success Levels)"]
 ```
 
 ### 1. The Bestiary
 - **Purpose:** Your template library of monsters, NPCs, beasts, and adversaries.
 - **Storage:** Stored as JSON files in `<baseFolder>/Bestiary/<template_name>_by_<author>.json`.
-- **How it works:** Rather than storing flat, rolled statistics, Bestiary templates preserve **raw dice formulas** (e.g. `STR = 3d6+6`, `Brawn = STR+SIZ`, `1d8+1` damage), hit location armor/formula profiles, combat styles, standard/custom/magic skills, notes, and weapon pools.
-- **Author-Namespaced:** Prevents naming collisions when importing templates created by different authors.
+- **How it works:** Rather than storing flat, rolled statistics, Bestiary templates preserve **raw dice formulas** (e.g., `STR = 3d6+6`, `Brawn = STR+SIZ`, `1d8+1` damage), hit location armor/formula profiles, combat styles, standard/custom/magic skills, notes, and weapon pools.
+- **Author-Namespaced:** Prevents naming collisions when importing templates created by different community authors.
 - **Customizable:** Edit formulas, hit locations, skill formulas, image links, and optional weapon groups directly inside Obsidian.
 
 ### 2. The Armory
@@ -83,6 +86,10 @@ flowchart LR
    - **Ribbon Icon:** Click the `swords` icon in the left ribbon.
    - **Right-Click Ribbon Icon:** Open the manager in a *New Tab*, *Split Right*, *Split Down*, or *Current Tab*.
    - **Command Palette:** Run `Mythras: Open Mythras Manager` or open from the plugin settings.
+4. Open the **GM Combat Log Leaf**:
+   - **Ribbon Icon:** Click the `list` icon in the left ribbon.
+   - **Command Palette:** Run `Mythras: Open Combat Log`.
+   - The Combat Log docks neatly into the right sidebar.
 
 ---
 
@@ -90,15 +97,14 @@ flowchart LR
 
 ### Step 1: Building the Bestiary (Search, Import & Customization)
 
-#### Importing Templates
-1. Use `⌘/Ctrl + P` to open the Command Palette and search for "Mythras".
-2. Select **`Import Template from Mythras Encounter Generator`**.
-3. Type a search query (minimum 3 characters, e.g., `Goblin`, `Bandit`, `Skeleton`, `Dragon`).
-4. The modal queries the official online database and displays results with Rank, Race, Creator, and Tags.
-5. Select a template and press `Enter` (or click). The plugin scrapes the full template—extracting attributes, hit locations, features, standard/custom/magic skills, combat styles, and weapon options—and saves it to `<baseFolder>/Bestiary/`.
+#### Importing Templates from the Web
+1. Open the Command Palette (`Ctrl/Cmd + P`) and select **`Import Template from Mythras Encounter Generator`**.
+2. Type a search query (minimum 3 characters, e.g., `Goblin`, `Bandit`, `Skeleton`, `Dragon`).
+3. The modal queries the official online database and displays results with Rank, Race, Creator, and Tags.
+4. Select a template and press `Enter` (or click). The plugin scrapes the full template—extracting attributes, hit locations, features, standard/custom/magic skills, combat styles, and weapon options—and saves it to `<baseFolder>/Bestiary/`.
 
 #### Managing & Editing Templates
-1. Open the **Mythras Manager** and switch to the **Bestiary** tab.
+1. Open the **Mythras Manager** (`swords` icon) and switch to the **Bestiary** tab.
 2. Filter templates by tags or sort by *Name*, *Author*, *Rank*, or *Last Modified*.
 3. Click on any entry to view the **Detail View** or click **Edit** to modify:
    - **Characteristics & Formulas:** Adjust formulas like `2d6+6` or base attribute rules.
@@ -182,7 +188,7 @@ You can turn any note in your vault into an interactive Encounter Sheet:
    - The Encounter Title and Scenario badge.
    - A **Quick-Edit Pencil Button** that opens this encounter directly in the Roster Manager.
    - The rendered Markdown description.
-   - A grid of all enemy statblocks assigned to this encounter.
+   - A responsive grid of all enemy statblocks assigned to this encounter.
 
 ---
 
@@ -198,59 +204,85 @@ Whether embedded via ````enemy <id>```` or rendered as part of a ````mythras-enc
 - **Standard & Magic Skills:** Formatted percentages with internal Obsidian links for skill lookups.
 - **Pencil Icon:** Instant shortcut to open and edit the full instance in the Roster Manager.
 
-#### Direct Hit Location Click-to-Edit (New Feature!)
+#### Direct Hit Location Click-to-Edit
 During fast-paced combat, you do not need to open side panels to record wounds or armor degradation:
 
 1. **Click directly on any Hit Location pill** in the statblock (e.g., `10-12 | Chest (3/6)`).
 2. The **Hit Location Quick Edit Modal** opens instantly:
-   - **Current AP:** Adjust remaining armor points (e.g., after sunder or penetration).
+   - **Current AP:** Adjust remaining armor points (e.g., after sunder or armor penetration).
    - **Current HP:** Enter remaining hit points (or negative hit points for severe wounds).
 3. Press `Enter` or click **Save**.
-4. **Instant Persistence & Sync:** 
+4. **Instant Persistence & Real-Time Sync:** 
    - The new values are saved immediately to the instance's JSON file in `<baseFolder>/Roster/`.
    - All open notes and views referencing this enemy update immediately in real-time.
    - Modified hit locations are **visually highlighted** in red/bold (`is-modified` state) so you can identify wounded body parts at a glance.
 
 ---
 
+### Step 5: Native GM Combat Log & Click-to-Roll
+
+The plugin features a native dice roller and dedicated **GM Combat Log** directly inside Obsidian's right sidebar.
+
+```
+┌────────────────────────────────────────────────────────┐
+│ COMBAT LOG                                 [Clear Log] │
+├────────────────────────────────────────────────────────┤
+│ Goblin Archer #1                            [19:42:15] │
+│ Bow & Arrow (65%) → Roll: 04 → [CRITICAL]              │
+├────────────────────────────────────────────────────────┤
+│ Cave Troll #2                               [19:42:08] │
+│ Club (58%) → Roll: 42 → [SUCCESS]                      │
+├────────────────────────────────────────────────────────┤
+│ Bandit Leader                               [19:41:50] │
+│ Evade (45%) → Roll: 81 → [FAILURE]                     │
+├────────────────────────────────────────────────────────┤
+│ Cultist Initiate                            [19:41:30] │
+│ Willpower (32%) → Roll: 100 → [FUMBLE]                 │
+└────────────────────────────────────────────────────────┘
+```
+
+#### 1. Click-to-Roll on Statblocks
+Every skill percentage in your statblocks—including **Combat Styles**, **Standard Skills**, **Magic Skills**, **Professional Skills**, and **Custom Skills**—is rendered as an interactive roll button (e.g., `Brawn: 62%`, `Spear & Shield: 74%`).
+
+- **Click the percentage pill** to roll a `1d100` skill check for that combatant.
+- The roll automatically resolves against the target skill rating according to official Mythras rules:
+  - 🔵 **Critical Success:** Roll $\le \lceil \text{Skill Target} / 10 \rceil$ (e.g., $\le 7$ for a $64\%$ skill).
+  - 🟢 **Success:** Roll $\le \text{Skill Target}$.
+  - 🔴 **Failure:** Roll $> \text{Skill Target}$ (and $< 99$).
+  - 🟣 **Fumble:** Roll $\ge 99$ (99 or 100).
+
+#### 2. The Combat Log View
+- Whenever a roll is made, the **Combat Log** view in the right sidebar is automatically brought into focus.
+- Each entry displays:
+  - **Actor Name:** The instance or template name of the combatant.
+  - **Timestamp:** Exact time of the roll (`[HH:MM:SS]`).
+  - **Action & Target:** Name of the skill/style with the target percentage (e.g., `Broadsword (65%)`).
+  - **D100 Roll Value:** The exact number rolled.
+  - **Success Level Badge:** Color-coded status badge with distinct borders and glow effects:
+    - **Critical:** Light blue background, blue border badge.
+    - **Success:** Soft green background, green border badge.
+    - **Failure:** Soft red background, red border badge.
+    - **Fumble:** Soft purple background, purple border badge.
+- **Clear Log Button:** Click the "Clear Log" button in the header at any time to clear history between rounds or encounters.
+
+---
+
 ## Syntax & Codeblock Cheatsheet
 
-- **Compact Statblock:** Renders a compact live statblock for a specific combatant.
-  ````markdown
-  ```enemy <id>
-  ```
-  ````
-- **Expanded Statblock:** Renders a full expanded statblock including all skills and notes.
-  ````markdown
-  ```enemy <id> long
-  ```
-  ````
-- **Encounter Grid (Auto):** Renders the complete encounter grid for the current note based on frontmatter.
-  ````markdown
-  ```mythras-encounter
-  ```
-  ````
-- **Encounter Grid (Specific ID):** Renders an encounter by ID with full-format statblocks.
-  ````markdown
-  ```mythras-encounter
-  id: <uuid>
-  format: long
-  ```
-  ````
-- **Weapon Statblock:** Renders a full equipment statblock card from the Armory.
-  ````markdown
-  ```item
-  Broadsword
-  ```
-  ````
-- **Inline Weapon Tooltip:** Creates an inline weapon badge with a hover statblock popover.
-  `` `item: Heavy Crossbow` ``
+| Syntax | Description | Example |
+| :--- | :--- | :--- |
+| ```` ```enemy <id> ``` ```` | Renders a compact live statblock for a specific combatant. | ```` ```enemy 1787844127518493 ``` ```` |
+| ```` ```enemy <id> long ``` ```` | Renders a full expanded statblock including all skills and notes. | ```` ```enemy 1787844127518493 long ``` ```` |
+| ```` ```mythras-encounter ``` ```` | Renders the complete encounter grid for the current note. | ```` ```mythras-encounter ``` ```` |
+| ```` ```mythras-encounter\nid: <uuid>\nformat: long\n``` ```` | Renders an encounter by ID with full-format statblocks. | ```` ```mythras-encounter\nid: 2ecf721d-bd58-42e7-8445-7a644fa838ca\nformat: long\n``` ```` |
+| ```` ```item\n<Weapon Name>\n``` ```` | Renders a full equipment statblock card from the Armory. | ```` ```item\nBroadsword\n``` ```` |
+| `` `item: <Weapon Name>` `` | Inline weapon badge with hover statblock popover. | `` `item: Heavy Crossbow` `` |
 
 ---
 
 ## The Mythras Rules & Math Engine
 
-The plugin strictly follows official Mythras Core Rules:
+The plugin strictly implements official Mythras Core Rules:
 
 - **Base Hit Points per Location:**
   $$\text{Base HP} = \left\lceil \frac{\text{CON} + \text{SIZ}}{5} \right\rceil$$
@@ -262,6 +294,11 @@ The plugin strictly follows official Mythras Core Rules:
 - **Damage Modifier:** Calculated from $\text{STR} + \text{SIZ}$ progression ($-1\text{d8}$ up to $+2\text{d12}$ and beyond).
 - **Strike Rank / Initiative:** $\left\lceil \frac{\text{INT} + \text{DEX}}{2} \right\rceil$.
 - **Magic Points:** Equal to current $\text{POW}$.
+- **Skill Checks & Success Levels:**
+  - **Critical:** $\text{Roll} \le \lceil\text{Skill} / 10\rceil$
+  - **Success:** $\lceil\text{Skill} / 10\rceil < \text{Roll} \le \text{Skill}$
+  - **Failure:** $\text{Skill} < \text{Roll} < 99$
+  - **Fumble:** $\text{Roll} \ge 99$
 - **Weighted Weapon Selection:** Evaluates probability weights without replacement when picking optional equipment groups.
 
 ---
@@ -272,7 +309,8 @@ The plugin strictly follows official Mythras Core Rules:
 | :--- | :--- |
 | **`Import Template from Mythras Encounter Generator`** | Opens search modal to download templates directly from `mythras.skoll.xyz`. |
 | **`Generate Mythras Encounter`** | Opens generation modal to roll enemies from local Bestiary templates. |
-| **Open Mythras Manager** | Opens the tabbed Manager leaf (Roster, Armory, Bestiary) via ribbon icon or settings. |
+| **`Open Mythras Manager`** | Opens the tabbed Manager leaf (Roster, Armory, Bestiary) via ribbon icon (`swords`) or settings. |
+| **`Open Combat Log`** | Opens the dedicated GM Combat Log sidebar view via ribbon icon (`list`) or command palette. |
 
 ---
 

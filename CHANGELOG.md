@@ -5,22 +5,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.8.0] - 2026-08-27
 ### Added
-- **Enemy Live Rendering:** Obsidian now natively renders \`\`\`enemy <ID>\`\`\` codeblocks as beautiful, formatted Mythras statblocks directly inside your notes!
-- **Roster Editor (Full UI):** You can now fully edit instantiated enemies directly from the Roster Manager. Easily tweak names, move them between encounters, track Hit Points (wounds), or deeply customize their attributes, skills, and weapons.
-- **Roster UI Overhaul:** Redesigned the Roster Manager interface to feature a two-pane layout with a scrollable Scenario sidebar and an Encounter Tag-Cloud for filtering active enemies.
-- Templates saved to the Bestiary now include the author's name in the filename to prevent overwriting templates with the same name from different authors (Fixes #1).
-- Complete data model overhaul for Bestiary templates. The scraper now extracts `attributes`, `features`, `standardSkills`, `customSkills`, `combatStyles`, and detailed `weapons` profiles (Fixes #4).
-- The Encounter Generator now randomly selects optional weapons from the scraped weapon lists (e.g., 1-handed weapons) and fully renders Custom Weapons with damage, size, reach, and special effects.
-- Added a local `armory.json` feature for populating standard weapon stats (Damage, Size, Reach/Range, AP/HP, SpecialFx) automatically during encounter generation.
-- Accurately replicated the Mythras Encounter Generator's weighted random selection logic (probability weights without replacement) and support for dice formulas in weapon amounts (Fixes #6).
-- Overhauled Markdown weapon formatting to distinctly render Melee, Ranged, and Shield weapon types with their correct specific stats (e.g. Range instead of Reach for Bows).
-- Restructured the plugin's file layout to use a single configurable `baseFolder` that automatically houses `Bestiary` and `Armory` subdirectories to prevent clutter (Fixes #7).
-- Introduced the **Local Bestiary Manager**, a full UI available from the plugin settings to list, view, and edit local templates.
-- Features dynamic editing views with Obsidian Vault image selection, custom vs. armory weapon handling, and automatic author tagging for manually customized creatures (Fixes #9).
-- Introduced **Inline Item Statblocks** via Obsidian's Live Preview mode. Typing \`item: Weapon Name\` automatically resolves into an interactive hover-link that displays a compact SVG-icon-based statblock popover (Fixes #13).
-- Added support for static block-level item statblocks using \`\`\`item\`\`\` codeblocks with a comprehensive grid layout.
-- Added an Editor Suggester for auto-completing weapon names while typing in the editor.
+- **Native GM Combat Log & Dice Roller (Issue #27):**
+  - Integrated an authentic Mythras d100 dice roller into live statblocks.
+  - Interactive "Click-to-Roll" pills for Combat Styles, Standard Skills, Magic Skills, Professional Skills, and Custom Skills.
+  - Automatic Mythras Success Level determination: Critical ($\le \lceil \text{Target}/10 \rceil$), Success ($\le \text{Target}$), Failure ($> \text{Target}$), and Fumble ($\ge 99$).
+  - Dedicated GM Combat Log view in Obsidian's right sidebar (`mythras-combat-log-view`) with actor names, timestamps, rolled values, target percentages, and color-coded status badges.
+  - Added "Clear Log" button, ribbon icon (`list`), and command palette action (`Mythras: Open Combat Log`).
+- **Interactive Click-to-Edit Hit Locations:**
+  - Direct click-to-edit on any Hit Location badge (`is-clickable`) in rendered enemy statblocks.
+  - Quick Edit modal to adjust Current AP and Current HP during live combat.
+  - Instant persistence to Roster instance JSON files with real-time DOM synchronization across all open views in Obsidian.
+  - Visual damage indicator (`is-modified`) highlighting wounded locations in bold red.
+- **Modernized Statblock & Encounter UI:**
+  - Redesigned short and long statblock layouts with responsive column grids, derived attribute cards, and weapon breakdown lines.
+  - Added quick-jump pencil edit buttons on statblocks and `mythras-encounter` headers to jump directly into the Roster Manager.
+  - Enhanced Combat Log entries with subtle colored backgrounds, accent borders, and hover effects for instant readability.
+
+## [0.7.0] - 2026-08-26
+### Added
+- **Roster Manager & Encounter Workflows:**
+  - Full desktop-class Roster Manager UI featuring a two-pane layout, Scenario tree navigation, Encounter Tag-Cloud filtering, and deep-editing.
+  - Dynamic ````mythras-encounter```` codeblocks auto-rendered based on frontmatter `type: mythras-encounter` and `encounter-id`.
+  - Native rendering of ````enemy <ID> [long]```` codeblocks directly inside Obsidian notes.
+  - Support for multi-instance encounter generation and automatic insertion into active markdown notes.
+- **Inline Item References & Armory:**
+  - Live Preview and reading mode support for inline weapon tooltips (`` `item: Weapon Name` ``) with SVG stat popovers.
+  - Static equipment statblock cards via ````item```` codeblocks.
+  - Editor suggester for auto-completing armory weapon names.
+  - Centralized `Armory` catalog pre-seeded with 60+ weapons from the Classic Fantasy Imperative SRD.
+- **Bestiary & Scraping Engine:**
+  - Direct import from the online Mythras Encounter Generator (`mythras.skoll.xyz`) with author namespacing.
+  - Support for weighted random weapon pools without replacement and dice formula evaluation.
 
 ## [0.1.0] - 2026-08-24
 ### Added
@@ -28,6 +46,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Template Scraper**: Fetches and parses HTML pages to extract Mythras rules and dice formulas for templates.
 - **Bestiary**: Local JSON storage mechanism for templates inside the Obsidian Vault.
 - **Search Modal**: In-app UI (`SuggestModal`) to search the remote Mythras database by name, showing race, rank, creator, and tags.
-- **Dice Roller**: Parses Mythras-specific dice formulas (e.g. `2d6+6`, `STR+DEX+30`) and computes derived values like Action Points and Damage Modifiers.
+- **Dice Roller**: Parses Mythras-specific dice formulas (e.g., `2d6+6`, `STR+DEX+30`) and computes derived values like Action Points and Damage Modifiers.
 - **Hit Location Engine**: Computes Hit Points per hit location based on base HP and standard modifiers (legs, chest, abdomen, arms).
 - **Encounter Generator**: Selects a downloaded template and generates one or more instances as simple Markdown statblocks at the cursor's location.
