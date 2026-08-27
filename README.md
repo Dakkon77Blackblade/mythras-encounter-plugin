@@ -215,14 +215,36 @@ During fast-paced combat, you do not need to open side panels to record wounds o
 
 ## Syntax & Codeblock Cheatsheet
 
-| Syntax | Description | Example |
-| :--- | :--- | :--- |
-| ```` ```enemy <id> ``` ```` | Renders a compact live statblock for a specific combatant. | ```` ```enemy 1787844127518493 ``` ```` |
-| ```` ```enemy <id> long ``` ```` | Renders a full expanded statblock including all skills and notes. | ```` ```enemy 1787844127518493 long ``` ```` |
-| ```` ```mythras-encounter ``` ```` | Renders the complete encounter grid for the current note. | ```` ```mythras-encounter ``` ```` |
-| ```` ```mythras-encounter<br>id: <uuid><br>format: long<br>``` ```` | Renders an encounter by ID with full-format statblocks. | ```` ```mythras-encounter<br>id: 2ecf721d-bd58-42e7-8445-7a644fa838ca<br>format: long<br>``` ```` |
-| ```` ```item<br><Weapon Name><br>``` ```` | Renders a full equipment statblock card from the Armory. | ```` ```item<br>Broadsword<br>``` ```` |
-| `` `item: <Weapon Name>` `` | Inline weapon badge with hover statblock popover. | `` `item: Heavy Crossbow` `` |
+- **Compact Statblock:** Renders a compact live statblock for a specific combatant.
+  ````markdown
+  ```enemy <id>
+  ```
+  ````
+- **Expanded Statblock:** Renders a full expanded statblock including all skills and notes.
+  ````markdown
+  ```enemy <id> long
+  ```
+  ````
+- **Encounter Grid (Auto):** Renders the complete encounter grid for the current note based on frontmatter.
+  ````markdown
+  ```mythras-encounter
+  ```
+  ````
+- **Encounter Grid (Specific ID):** Renders an encounter by ID with full-format statblocks.
+  ````markdown
+  ```mythras-encounter
+  id: <uuid>
+  format: long
+  ```
+  ````
+- **Weapon Statblock:** Renders a full equipment statblock card from the Armory.
+  ````markdown
+  ```item
+  Broadsword
+  ```
+  ````
+- **Inline Weapon Tooltip:** Creates an inline weapon badge with a hover statblock popover.
+  `` `item: Heavy Crossbow` ``
 
 ---
 
@@ -254,6 +276,12 @@ The plugin strictly follows official Mythras Core Rules:
 
 ---
 
-## License
+## Attribution & Licenses
 
-MIT License. Mythras is a trademark of *The Design Mechanism*. This plugin is an independent tool designed for tabletop roleplaying game preparation.
+This plugin provides automation and management tools for use with the Mythras roleplaying game system.
+- The **Mythras Encounter Generator** (mythras.skoll.xyz) is a fan-made project and is not affiliated with The Design Mechanism.
+- **Mythras** and **Classic Fantasy** are trademarks of The Design Mechanism.
+- The default weapons and rules engine mechanics are sourced from the **Mythras Imperative SRD** and **Classic Fantasy Imperative SRD**, both released under the ORC License. 
+- For the full ORC License text and attribution notices, please refer to the official [Mythras SRD](https://srd.mythras.net/#/rules/en/README) and [Classic Fantasy SRD](https://cfi-srd.mythras.net/#/rules/en/README).
+
+This plugin itself is released under the MIT License.
