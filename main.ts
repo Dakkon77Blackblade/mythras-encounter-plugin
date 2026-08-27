@@ -100,11 +100,11 @@ export default class MythrasEncounterPlugin extends Plugin {
 
         // Block-level processor for ```enemy <ID> ```
         this.registerMarkdownCodeBlockProcessor('enemy', async (source, el, ctx) => {
-            const lines = source.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-            if (lines.length === 0) return;
-            
-            const isLong = lines.some(l => l.toLowerCase() === 'long');
-            const enemyId = lines.find(l => l.toLowerCase() !== 'long') || lines[0];
+            const rawText = source.trim();
+            if (!rawText) return;
+
+            const isLong = /\blong\b/i.test(rawText);
+            const enemyId = rawText.replace(/\blong\b/ig, '').trim();
 
             if (!enemyId) return;
 
