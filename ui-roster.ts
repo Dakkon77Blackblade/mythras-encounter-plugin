@@ -275,6 +275,22 @@ export class RosterManagerUI {
         new Notice(`Enemy not found: ${instanceId}`);
     }
 
+    openEncounterView(encounterName: string) {
+        for (const scenario of this.scenarios) {
+            for (const encounter of scenario.encounters) {
+                if (encounter.name.trim().toLowerCase() === encounterName.trim().toLowerCase()) {
+                    this.selectedScenario = scenario.name;
+                    this.selectedEncounter = encounter.name;
+                    this.currentView = 'list';
+                    this.selectedInstance = null;
+                    this.render();
+                    return;
+                }
+            }
+        }
+        new Notice(`Encounter not found: ${encounterName}`);
+    }
+
     display() {
         const { containerEl } = this;
         containerEl.empty();

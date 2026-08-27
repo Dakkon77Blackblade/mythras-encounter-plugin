@@ -1,4 +1,4 @@
-import { Plugin, normalizePath, Menu, TFile } from 'obsidian';
+import { Plugin, normalizePath, Menu, TFile, setIcon } from 'obsidian';
 import { MythrasEncounterSettings, DEFAULT_SETTINGS, MythrasEncounterSettingTab } from './settings';
 import { MythrasSearchModal } from './modal-search';
 import { MythrasGenerateModal } from './modal-generate';
@@ -235,7 +235,22 @@ export default class MythrasEncounterPlugin extends Plugin {
             };
             findJsonFiles(folder);
 
-            const gridWrapper = el.createDiv('mythras-encounter-grid');
+            const wrapper = el.createDiv('mythras-encounter-wrapper');
+            const editBtn = wrapper.createDiv('mythras-encounter-edit-btn');
+            
+            setIcon(editBtn, 'pencil');
+
+            editBtn.onclick = async () => {
+                const leaf = this.app.workspace.getLeaf(false);
+                await leaf.setViewState({ type: MYTHRAS_MANAGER_VIEW, active: true });
+                const view = leaf.view as any;
+                if (view && view.rosterUI) {
+                    view.currentTab = 'roster';
+                    view.rosterUI.openEncounterView(encounterName);
+                }
+            };
+
+            const gridWrapper = wrapper.createDiv('mythras-encounter-grid');
             const matchingInstances: any[] = [];
 
             for (const file of matchingFiles) {
@@ -252,7 +267,7 @@ export default class MythrasEncounterPlugin extends Plugin {
             }
 
             if (matchingInstances.length === 0) {
-                el.createEl('div', { text: `No enemies found for encounter: ${encounterName}` });
+                wrapper.createEl('div', { text: `No enemies found for encounter: ${encounterName}` });
                 return;
             }
 
