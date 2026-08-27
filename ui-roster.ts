@@ -360,79 +360,43 @@ export class RosterManagerUI {
             if (b.name === 'Uncategorized') return -1;
             return a.name.localeCompare(b.name);
         });
-
-        // 3. Auto-sync backend folders to match current Scenario / Encounter names
-        for (const scenario of this.scenarios) {
-            const safeScenario = scenario.name.replace(/[^\p{L}\p{N} -]/gu, '').trim() || 'Uncategorized';
-            for (const enc of scenario.encounters) {
-                const safeEncounter = enc.name.replace(/[^\p{L}\p{N} -]/gu, '').trim();
-                if (!safeEncounter) continue;
-
-                const expectedFolderPath = normalizePath(`${rosterPath}/${safeScenario}/${safeEncounter}`);
-                
-                for (const inst of enc.instances) {
-                    if (inst.file.parent?.path !== expectedFolderPath) {
-                        const parts = expectedFolderPath.split('/');
-                        let currentPath = '';
-                        for (const part of parts) {
-                            if (part === '') continue;
-                            currentPath = currentPath === '' ? part : `${currentPath}/${part}`;
-                            if (!await this.app.vault.adapter.exists(currentPath)) {
-                                await this.app.vault.createFolder(currentPath);
-                            }
-                        }
-                        
-                        const newFilePath = normalizePath(`${expectedFolderPath}/${inst.file.name}`);
-                        if (!await this.app.vault.adapter.exists(newFilePath)) {
-                            // Also update the JSON data so it doesn't get confused next time
-                            inst.data.scenario = scenario.name;
-                            inst.data.encounter = enc.name;
-                            const dataStr = JSON.stringify(inst.data, null, 2);
-                            
-                            await this.app.fileManager.renameFile(inst.file, newFilePath);
-                            await this.app.vault.modify(inst.file, dataStr);
-                        }
-                    }
-                }
-            }
-        }
     }
 
     async saveSelectedInstance() {
         if (!this.selectedInstance) return;
         
         this.selectedInstance.data.lastModified = Date.now();
-        const dataStr = JSON.stringify(this.selectedInstance.data, null, 2);
-        
-        let safeScenario = 'Uncategorized';
-        let safeEncounter = this.selectedInstance.data.encounterId || 'Unknown';
-        
-        for (const scen of this.scenarios) {
-            const enc = scen.encounters.find(e => e.id === this.selectedInstance!.data.encounterId);
-            if (enc) {
-                safeScenario = scen.name.replace(/[^\p{L}\p{N} -]/gu, '').trim() || 'Uncategorized';
-                safeEncounter = enc.name.replace(/[^\p{L}\p{N} -]/gu, '').trim() || safeEncounter;
-                break;
+        if (!this.selectedInstance.data.encounterId) {
+            for (const scen of this.scenarios) {
+                const enc = scen.encounters.find(e => e.name === this.selectedInstance!.data.encounter);
+                if (enc) {
+                    this.selectedInstance.data.encounterId = enc.id;
+                    break;
+                }
             }
         }
         
+        const dataStr = JSON.stringify(this.selectedInstance.data, null, 2);
+        
         const oldFile = this.selectedInstance.file;
-        const newFolderPath = normalizePath(`${this.plugin.settings.baseFolder}/Roster/${safeScenario}/${safeEncounter}`);
+        const newFolderPath = normalizePath(`${this.plugin.settings.baseFolder}/Roster`);
         
         if (oldFile.parent?.path !== newFolderPath) {
-            const parts = newFolderPath.split('/');
-            let currentPath = '';
-            for (const part of parts) {
-                if (part === '') continue;
-                currentPath = currentPath === '' ? part : `${currentPath}/${part}`;
-                if (!await this.app.vault.adapter.exists(currentPath)) {
-                    await this.app.vault.createFolder(currentPath);
-                }
+            if (!await this.app.vault.adapter.exists(newFolderPath)) {
+                await this.app.vault.createFolder(newFolderPath);
             }
             
             const newFilePath = normalizePath(`${newFolderPath}/${oldFile.name}`);
-            await this.app.vault.create(newFilePath, dataStr);
-            await this.app.vault.delete(oldFile);
+            if (await this.app.vault.adapter.exists(newFilePath)) {
+                // If a file with the same name already exists in root, maybe handle collision?
+                // For now, let's just delete the old one and overwrite the new one, or rename.
+                // Usually oldFile.name is unique enough (UUID-based).
+                await this.app.vault.modify(this.app.vault.getAbstractFileByPath(newFilePath) as TFile, dataStr);
+                await this.app.vault.delete(oldFile);
+            } else {
+                await this.app.vault.create(newFilePath, dataStr);
+                await this.app.vault.delete(oldFile);
+            }
             
             const newFile = this.app.vault.getAbstractFileByPath(newFilePath) as TFile;
             this.selectedInstance.file = newFile;
@@ -646,13 +610,13 @@ export class RosterManagerUI {
             const msg = `Are you sure you want to delete the Scenario '${scenario.name}'? This will permanently delete ${encCount} Encounters and ${instCount} enemies! Markdown notes will NOT be deleted, but will be disconnected from the roster.`;
             new ConfirmModal(this.app, msg, async (result) => {
                 if (result) {
-                    const safeScenario = scenario.name.replace(/[^\p{L}\p{N} -]/gu, '').trim() || 'Uncategorized';
-                    const folder = this.app.vault.getAbstractFileByPath(`${this.plugin.settings.baseFolder}/Roster/${safeScenario}`);
-                    if (folder) {
-                        await this.app.vault.trash(folder, true);
-                    }
-                    
                     for (const enc of scenario.encounters) {
+                        for (const inst of enc.instances) {
+                            if (inst.file instanceof TFile) {
+                                await this.app.vault.trash(inst.file, true);
+                            }
+                        }
+                        
                         const mdFile = this.app.vault.getAbstractFileByPath(enc.path);
                         if (mdFile instanceof TFile && mdFile.extension === 'md') {
                             await this.app.fileManager.processFrontMatter(mdFile, (fm) => {
@@ -777,11 +741,11 @@ export class RosterManagerUI {
                 const msg = `Are you sure you want to delete the Encounter '${enc.name}'? This will permanently delete the Markdown note and ${instCount} enemies!`;
                 new ConfirmModal(this.app, msg, async (result) => {
                     if (result) {
-                        const safeScenario = scenario.name.replace(/[^\p{L}\p{N} -]/gu, '').trim() || 'Uncategorized';
-                        const safeName = enc.name.replace(/[^\p{L}\p{N} -]/gu, '').trim();
-                        const backendPath = normalizePath(`${this.plugin.settings.baseFolder}/Roster/${safeScenario}/${safeName}`);
-                        const folder = this.app.vault.getAbstractFileByPath(backendPath);
-                        if (folder) await this.app.vault.trash(folder, true);
+                        for (const inst of enc.instances) {
+                            if (inst.file instanceof TFile) {
+                                await this.app.vault.trash(inst.file, true);
+                            }
+                        }
                         
                         const mdFile = this.app.vault.getAbstractFileByPath(enc.path);
                         if (mdFile) await this.app.vault.trash(mdFile, true);

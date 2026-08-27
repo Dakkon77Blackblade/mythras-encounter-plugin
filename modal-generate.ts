@@ -111,11 +111,9 @@ export class MythrasGenerateModal extends Modal {
             const activeView = this.app.workspace.activeEditor;
             // Removed the early return if no editor exists, as we still want to save to the Roster!
 
-            // Ensure folder structure exists
             const safeScenario = this.scenario.replace(/[^\p{L}\p{N} -]/gu, '').trim() || 'General';
             const safeEncounter = this.encounter.replace(/[^\p{L}\p{N} -]/gu, '').trim() || 'Random Encounter';
-            const folderPath = normalizePath(`${this.plugin.settings.baseFolder}/Roster/${safeScenario}/${safeEncounter}`);
-            
+            const folderPath = normalizePath(`${this.plugin.settings.baseFolder}/Roster`);
             await this.ensureFolderExists(folderPath);
 
             let output = `\n## Encounter: ${template.name}\n\n`;
