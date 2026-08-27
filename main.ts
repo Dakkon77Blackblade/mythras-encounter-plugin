@@ -87,7 +87,7 @@ export default class MythrasEncounterPlugin extends Plugin {
         // Register the autocomplete suggester for items
         this.registerEditorSuggest(new ItemSuggester(this.app, this));
 
-        // Auto-inject encounter-id for mythras-encounter files
+        // Auto-inject encounter-id for mythras-encounter files and refresh UI
         this.registerEvent(
             this.app.metadataCache.on('changed', (file, data, cache) => {
                 const fm = cache.frontmatter;
@@ -98,6 +98,32 @@ export default class MythrasEncounterPlugin extends Plugin {
                                 frontmatter['encounter-id'] = window.crypto.randomUUID();
                             }
                         });
+                    }
+                    
+                    // Notify any open Roster UI to refresh so backend folders auto-sync
+                    const leaves = this.app.workspace.getLeavesOfType(MYTHRAS_MANAGER_VIEW);
+                    for (const leaf of leaves) {
+                        const view = leaf.view as any;
+                        if (view && view.rosterUI) {
+                            view.rosterUI.loadInstances().then(() => view.rosterUI.display());
+                        }
+                    }
+                }
+            })
+        );
+
+        this.registerEvent(
+            this.app.vault.on('rename', (file) => {
+                if (file instanceof TFile && file.extension === 'md') {
+                    const cache = this.app.metadataCache.getFileCache(file);
+                    if (cache?.frontmatter?.type === 'mythras-encounter') {
+                        const leaves = this.app.workspace.getLeavesOfType(MYTHRAS_MANAGER_VIEW);
+                        for (const leaf of leaves) {
+                            const view = leaf.view as any;
+                            if (view && view.rosterUI) {
+                                view.rosterUI.loadInstances().then(() => view.rosterUI.display());
+                            }
+                        }
                     }
                 }
             })
