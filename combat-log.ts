@@ -6,8 +6,11 @@ export interface CombatLogEntry {
     actor: string;
     action: string;
     roll: number;
-    target: number;
-    successLevel: string;
+    target?: number;
+    successLevel?: string;
+    type?: 'skill' | 'damage';
+    damageTotal?: number;
+    specialFx?: string;
 }
 
 export const COMBAT_LOG_VIEW = "mythras-combat-log-view";
@@ -66,20 +69,33 @@ export class CombatLogView extends ItemView {
 
         for (const entry of entries) {
             const levelClass = entry.successLevel ? `combat-log-${entry.successLevel.toLowerCase()}` : '';
-            const el = logContainer.createDiv(`combat-log-entry ${levelClass}`.trim());
+            const typeClass = entry.type === 'damage' ? 'combat-log-damage' : '';
+            const el = logContainer.createDiv(`combat-log-entry ${levelClass} ${typeClass}`.trim());
             const timeStr = new Date(entry.timestamp).toLocaleTimeString();
             
             const headerEl = el.createDiv('combat-log-entry-header');
-            headerEl.createDiv({ text: entry.actor, cls: 'combat-log-actor' });
-            headerEl.createDiv({ text: `[${timeStr}]`, cls: 'combat-log-time' });
+            
+            if (entry.type === 'damage') {
+                headerEl.createDiv({ text: `[${timeStr}] ${entry.actor} attacked with ${entry.action}`, cls: 'combat-log-action-text' });
+                
+                const resultEl = el.createDiv('combat-log-result');
+                resultEl.createSpan({ text: `Damage: ${entry.damageTotal} (Rolled: ${entry.roll})`, cls: 'combat-log-damage-info' });
+                
+                if (entry.specialFx) {
+                    el.createDiv({ text: `Effects: ${entry.specialFx}`, cls: 'combat-log-fx' });
+                }
+            } else {
+                headerEl.createDiv({ text: entry.actor, cls: 'combat-log-actor' });
+                headerEl.createDiv({ text: `[${timeStr}]`, cls: 'combat-log-time' });
 
-            const resultEl = el.createDiv('combat-log-result');
-            resultEl.createSpan({ text: `${entry.action} (${entry.target}%)`, cls: 'combat-log-action' });
-            resultEl.createSpan({ text: ` → Roll: ${entry.roll} → `, cls: 'combat-log-roll-info' });
-            resultEl.createSpan({ 
-                text: entry.successLevel, 
-                cls: `combat-log-badge combat-log-badge-${(entry.successLevel || '').toLowerCase()}` 
-            });
+                const resultEl = el.createDiv('combat-log-result');
+                resultEl.createSpan({ text: `${entry.action} (${entry.target}%)`, cls: 'combat-log-action' });
+                resultEl.createSpan({ text: ` → Roll: ${entry.roll} → `, cls: 'combat-log-roll-info' });
+                resultEl.createSpan({ 
+                    text: entry.successLevel || '', 
+                    cls: `combat-log-badge combat-log-badge-${(entry.successLevel || '').toLowerCase()}` 
+                });
+            }
         }
     }
 }

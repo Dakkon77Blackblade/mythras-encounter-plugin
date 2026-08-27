@@ -748,4 +748,26 @@
     border: 1px solid rgba(168, 85, 247, 0.45);
 }
 
+/* Combat Log Damage */
+.combat-log-entry.combat-log-damage {
+    border-left: 4px solid var(--text-warning);
+    background-color: rgba(220, 160, 40, 0.1);
+}
 
+.combat-log-action-text {
+    font-weight: 500;
+    color: var(--text-normal);
+}
+
+.combat-log-damage-info {
+    font-weight: bold;
+    color: var(--text-error);
+    font-size: 1.1em;
+}
+
+.combat-log-fx {
+    font-style: italic;
+    color: var(--text-accent);
+    font-size: 0.85em;
+    margin-top: 4px;
+}

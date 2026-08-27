@@ -508,7 +508,28 @@ export function renderEnemyStatblock(
             if (w.traits) allFx.push(w.traits);
 
             wLine.createSpan({ text: `⚔️ ${w.name}: `, cls: 'mythras-label-bold' });
-            wLine.createSpan({ text: `${w.damage || '-'}, Size ${w.size || '-'}${reachRange}` });
+            
+            const dmgSpan = wLine.createSpan({ text: `${w.damage || '-'}`, cls: 'mythras-rollable-pill' });
+            dmgSpan.onclick = () => {
+                if (!w.damage || w.damage === '-') return;
+                const calculatedDamage = DiceRoller.rollExpression(w.damage);
+                if (plugin.combatLogService) {
+                    plugin.combatLogService.addEntry({
+                        actor: instance.name,
+                        action: w.name,
+                        type: 'damage',
+                        damageTotal: calculatedDamage,
+                        roll: calculatedDamage,
+                        specialFx: allFx.length > 0 ? allFx.join(', ') : undefined
+                    });
+                    
+                    if (plugin.activateCombatLogView) {
+                        plugin.activateCombatLogView();
+                    }
+                }
+            };
+            
+            wLine.createSpan({ text: `, Size ${w.size || '-'}${reachRange}` });
             if (allFx.length > 0) {
                 wLine.createSpan({ text: `, ` });
                 wLine.createSpan({ text: allFx.join(', '), cls: 'mythras-weapon-fx' });
