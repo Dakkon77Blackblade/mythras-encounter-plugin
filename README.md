@@ -74,6 +74,7 @@ flowchart TD
 - **Hierarchy:** Organizes combatants into **Scenarios** (e.g., *Deep Mines*, *Act 2 - City*) and **Encounters** (e.g., *Gate Ambush*, *Chieftain's Lair*).
 - **Stateful Combat Tracking:** Unlike static text statblocks, Roster instances maintain real-time combat state: Current Hit Points (wounds) and Current Armor Points per Hit Location, custom name overrides, and individual notes.
 - **Two-Pane UI:** A desktop-class workspace with a Scenario navigation tree, Encounter Tag-Cloud filter, multi-select bulk operations (move, duplicate, delete), quick snippet copying, and a tabbed deep-editor.
+- **Deep Editing:** Within the tabbed editor, dynamically adjust core stats, add or modify individual Hit Locations, and freely add, edit, or remove standard, professional, and magic skills directly on the combatant instance to represent unique variations.
 
 ---
 
