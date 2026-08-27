@@ -6,7 +6,7 @@
 
 A complete encounter, bestiary, armory, and combat management suite for Game Masters running **Mythras** (and d100 / BRP systems) in [Obsidian](https://obsidian.md).
 
-This plugin bridges the gap between the official online [Mythras Encounter Generator](https://mythras.skoll.xyz/) and your local Obsidian Vault. It enables offline template management, authentic local dice rolling, dynamic encounter building, live interactive statblocks, real-time Hit Location wound tracking, and seamless inline weapon references directly inside your campaign notes.
+This plugin bridges the gap between the fan-project online [Mythras Encounter Generator](https://mythras.skoll.xyz/about/) and your local Obsidian Vault. It enables offline template management, authentic local dice rolling, dynamic encounter building, live interactive statblocks, real-time Hit Location wound tracking, and seamless inline weapon references directly inside your campaign notes.
 
 ---
 
@@ -90,11 +90,12 @@ flowchart LR
 
 ### Step 1: Building the Bestiary (Search, Import & Customization)
 
-#### Importing Templates from the Web
-1. Open the Command Palette (`Ctrl/Cmd + P`) and select **`Import Template from Mythras Encounter Generator`**.
-2. Type a search query (minimum 3 characters, e.g., `Goblin`, `Bandit`, `Skeleton`, `Dragon`).
-3. The modal queries the official online database and displays results with Rank, Race, Creator, and Tags.
-4. Select a template and press `Enter` (or click). The plugin scrapes the full template—extracting attributes, hit locations, features, standard/custom/magic skills, combat styles, and weapon options—and saves it to `<baseFolder>/Bestiary/`.
+#### Importing Templates
+1. Use `⌘/Ctrl + P` to open the Command Palette and search for "Mythras".
+2. Select **`Import Template from Mythras Encounter Generator`**.
+3. Type a search query (minimum 3 characters, e.g., `Goblin`, `Bandit`, `Skeleton`, `Dragon`).
+4. The modal queries the official online database and displays results with Rank, Race, Creator, and Tags.
+5. Select a template and press `Enter` (or click). The plugin scrapes the full template—extracting attributes, hit locations, features, standard/custom/magic skills, combat styles, and weapon options—and saves it to `<baseFolder>/Bestiary/`.
 
 #### Managing & Editing Templates
 1. Open the **Mythras Manager** and switch to the **Bestiary** tab.
@@ -219,8 +220,8 @@ During fast-paced combat, you do not need to open side panels to record wounds o
 | ```` ```enemy <id> ``` ```` | Renders a compact live statblock for a specific combatant. | ```` ```enemy 1787844127518493 ``` ```` |
 | ```` ```enemy <id> long ``` ```` | Renders a full expanded statblock including all skills and notes. | ```` ```enemy 1787844127518493 long ``` ```` |
 | ```` ```mythras-encounter ``` ```` | Renders the complete encounter grid for the current note. | ```` ```mythras-encounter ``` ```` |
-| ```` ```mythras-encounter\nid: <uuid>\nformat: long\n``` ```` | Renders an encounter by ID with full-format statblocks. | ```` ```mythras-encounter\nid: 2ecf721d-bd58-42e7-8445-7a644fa838ca\nformat: long\n``` ```` |
-| ```` ```item\n<Weapon Name>\n``` ```` | Renders a full equipment statblock card from the Armory. | ```` ```item\nBroadsword\n``` ```` |
+| ```` ```mythras-encounter<br>id: <uuid><br>format: long<br>``` ```` | Renders an encounter by ID with full-format statblocks. | ```` ```mythras-encounter<br>id: 2ecf721d-bd58-42e7-8445-7a644fa838ca<br>format: long<br>``` ```` |
+| ```` ```item<br><Weapon Name><br>``` ```` | Renders a full equipment statblock card from the Armory. | ```` ```item<br>Broadsword<br>``` ```` |
 | `` `item: <Weapon Name>` `` | Inline weapon badge with hover statblock popover. | `` `item: Heavy Crossbow` `` |
 
 ---
