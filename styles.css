@@ -468,15 +468,17 @@
 
 
 .mythras-encounter-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 16px;
-    align-items: start;
+    align-items: flex-start;
     width: 100%;
 }
 
 .mythras-encounter-grid .mythras-enemy-short {
     margin: 0;
+    flex: 1 1 450px;
+    max-width: 600px;
     width: 100%;
 }
 
