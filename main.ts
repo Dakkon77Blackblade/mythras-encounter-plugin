@@ -538,8 +538,6 @@ export default class MythrasEncounterPlugin extends Plugin {
     }
 
     async renderEnemyWithImages(instance: MythrasInstance, isLong: boolean, sourcePath: string, onEdit?: () => Promise<void>): Promise<HTMLElement> {
-        let currentStatblock: HTMLElement;
-        
         const onUpdate = async (updatedInstance: MythrasInstance) => {
             const rosterPath = normalizePath(`${this.settings.baseFolder}/Roster`);
             const folder = this.app.vault.getAbstractFileByPath(rosterPath);
@@ -547,18 +545,25 @@ export default class MythrasEncounterPlugin extends Plugin {
                 const file = (folder as any).children.find((f: any) => f.extension === 'json' && f.name.startsWith(updatedInstance.id));
                 if (file && file instanceof TFile) {
                     await this.app.vault.modify(file, JSON.stringify(updatedInstance, null, 2));
-                    Object.assign(instance, updatedInstance);
                     
-                    const newStatblock = await this.renderEnemyWithImages(instance, isLong, sourcePath, onEdit);
-                    if (currentStatblock && currentStatblock.parentNode) {
-                        currentStatblock.replaceWith(newStatblock);
-                    }
+                    // Update all matching instances in the DOM
+                    const domInstances = document.querySelectorAll(`.mythras-enemy-short[data-mythras-instance-id="${updatedInstance.id}"]`);
+                    domInstances.forEach(async (el) => {
+                        const elIsLong = (el as HTMLElement).dataset.mythrasIsLong === 'true';
+                        const elSourcePath = (el as HTMLElement).dataset.mythrasSourcePath || '';
+                        // Render a fresh statblock to replace this one
+                        const newStatblock = await this.renderEnemyWithImages(updatedInstance, elIsLong, elSourcePath, onEdit);
+                        el.replaceWith(newStatblock);
+                    });
                 }
             }
         };
 
         const statblock = renderEnemyStatblock(this.app, instance, isLong ? 'long' : 'short', onEdit, onUpdate);
-        currentStatblock = statblock;
+        
+        statblock.dataset.mythrasInstanceId = instance.id;
+        statblock.dataset.mythrasIsLong = isLong ? 'true' : 'false';
+        statblock.dataset.mythrasSourcePath = sourcePath;
 
         const imgDiv = statblock.querySelector('.mythras-enemy-image') as HTMLElement;
         if (imgDiv && imgDiv.dataset.imageLink) {
