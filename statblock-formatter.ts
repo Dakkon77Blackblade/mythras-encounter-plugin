@@ -526,26 +526,40 @@ export class HitLocationEditModal extends Modal {
         let newAp = this.hl.currentAp !== undefined ? String(this.hl.currentAp) : String(this.hl.ap);
         let newHp = this.hl.currentHp !== undefined ? String(this.hl.currentHp) : String(this.hl.hp);
         
+        const save = () => {
+            let parsedAp: string | number = newAp;
+            if (!isNaN(Number(newAp)) && newAp.trim() !== '') {
+                parsedAp = Number(newAp);
+            }
+            this.onSave(parsedAp, parseInt(newHp) || 0);
+            this.close();
+        };
+        
         new Setting(contentEl)
             .setName('Current AP')
-            .addText(text => text.setValue(newAp).onChange(val => newAp = val));
+            .setDesc(`Max: ${this.hl.ap}`)
+            .addText(text => {
+                text.setValue(newAp).onChange(val => newAp = val);
+                text.inputEl.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') save();
+                });
+            });
             
         new Setting(contentEl)
             .setName('Current HP')
-            .addText(text => text.setValue(newHp).onChange(val => newHp = val));
+            .setDesc(`Max: ${this.hl.hp}`)
+            .addText(text => {
+                text.setValue(newHp).onChange(val => newHp = val);
+                text.inputEl.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') save();
+                });
+            });
             
         new Setting(contentEl)
             .addButton(btn => btn
                 .setButtonText('Save')
                 .setCta()
-                .onClick(() => {
-                    let parsedAp: string | number = newAp;
-                    if (!isNaN(Number(newAp)) && newAp.trim() !== '') {
-                        parsedAp = Number(newAp);
-                    }
-                    this.onSave(parsedAp, parseInt(newHp) || 0);
-                    this.close();
-                }));
+                .onClick(save));
     }
     
     onClose() {
