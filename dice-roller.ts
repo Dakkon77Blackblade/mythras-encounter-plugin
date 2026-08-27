@@ -1,6 +1,15 @@
+export interface RollBreakdownNode {
+    sign: string;
+    label: string;
+    rolls?: number[];
+    value: number;
+}
+
 export class DiceRoller {
-    static rollExpressionWithBreakdown(expression: string | number, stats: Record<string, number> = {}): { total: number, breakdown: string } {
-        if (typeof expression === 'number') return { total: expression, breakdown: expression.toString() };
+    static rollExpressionWithBreakdown(expression: string | number, stats: Record<string, number> = {}): { total: number, breakdown: RollBreakdownNode[] } {
+        if (typeof expression === 'number') {
+            return { total: expression, breakdown: [{ sign: '+', label: expression.toString(), value: expression }] };
+        }
         
         let expr = expression.trim();
         for (const [stat, val] of Object.entries(stats)) {
@@ -9,20 +18,20 @@ export class DiceRoller {
 
         const parts = expr.split(/(?=[+-])/);
         let total = 0;
-        let breakdownParts: string[] = [];
+        let breakdownParts: RollBreakdownNode[] = [];
 
         for (let part of parts) {
-            let signStr = '';
+            let signStr = '+';
             let sign = 1;
             if (part.startsWith('+')) {
-                signStr = '+ ';
+                signStr = '+';
                 part = part.substring(1);
             } else if (part.startsWith('-')) {
-                signStr = '- ';
+                signStr = '-';
                 sign = -1;
                 part = part.substring(1);
             } else if (breakdownParts.length > 0) {
-                signStr = '+ ';
+                signStr = '+';
             }
 
             part = part.trim();
@@ -39,22 +48,30 @@ export class DiceRoller {
                     rollTotal += r;
                     individualRolls.push(r);
                 }
-                total += sign * rollTotal;
+                const partValue = sign * rollTotal;
+                total += partValue;
                 
-                let detail = `[${individualRolls.join('+')}]`;
-                if (count === 1) detail = `[${rollTotal}]`;
-                
-                breakdownParts.push(`${signStr}${detail}`);
+                breakdownParts.push({
+                    sign: signStr,
+                    label: `${count}d${sides}`,
+                    rolls: individualRolls,
+                    value: rollTotal
+                });
             } else {
                 const num = parseInt(part, 10);
                 if (!isNaN(num)) {
-                    total += sign * num;
-                    breakdownParts.push(`${signStr}${num}`);
+                    const partValue = sign * num;
+                    total += partValue;
+                    breakdownParts.push({
+                        sign: signStr,
+                        label: num.toString(),
+                        value: num
+                    });
                 }
             }
         }
 
-        return { total, breakdown: breakdownParts.join(' ').trim() };
+        return { total, breakdown: breakdownParts };
     }
 
     static rollExpression(expression: string | number, stats: Record<string, number> = {}): number {

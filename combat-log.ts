@@ -11,7 +11,7 @@ export interface CombatLogEntry {
     type?: 'skill' | 'damage';
     damageTotal?: number;
     specialFx?: string;
-    rollBreakdown?: string;
+    rollBreakdown?: any[];
 }
 
 export const COMBAT_LOG_VIEW = "mythras-combat-log-view";
@@ -80,13 +80,30 @@ export class CombatLogView extends ItemView {
                 headerEl.createDiv({ text: `[${timeStr}] ${entry.actor} attacked with ${entry.action}`, cls: 'combat-log-action-text' });
                 
                 const resultEl = el.createDiv('combat-log-result');
-                let text = `Damage: ${entry.damageTotal}`;
-                if (entry.rollBreakdown) {
-                    text += ` (Rolled: ${entry.rollBreakdown} = ${entry.damageTotal})`;
+                const dmgLabel = resultEl.createSpan({ text: 'Damage: ', cls: 'combat-log-damage-label' });
+                
+                if (entry.rollBreakdown && entry.rollBreakdown.length > 0) {
+                    const breakdownEl = resultEl.createSpan('combat-log-breakdown');
+                    entry.rollBreakdown.forEach((node, index) => {
+                        const isFirst = index === 0;
+                        if (!isFirst || node.sign === '-') {
+                            breakdownEl.createSpan({ text: ` ${node.sign} `, cls: 'combat-log-sign' });
+                        }
+                        
+                        const nodeEl = breakdownEl.createSpan('combat-log-node');
+                        if (node.rolls) {
+                            nodeEl.createSpan({ text: node.label, cls: 'combat-log-dice-label' });
+                            nodeEl.createSpan({ text: ` [${node.rolls.join('+')}]`, cls: 'combat-log-dice-rolls' });
+                        } else {
+                            nodeEl.createSpan({ text: node.label, cls: 'combat-log-constant' });
+                        }
+                    });
+                    
+                    breakdownEl.createSpan({ text: ' = ', cls: 'combat-log-equals' });
+                    breakdownEl.createSpan({ text: `${entry.damageTotal}`, cls: 'combat-log-damage-total' });
                 } else {
-                    text += ` (Rolled: ${entry.roll})`;
+                    resultEl.createSpan({ text: `${entry.damageTotal} (Rolled: ${entry.roll})`, cls: 'combat-log-damage-info' });
                 }
-                resultEl.createSpan({ text: text, cls: 'combat-log-damage-info' });
                 
                 if (entry.specialFx) {
                     el.createDiv({ text: `Effects: ${entry.specialFx}`, cls: 'combat-log-fx' });
