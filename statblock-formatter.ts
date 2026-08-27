@@ -49,6 +49,18 @@ export async function generateStatblock(app: App, armoryFile: string, template: 
         rolledStandardSkills.push(`**${skill}:** ${val}%`);
     }
 
+    const rolledMagicSkills: string[] = [];
+    for (const [skill, formula] of Object.entries(template.magicSkills || {})) {
+        const val = DiceRoller.rollExpression(formula, rolledStats);
+        rolledMagicSkills.push(`**${skill}:** ${val}%`);
+    }
+
+    const rolledProfessionalSkills: string[] = [];
+    for (const [skill, formula] of Object.entries(template.professionalSkills || {})) {
+        const val = DiceRoller.rollExpression(formula, rolledStats);
+        rolledProfessionalSkills.push(`**${skill}:** ${val}%`);
+    }
+
     const rolledCustomSkills: string[] = [];
     for (const [skill, formula] of Object.entries(template.customSkills || {})) {
         const val = DiceRoller.rollExpression(formula, rolledStats);
@@ -213,6 +225,12 @@ export async function generateStatblock(app: App, armoryFile: string, template: 
     if (rolledStandardSkills.length > 0) {
         md += `**Standard Skills:** ${rolledStandardSkills.join(' | ')}\n\n`;
     }
+    if (rolledMagicSkills.length > 0) {
+        md += `**Magic Skills:** ${rolledMagicSkills.join(' | ')}\n\n`;
+    }
+    if (rolledProfessionalSkills.length > 0) {
+        md += `**Professional Skills:** ${rolledProfessionalSkills.join(' | ')}\n\n`;
+    }
     if (rolledCustomSkills.length > 0) {
         md += `**Custom Skills:** ${rolledCustomSkills.join(' | ')}\n\n`;
     }
@@ -309,6 +327,14 @@ export function formatInstanceAsMarkdown(instance: MythrasInstance): string {
     if (instance.standardSkills && Object.keys(instance.standardSkills).length > 0) {
         const standard = Object.entries(instance.standardSkills).map(([k, v]) => `**${k}:** ${v}%`);
         md += `**Standard Skills:** ${standard.join(' | ')}\n\n`;
+    }
+    if (instance.magicSkills && Object.keys(instance.magicSkills).length > 0) {
+        const magic = Object.entries(instance.magicSkills).map(([k, v]) => `**${k}:** ${v}%`);
+        md += `**Magic Skills:** ${magic.join(' | ')}\n\n`;
+    }
+    if (instance.professionalSkills && Object.keys(instance.professionalSkills).length > 0) {
+        const prof = Object.entries(instance.professionalSkills).map(([k, v]) => `**${k}:** ${v}%`);
+        md += `**Professional Skills:** ${prof.join(' | ')}\n\n`;
     }
     if (instance.customSkills && Object.keys(instance.customSkills).length > 0) {
         const custom = Object.entries(instance.customSkills).map(([k, v]) => `**${k}:** ${v}%`);
@@ -426,8 +452,18 @@ export function renderEnemyStatblock(instance: MythrasInstance, mode: 'short' | 
             firstSkillGroup = false;
         }
 
+        if (instance.magicSkills && Object.keys(instance.magicSkills).length > 0) {
+            renderSkills('Magic Skills:', instance.magicSkills, firstSkillGroup);
+            firstSkillGroup = false;
+        }
+
+        if (instance.professionalSkills && Object.keys(instance.professionalSkills).length > 0) {
+            renderSkills('Professional Skills:', instance.professionalSkills, firstSkillGroup);
+            firstSkillGroup = false;
+        }
+
         if (instance.customSkills && Object.keys(instance.customSkills).length > 0) {
-            renderSkills('Professional Skills:', instance.customSkills, firstSkillGroup);
+            renderSkills('Custom Skills:', instance.customSkills, firstSkillGroup);
             firstSkillGroup = false;
         }
 

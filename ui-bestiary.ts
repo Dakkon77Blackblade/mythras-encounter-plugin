@@ -297,11 +297,16 @@ export class BestiaryManagerUI {
         const skillsDiv = grid.createDiv();
         skillsDiv.createEl('h3', { text: 'Skills' });
         const stdSkills = Object.entries(entry.standardSkills || {}).map(([k, v]) => `${k} ${v}`).join(', ');
+        const magSkills = Object.entries(entry.magicSkills || {}).map(([k, v]) => `${k} ${v}`).join(', ');
+        const proSkills = Object.entries(entry.professionalSkills || {}).map(([k, v]) => `${k} ${v}`).join(', ');
         const cstSkills = Object.entries(entry.customSkills || {}).map(([k, v]) => `${k} ${v}`).join(', ');
         const cbtStyles = Object.entries(entry.combatStyles || {}).map(([k, v]) => `${k} ${v}`).join(', ');
-        skillsDiv.createEl('p', { text: `Standard: ${stdSkills}` });
-        skillsDiv.createEl('p', { text: `Custom: ${cstSkills}` });
-        skillsDiv.createEl('p', { text: `Combat: ${cbtStyles}` });
+
+        if (stdSkills) skillsDiv.createEl('p', { text: `Standard: ${stdSkills}` });
+        if (magSkills) skillsDiv.createEl('p', { text: `Magic: ${magSkills}` });
+        if (proSkills) skillsDiv.createEl('p', { text: `Professional: ${proSkills}` });
+        if (cstSkills) skillsDiv.createEl('p', { text: `Custom: ${cstSkills}` });
+        if (cbtStyles) skillsDiv.createEl('p', { text: `Combat: ${cbtStyles}` });
 
         const weaponsDiv = container.createDiv();
         weaponsDiv.style.marginTop = '20px';
@@ -402,7 +407,12 @@ export class BestiaryManagerUI {
 
         this.renderDictionaryEditor(form, 'Stats', entry.stats, true);
         this.renderDictionaryEditor(form, 'Attributes', entry.attributes, true);
+        if (!entry.magicSkills) entry.magicSkills = {};
+        if (!entry.professionalSkills) entry.professionalSkills = {};
+        
         this.renderDictionaryEditor(form, 'Standard Skills', entry.standardSkills, false);
+        this.renderDictionaryEditor(form, 'Magic Skills', entry.magicSkills, false);
+        this.renderDictionaryEditor(form, 'Professional Skills', entry.professionalSkills, false);
         this.renderDictionaryEditor(form, 'Custom Skills', entry.customSkills, false);
         this.renderDictionaryEditor(form, 'Combat Styles', entry.combatStyles, false);
 
@@ -697,6 +707,8 @@ export class BestiaryManagerUI {
         sanitizeObj(tpl.stats);
         sanitizeObj(tpl.attributes);
         sanitizeObj(tpl.standardSkills);
+        sanitizeObj(tpl.magicSkills);
+        sanitizeObj(tpl.professionalSkills);
         sanitizeObj(tpl.customSkills);
         sanitizeObj(tpl.combatStyles);
 

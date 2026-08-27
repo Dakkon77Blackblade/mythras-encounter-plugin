@@ -47,6 +47,8 @@ export interface MythrasTemplate {
     hitLocations: { range: string; name: string; armor: string; hpBonus?: number }[];
     features: { name: string; description: string }[];
     standardSkills: { [key: string]: string };
+    magicSkills: { [key: string]: string };
+    professionalSkills: { [key: string]: string };
     customSkills: { [key: string]: string };
     combatStyles: { [key: string]: string };
     weapons: MythrasWeapon[];
@@ -74,6 +76,8 @@ export interface MythrasInstance {
     hitLocations: HitLocationInstance[];
     
     standardSkills: { [key: string]: number };
+    magicSkills: { [key: string]: number };
+    professionalSkills: { [key: string]: number };
     customSkills: { [key: string]: number };
     combatStyles: { [key: string]: number };
     
@@ -122,6 +126,8 @@ export class MythrasApi {
             hitLocations: [],
             features: [],
             standardSkills: {},
+            magicSkills: {},
+            professionalSkills: {},
             customSkills: {},
             combatStyles: {},
             weapons: []
@@ -252,6 +258,8 @@ export class MythrasApi {
         };
 
         parseSkills('Standard skills', template.standardSkills);
+        parseSkills('Magic skills', template.magicSkills);
+        parseSkills('Professional skills', template.professionalSkills);
         parseSkills('Custom skills', template.customSkills);
 
         // Combat styles

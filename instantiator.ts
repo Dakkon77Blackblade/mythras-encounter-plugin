@@ -59,6 +59,16 @@ export async function instantiateEnemy(
         standardSkills[skill] = DiceRoller.rollExpression(formula, stats);
     }
 
+    const magicSkills: Record<string, number> = {};
+    for (const [skill, formula] of Object.entries(template.magicSkills || {})) {
+        magicSkills[skill] = DiceRoller.rollExpression(formula, stats);
+    }
+
+    const professionalSkills: Record<string, number> = {};
+    for (const [skill, formula] of Object.entries(template.professionalSkills || {})) {
+        professionalSkills[skill] = DiceRoller.rollExpression(formula, stats);
+    }
+
     const customSkills: Record<string, number> = {};
     for (const [skill, formula] of Object.entries(template.customSkills || {})) {
         customSkills[skill] = DiceRoller.rollExpression(formula, stats);
@@ -156,6 +166,8 @@ export async function instantiateEnemy(
         attributes,
         hitLocations,
         standardSkills,
+        magicSkills,
+        professionalSkills,
         customSkills,
         combatStyles,
         weapons: activeWeapons,

@@ -967,11 +967,14 @@ export class RosterManagerUI {
                     inp.oninput = (e) => obj[k] = parseInt((e.target as HTMLInputElement).value) || 0;
                 });
             };
+            if (!data.magicSkills) data.magicSkills = {};
+            if (!data.professionalSkills) data.professionalSkills = {};
 
             renderDict(data.standardSkills, 'Standard Skills');
+            renderDict(data.magicSkills, 'Magic Skills');
+            renderDict(data.professionalSkills, 'Professional Skills');
             renderDict(data.customSkills, 'Custom Skills');
             renderDict(data.combatStyles, 'Combat Styles');
-
         } else if (this.editTab === 'weapons') {
             const btnAdd = formArea.createEl('button', { text: '+ Add Weapon', cls: 'mod-cta' });
             btnAdd.style.width = '200px';
