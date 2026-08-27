@@ -512,14 +512,15 @@ export function renderEnemyStatblock(
             const dmgSpan = wLine.createSpan({ text: `${w.damage || '-'}`, cls: 'mythras-rollable-pill' });
             dmgSpan.onclick = () => {
                 if (!w.damage || w.damage === '-') return;
-                const calculatedDamage = DiceRoller.rollExpression(w.damage);
+                const calculatedDamage = DiceRoller.rollExpressionWithBreakdown(w.damage);
                 if (plugin.combatLogService) {
                     plugin.combatLogService.addEntry({
-                        actor: instance.name,
+                        actor: instance.instanceName || instance.templateName || "Unknown",
                         action: w.name,
                         type: 'damage',
-                        damageTotal: calculatedDamage,
-                        roll: calculatedDamage,
+                        damageTotal: calculatedDamage.total,
+                        roll: calculatedDamage.total,
+                        rollBreakdown: calculatedDamage.breakdown,
                         specialFx: allFx.length > 0 ? allFx.join(', ') : undefined
                     });
                     

@@ -11,6 +11,7 @@ export interface CombatLogEntry {
     type?: 'skill' | 'damage';
     damageTotal?: number;
     specialFx?: string;
+    rollBreakdown?: string;
 }
 
 export const COMBAT_LOG_VIEW = "mythras-combat-log-view";
@@ -79,7 +80,13 @@ export class CombatLogView extends ItemView {
                 headerEl.createDiv({ text: `[${timeStr}] ${entry.actor} attacked with ${entry.action}`, cls: 'combat-log-action-text' });
                 
                 const resultEl = el.createDiv('combat-log-result');
-                resultEl.createSpan({ text: `Damage: ${entry.damageTotal} (Rolled: ${entry.roll})`, cls: 'combat-log-damage-info' });
+                let text = `Damage: ${entry.damageTotal}`;
+                if (entry.rollBreakdown) {
+                    text += ` (Rolled: ${entry.rollBreakdown} = ${entry.damageTotal})`;
+                } else {
+                    text += ` (Rolled: ${entry.roll})`;
+                }
+                resultEl.createSpan({ text: text, cls: 'combat-log-damage-info' });
                 
                 if (entry.specialFx) {
                     el.createDiv({ text: `Effects: ${entry.specialFx}`, cls: 'combat-log-fx' });
