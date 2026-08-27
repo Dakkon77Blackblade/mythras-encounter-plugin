@@ -390,6 +390,8 @@ export default class MythrasEncounterPlugin extends Plugin {
                 return (a.instanceName || '').localeCompare(b.instanceName || '');
             });
 
+            const isLong = source.toLowerCase().includes('format: long');
+
             for (const instance of matchingInstances) {
                 try {
                     const onEdit = async () => {
