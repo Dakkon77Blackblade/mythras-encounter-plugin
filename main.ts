@@ -10,10 +10,12 @@ import { buildItemLivePreviewPlugin } from './live-preview';
 import { formatInstanceAsMarkdown, renderEnemyStatblock } from './statblock-formatter';
 import { MythrasInstance } from './mythras-api';
 import { MarkdownRenderer } from 'obsidian';
+import { CombatLogService, CombatLogView, COMBAT_LOG_VIEW } from './combat-log';
 
 export default class MythrasEncounterPlugin extends Plugin {
     settings: MythrasEncounterSettings;
     armoryCache: MythrasWeapon[] = [];
+    combatLogService: CombatLogService = new CombatLogService();
 
     async onload() {
         await this.loadSettings();
@@ -29,6 +31,21 @@ export default class MythrasEncounterPlugin extends Plugin {
             MYTHRAS_MANAGER_VIEW,
             (leaf) => new MythrasManagerView(leaf, this)
         );
+
+        this.registerView(
+            COMBAT_LOG_VIEW,
+            (leaf) => new CombatLogView(leaf, this.combatLogService)
+        );
+
+        this.addCommand({
+            id: 'open-mythras-combat-log',
+            name: 'Open Combat Log',
+            callback: () => this.activateCombatLogView()
+        });
+
+        this.addRibbonIcon('list', 'Open Combat Log', () => {
+            this.activateCombatLogView();
+        });
 
         const ribbonIcon = this.addRibbonIcon('swords', 'Open Mythras Manager', (evt: MouseEvent) => {
             if (evt.button === 2) return; // Ignore right-clicks
@@ -418,6 +435,25 @@ export default class MythrasEncounterPlugin extends Plugin {
         workspace.revealLeaf(leaf);
     }
 
+    async activateCombatLogView() {
+        const { workspace } = this.app;
+        
+        let leaf: any = null;
+        const leaves = workspace.getLeavesOfType(COMBAT_LOG_VIEW);
+        
+        if (leaves.length > 0) {
+            leaf = leaves[0];
+        } else {
+            leaf = workspace.getRightLeaf(false);
+            if (leaf) {
+                await leaf.setViewState({ type: COMBAT_LOG_VIEW, active: true });
+            }
+        }
+        if (leaf) {
+            workspace.revealLeaf(leaf);
+        }
+    }
+
     async migrateLegacyEncounters() {
         const rosterPath = `${this.settings.baseFolder}/Roster`;
         const rosterFolder = this.app.vault.getAbstractFileByPath(rosterPath);
@@ -559,7 +595,7 @@ export default class MythrasEncounterPlugin extends Plugin {
             }
         };
 
-        const statblock = renderEnemyStatblock(this.app, instance, isLong ? 'long' : 'short', onEdit, onUpdate);
+        const statblock = renderEnemyStatblock(this.app, instance, isLong ? 'long' : 'short', onEdit, onUpdate, this);
         
         statblock.dataset.mythrasInstanceId = instance.id;
         statblock.dataset.mythrasIsLong = isLong ? 'true' : 'false';
