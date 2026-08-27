@@ -296,8 +296,7 @@
     max-width: 600px;
 }
 
-.mythras-enemy-edit-btn,
-.mythras-encounter-edit-btn {
+.mythras-enemy-edit-btn {
     position: absolute;
     top: 10px;
     right: 10px;
@@ -488,6 +487,26 @@
 .mythras-encounter-wrapper {
     position: relative;
     width: 100%;
+}
+
+.mythras-encounter-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.mythras-encounter-header h2 {
+    margin: 0;
+}
+
+.mythras-encounter-edit-btn {
+    cursor: pointer;
+    opacity: 0.4;
+    transition: opacity 0.2s;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
 }
 
 .mythras-encounter-grid {

@@ -236,8 +236,11 @@ export default class MythrasEncounterPlugin extends Plugin {
             findJsonFiles(folder);
 
             const wrapper = el.createDiv('mythras-encounter-wrapper');
-            const editBtn = wrapper.createDiv('mythras-encounter-edit-btn');
             
+            const headerWrap = wrapper.createDiv('mythras-encounter-header');
+            headerWrap.createEl('h2', { text: encounterName });
+            
+            const editBtn = headerWrap.createDiv('mythras-encounter-edit-btn');
             setIcon(editBtn, 'pencil');
 
             editBtn.onclick = async () => {
