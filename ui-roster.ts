@@ -360,6 +360,42 @@ export class RosterManagerUI {
             if (b.name === 'Uncategorized') return -1;
             return a.name.localeCompare(b.name);
         });
+
+        // 3. Auto-sync backend folders to match current Scenario / Encounter names
+        for (const scenario of this.scenarios) {
+            const safeScenario = scenario.name.replace(/[^\p{L}\p{N} -]/gu, '').trim() || 'Uncategorized';
+            for (const enc of scenario.encounters) {
+                const safeEncounter = enc.name.replace(/[^\p{L}\p{N} -]/gu, '').trim();
+                if (!safeEncounter) continue;
+
+                const expectedFolderPath = normalizePath(`${rosterPath}/${safeScenario}/${safeEncounter}`);
+                
+                for (const inst of enc.instances) {
+                    if (inst.file.parent?.path !== expectedFolderPath) {
+                        const parts = expectedFolderPath.split('/');
+                        let currentPath = '';
+                        for (const part of parts) {
+                            if (part === '') continue;
+                            currentPath = currentPath === '' ? part : `${currentPath}/${part}`;
+                            if (!await this.app.vault.adapter.exists(currentPath)) {
+                                await this.app.vault.createFolder(currentPath);
+                            }
+                        }
+                        
+                        const newFilePath = normalizePath(`${expectedFolderPath}/${inst.file.name}`);
+                        if (!await this.app.vault.adapter.exists(newFilePath)) {
+                            // Also update the JSON data so it doesn't get confused next time
+                            inst.data.scenario = scenario.name;
+                            inst.data.encounter = enc.name;
+                            const dataStr = JSON.stringify(inst.data, null, 2);
+                            
+                            await this.app.fileManager.renameFile(inst.file, newFilePath);
+                            await this.app.vault.modify(inst.file, dataStr);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     async saveSelectedInstance() {
