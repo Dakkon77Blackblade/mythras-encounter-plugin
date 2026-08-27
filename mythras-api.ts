@@ -69,6 +69,7 @@ export interface MythrasInstance {
     image?: string;
     scenario: string;
     encounter: string;
+    encounterId?: string;
     lastModified: number;
     
     stats: { [key: string]: number };

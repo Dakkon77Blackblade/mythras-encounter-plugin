@@ -489,6 +489,21 @@
     width: 100%;
 }
 
+.mythras-encounter-warning {
+    background-color: var(--background-modifier-error);
+    color: var(--text-error);
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    font-weight: bold;
+    border: 1px solid var(--text-error);
+}
+
+.mythras-encounter-desc {
+    margin-bottom: 15px;
+    color: var(--text-normal);
+}
+
 .mythras-encounter-header {
     display: flex;
     align-items: center;

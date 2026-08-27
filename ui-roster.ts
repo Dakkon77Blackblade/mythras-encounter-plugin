@@ -117,6 +117,7 @@ interface RosterScenario {
 interface RosterEncounter {
     name: string;
     path: string;
+    id: string;
     instances: { file: TFile, data: MythrasInstance }[];
 }
 
@@ -159,64 +160,116 @@ export class RosterManagerUI {
 
     async loadInstances() {
         this.scenarios = [];
-        const rosterPath = `${this.plugin.settings.baseFolder}/Roster`;
-        const rootFolder = this.app.vault.getAbstractFileByPath(rosterPath);
-        
-        if (!rootFolder || !(rootFolder instanceof TFolder)) return;
+        const scenarioMap = new Map<string, RosterScenario>();
+        const encounterMap = new Map<string, RosterEncounter>();
 
-        const generalScenario: RosterScenario = { name: 'General', path: rosterPath, encounters: [] };
+        const getOrCreateScenario = (name: string): RosterScenario => {
+            let scen = scenarioMap.get(name);
+            if (!scen) {
+                scen = { name, path: `${this.plugin.settings.baseFolder}/Roster/${name}`, encounters: [] };
+                scenarioMap.set(name, scen);
+                this.scenarios.push(scen);
+            }
+            return scen;
+        };
 
-        for (const scenarioNode of rootFolder.children) {
-            if (scenarioNode instanceof TFile && scenarioNode.extension === 'json') {
-                let genEnc = generalScenario.encounters.find(e => e.name === 'Random Encounter');
-                if (!genEnc) {
-                    genEnc = { name: 'Random Encounter', path: rosterPath, instances: [] };
-                    generalScenario.encounters.push(genEnc);
-                }
-                try {
-                    const content = await this.app.vault.read(scenarioNode);
-                    genEnc.instances.push({ file: scenarioNode, data: JSON.parse(content) });
-                } catch (e) {
-                    console.error(e);
-                }
-            } else if (scenarioNode instanceof TFolder) {
-                const scenario: RosterScenario = { name: scenarioNode.name, path: scenarioNode.path, encounters: [] };
+        // 1. Scan Markdown Files for Encounters
+        const mdFiles = this.app.vault.getMarkdownFiles();
+        for (const file of mdFiles) {
+            const cache = this.app.metadataCache.getFileCache(file);
+            if (cache?.frontmatter?.type === 'mythras-encounter') {
+                const encounterId = cache.frontmatter['encounter-id'];
+                if (!encounterId) continue; // wait for auto-id
+
+                const scenarioName = cache.frontmatter['scenario'] || 'Uncategorized';
+                const encounterName = file.basename;
+
+                const scenario = getOrCreateScenario(scenarioName);
                 
-                for (const encNode of scenarioNode.children) {
-                    if (encNode instanceof TFile && encNode.extension === 'json') {
-                        let genEnc = scenario.encounters.find(e => e.name === 'Random Encounter');
-                        if (!genEnc) {
-                            genEnc = { name: 'Random Encounter', path: scenarioNode.path, instances: [] };
-                            scenario.encounters.push(genEnc);
-                        }
-                        try {
-                            const content = await this.app.vault.read(encNode);
-                            genEnc.instances.push({ file: encNode, data: JSON.parse(content) });
-                        } catch (e) { console.error(e); }
-                    } else if (encNode instanceof TFolder) {
-                        const encounter: RosterEncounter = { name: encNode.name, path: encNode.path, instances: [] };
-                        for (const fileNode of encNode.children) {
-                            if (fileNode instanceof TFile && fileNode.extension === 'json') {
-                                try {
-                                    const content = await this.app.vault.read(fileNode);
-                                    encounter.instances.push({ file: fileNode, data: JSON.parse(content) });
-                                } catch (e) { console.error(e); }
-                            }
-                        }
-                        encounter.instances.sort((a, b) => b.data.lastModified - a.data.lastModified);
-                        scenario.encounters.push(encounter);
-                    }
-                }
-                scenario.encounters.sort((a, b) => a.name.localeCompare(b.name));
-                this.scenarios.push(scenario);
+                const enc: RosterEncounter = {
+                    name: encounterName,
+                    path: file.path,
+                    id: encounterId,
+                    instances: []
+                };
+                
+                encounterMap.set(encounterId, enc);
+                scenario.encounters.push(enc);
             }
         }
 
-        if (generalScenario.encounters.length > 0) {
-            this.scenarios.push(generalScenario);
+        // 2. Scan JSON Files in Roster for Enemy Instances
+        const rosterPath = `${this.plugin.settings.baseFolder}/Roster`;
+        const rootFolder = this.app.vault.getAbstractFileByPath(rosterPath);
+        
+        if (rootFolder && rootFolder instanceof TFolder) {
+            const matchingFiles: TFile[] = [];
+            const findJsonFiles = (f: any) => {
+                if (f && 'children' in f) {
+                    for (const child of f.children) {
+                        findJsonFiles(child);
+                    }
+                } else if (f instanceof TFile && f.extension === 'json') {
+                    matchingFiles.push(f);
+                }
+            };
+            findJsonFiles(rootFolder);
+
+            for (const file of matchingFiles) {
+                try {
+                    const content = await this.app.vault.read(file);
+                    const data = JSON.parse(content) as MythrasInstance;
+                    
+                    let encounterId = data.encounterId;
+                    
+                    // Fallback for legacy JSON without encounterId
+                    if (!encounterId) {
+                        // Guess encounter by finding one with matching name
+                        const legacyName = data.encounter || 'Random Encounter';
+                        const legacyScenarioName = data.scenario || 'General';
+                        
+                        // Let's just create a legacy bucket if missing
+                        const scenario = getOrCreateScenario(legacyScenarioName);
+                        let enc = scenario.encounters.find(e => e.name === legacyName);
+                        if (!enc) {
+                            enc = { name: legacyName, path: `${rosterPath}/${legacyScenarioName}/${legacyName}`, id: legacyName, instances: [] };
+                            encounterMap.set(enc.id, enc);
+                            scenario.encounters.push(enc);
+                        }
+                        encounterId = enc.id;
+                    }
+
+                    const enc = encounterMap.get(encounterId);
+                    if (enc) {
+                        enc.instances.push({ file, data });
+                    } else {
+                        // Orphaned instance? Put in Uncategorized
+                        const scenario = getOrCreateScenario('Uncategorized');
+                        let orphanEnc = scenario.encounters.find(e => e.id === encounterId);
+                        if (!orphanEnc) {
+                            orphanEnc = { name: data.encounter || 'Unknown', path: `${rosterPath}/Uncategorized/${encounterId}`, id: encounterId, instances: [] };
+                            scenario.encounters.push(orphanEnc);
+                            encounterMap.set(encounterId, orphanEnc);
+                        }
+                        orphanEnc.instances.push({ file, data });
+                    }
+                } catch (e) {}
+            }
         }
 
-        this.scenarios.sort((a, b) => a.name.localeCompare(b.name));
+        // Sort instances by last modified
+        for (const scenario of this.scenarios) {
+            for (const enc of scenario.encounters) {
+                enc.instances.sort((a, b) => b.data.lastModified - a.data.lastModified);
+            }
+            scenario.encounters.sort((a, b) => a.name.localeCompare(b.name));
+        }
+
+        this.scenarios.sort((a, b) => {
+            if (a.name === 'Uncategorized') return 1;
+            if (b.name === 'Uncategorized') return -1;
+            return a.name.localeCompare(b.name);
+        });
     }
 
     async saveSelectedInstance() {
@@ -225,16 +278,22 @@ export class RosterManagerUI {
         this.selectedInstance.data.lastModified = Date.now();
         const dataStr = JSON.stringify(this.selectedInstance.data, null, 2);
         
-        const safeScenario = this.selectedInstance.data.scenario.replace(/[^\p{L}\p{N} -]/gu, '').trim() || 'General';
-        const safeEncounter = this.selectedInstance.data.encounter.replace(/[^\p{L}\p{N} -]/gu, '').trim() || 'Random Encounter';
+        let safeScenario = 'Uncategorized';
+        let safeEncounter = this.selectedInstance.data.encounterId || 'Unknown';
+        
+        for (const scen of this.scenarios) {
+            const enc = scen.encounters.find(e => e.id === this.selectedInstance!.data.encounterId);
+            if (enc) {
+                safeScenario = scen.name.replace(/[^\p{L}\p{N} -]/gu, '').trim() || 'Uncategorized';
+                safeEncounter = enc.name.replace(/[^\p{L}\p{N} -]/gu, '').trim() || safeEncounter;
+                break;
+            }
+        }
         
         const oldFile = this.selectedInstance.file;
-        const oldScenario = oldFile.path.split('/')[2];
-        const oldEncounter = oldFile.path.split('/')[3];
+        const newFolderPath = normalizePath(`${this.plugin.settings.baseFolder}/Roster/${safeScenario}/${safeEncounter}`);
         
-        if (safeScenario !== oldScenario || safeEncounter !== oldEncounter) {
-            const newFolderPath = normalizePath(`${this.plugin.settings.baseFolder}/Roster/${safeScenario}/${safeEncounter}`);
-            
+        if (oldFile.parent?.path !== newFolderPath) {
             const parts = newFolderPath.split('/');
             let currentPath = '';
             for (const part of parts) {
@@ -249,13 +308,15 @@ export class RosterManagerUI {
             await this.app.vault.create(newFilePath, dataStr);
             await this.app.vault.delete(oldFile);
             
-            await this.loadInstances();
-            new Notice(`Saved and moved to ${safeScenario}/${safeEncounter}`);
+            const newFile = this.app.vault.getAbstractFileByPath(newFilePath) as TFile;
+            this.selectedInstance.file = newFile;
         } else {
-            await this.app.vault.modify(this.selectedInstance.file, dataStr);
-            await this.loadInstances();
-            new Notice("Saved successfully.");
+            await this.app.vault.modify(oldFile, dataStr);
         }
+        
+        await this.loadInstances();
+        this.display();
+        new Notice("Saved successfully.");
     }
 
     openEditView(instanceId: string) {
@@ -275,10 +336,10 @@ export class RosterManagerUI {
         new Notice(`Enemy not found: ${instanceId}`);
     }
 
-    openEncounterView(encounterName: string) {
+    openEncounterView(encounterId: string) {
         for (const scenario of this.scenarios) {
             for (const encounter of scenario.encounters) {
-                if (encounter.name.trim().toLowerCase() === encounterName.trim().toLowerCase()) {
+                if (encounter.id === encounterId || encounter.name.trim().toLowerCase() === encounterId.trim().toLowerCase()) {
                     this.selectedScenario = scenario.name;
                     this.selectedEncounter = encounter.name;
                     this.currentView = 'list';
@@ -288,7 +349,7 @@ export class RosterManagerUI {
                 }
             }
         }
-        new Notice(`Encounter not found: ${encounterName}`);
+        new Notice(`Encounter not found: ${encounterId}`);
     }
 
     display() {

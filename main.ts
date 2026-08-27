@@ -87,6 +87,27 @@ export default class MythrasEncounterPlugin extends Plugin {
         // Register the autocomplete suggester for items
         this.registerEditorSuggest(new ItemSuggester(this.app, this));
 
+        // Auto-inject encounter-id for mythras-encounter files
+        this.registerEvent(
+            this.app.metadataCache.on('changed', (file, data, cache) => {
+                const fm = cache.frontmatter;
+                if (fm && fm.type === 'mythras-encounter') {
+                    if (!fm['encounter-id']) {
+                        this.app.fileManager.processFrontMatter(file, (frontmatter) => {
+                            if (!frontmatter['encounter-id']) {
+                                frontmatter['encounter-id'] = window.crypto.randomUUID();
+                            }
+                        });
+                    }
+                }
+            })
+        );
+
+        // Run legacy migration on startup
+        this.app.workspace.onLayoutReady(() => {
+            this.migrateLegacyEncounters();
+        });
+
         // Register the CodeMirror 6 plugin for Live Preview inline items
         this.registerEditorExtension(buildItemLivePreviewPlugin(this));
 
@@ -208,23 +229,75 @@ export default class MythrasEncounterPlugin extends Plugin {
         // Block-level processor for ```mythras-encounter ... ```
         this.registerMarkdownCodeBlockProcessor('mythras-encounter', async (source, el, ctx) => {
             const rawText = source.trim();
-            if (!rawText) return;
-
             const isLong = /\blong\b/i.test(rawText);
-            const displayTitle = rawText.replace(/\blong\b/ig, '').trim();
-            const encounterName = displayTitle.toLowerCase();
 
-            if (!encounterName) return;
-
-            const rosterPath = `${this.settings.baseFolder}/Roster`;
-            const folder = this.app.vault.getAbstractFileByPath(rosterPath);
-            if (!folder) {
-                el.createEl('div', { text: `Roster folder not found. Cannot load encounter ${encounterName}` });
+            const sourceFile = this.app.vault.getAbstractFileByPath(ctx.sourcePath);
+            if (!(sourceFile instanceof TFile)) return;
+            
+            const cache = this.app.metadataCache.getFileCache(sourceFile);
+            if (!cache?.frontmatter || cache.frontmatter.type !== 'mythras-encounter') {
+                el.createEl('div', { text: `Achtung: Die Datei '${sourceFile.name}' ist nicht als Encounter markiert. Bitte füge 'type: mythras-encounter' im Frontmatter hinzu.`, cls: 'mythras-encounter-warning' });
                 return;
             }
 
-            const matchingFiles: TFile[] = [];
+            const encounterId = cache.frontmatter['encounter-id'];
+            const scenario = cache.frontmatter['scenario'];
+            const displayTitle = sourceFile.basename;
 
+            const wrapper = el.createDiv('mythras-encounter-wrapper');
+            
+            if (!scenario) {
+                wrapper.createEl('div', { text: `Achtung: Bitte trage ein 'scenario' im Frontmatter ein!`, cls: 'mythras-encounter-warning' });
+            }
+
+            const headerWrap = wrapper.createDiv('mythras-encounter-header');
+            headerWrap.createEl('h2', { text: displayTitle });
+            
+            const editBtn = headerWrap.createDiv('mythras-encounter-edit-btn');
+            setIcon(editBtn, 'pencil');
+
+            editBtn.onclick = async () => {
+                const leaf = this.app.workspace.getLeaf(false);
+                await leaf.setViewState({ type: MYTHRAS_MANAGER_VIEW, active: true });
+                const view = leaf.view as any;
+                if (view && view.rosterUI && encounterId) {
+                    view.currentTab = 'roster';
+                    view.rosterUI.openEncounterView(encounterId);
+                }
+            };
+            
+            // Read description from markdown body
+            let description = '';
+            try {
+                const fileContent = await this.app.vault.read(sourceFile);
+                const frontmatterMatch = fileContent.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n/);
+                if (frontmatterMatch) {
+                    let mdText = fileContent.substring(frontmatterMatch[0].length).trim();
+                    // Remove the mythras-encounter codeblock itself from the description!
+                    mdText = mdText.replace(/```mythras-encounter[\s\S]*?```/g, '').trim();
+                    if (mdText) {
+                        description = mdText;
+                    }
+                }
+            } catch (e) {}
+
+            if (description) {
+                const descDiv = wrapper.createDiv('mythras-encounter-desc');
+                MarkdownRenderer.renderMarkdown(description, descDiv, ctx.sourcePath, this);
+            }
+
+            const gridWrapper = wrapper.createDiv('mythras-encounter-grid');
+            
+            if (!encounterId) {
+                gridWrapper.createEl('div', { text: `Waiting for encounter-id to be generated...` });
+                return;
+            }
+
+            const rosterPath = `${this.settings.baseFolder}/Roster`;
+            const folder = this.app.vault.getAbstractFileByPath(rosterPath);
+            if (!folder) return;
+
+            const matchingFiles: TFile[] = [];
             const findJsonFiles = (f: any) => {
                 if (f && 'children' in f) {
                     for (const child of f.children) {
@@ -236,38 +309,17 @@ export default class MythrasEncounterPlugin extends Plugin {
             };
             findJsonFiles(folder);
 
-            const wrapper = el.createDiv('mythras-encounter-wrapper');
-            
-            const headerWrap = wrapper.createDiv('mythras-encounter-header');
-            headerWrap.createEl('h2', { text: displayTitle });
-            
-            const editBtn = headerWrap.createDiv('mythras-encounter-edit-btn');
-            setIcon(editBtn, 'pencil');
-
-            editBtn.onclick = async () => {
-                const leaf = this.app.workspace.getLeaf(false);
-                await leaf.setViewState({ type: MYTHRAS_MANAGER_VIEW, active: true });
-                const view = leaf.view as any;
-                if (view && view.rosterUI) {
-                    view.currentTab = 'roster';
-                    view.rosterUI.openEncounterView(encounterName);
-                }
-            };
-
-            const gridWrapper = wrapper.createDiv('mythras-encounter-grid');
             const matchingInstances: any[] = [];
 
             for (const file of matchingFiles) {
                 try {
                     const content = await this.app.vault.read(file);
-                    const instance = JSON.parse(content); // MythrasInstance
+                    const instance = JSON.parse(content);
                     
-                    if (instance.encounter && instance.encounter.trim().toLowerCase() === encounterName) {
+                    if (instance.encounterId === encounterId || (instance.encounter && instance.encounter.trim().toLowerCase() === displayTitle.toLowerCase())) {
                         matchingInstances.push(instance);
                     }
-                } catch (e) {
-                    console.error(`Failed to load instance from ${file.path}: ${e}`);
-                }
+                } catch (e) {}
             }
 
             if (matchingInstances.length === 0) {
@@ -350,6 +402,68 @@ export default class MythrasEncounterPlugin extends Plugin {
         
         await leaf.setViewState({ type: MYTHRAS_MANAGER_VIEW, active: true });
         workspace.revealLeaf(leaf);
+    }
+
+    async migrateLegacyEncounters() {
+        const rosterPath = `${this.settings.baseFolder}/Roster`;
+        const rosterFolder = this.app.vault.getAbstractFileByPath(rosterPath);
+        if (!rosterFolder || !('children' in rosterFolder)) return;
+
+        // Any folder directly under Roster is a Scenario, except maybe some loose JSONs
+        for (const scenarioNode of rosterFolder.children) {
+            if (scenarioNode.name === 'Uncategorized') continue;
+            
+            if ('children' in scenarioNode) {
+                const scenarioName = scenarioNode.name;
+                for (const encounterNode of scenarioNode.children) {
+                    if ('children' in encounterNode) {
+                        const encounterName = encounterNode.name;
+                        
+                        // Check if it already has a folder note
+                        const mdFile = this.app.vault.getAbstractFileByPath(`${encounterNode.path}/${encounterName}.md`);
+                        
+                        let encounterId = '';
+                        if (!mdFile) {
+                            encounterId = window.crypto.randomUUID();
+                            const content = `---\ntype: mythras-encounter\nscenario: "${scenarioName}"\nencounter-id: ${encounterId}\n---\n\n`;
+                            await this.app.vault.create(`${encounterNode.path}/${encounterName}.md`, content);
+                        } else {
+                            // If md exists but maybe not frontmatter loaded? Just let the metadata cache hook do it later.
+                            // But for migrating JSONs, we need to extract the ID.
+                            const file = mdFile as TFile;
+                            await this.app.fileManager.processFrontMatter(file, (fm) => {
+                                if (fm.type !== 'mythras-encounter') fm.type = 'mythras-encounter';
+                                if (!fm['encounter-id']) fm['encounter-id'] = window.crypto.randomUUID();
+                                encounterId = fm['encounter-id'];
+                            });
+                        }
+                        
+                        // Wait a bit to ensure encounterId is populated
+                        if (!encounterId) {
+                            const cache = this.app.metadataCache.getCache(encounterNode.path + '/' + encounterName + '.md');
+                            if (cache?.frontmatter) encounterId = cache.frontmatter['encounter-id'];
+                        }
+
+                        if (encounterId) {
+                            // Migrate all JSON files in this folder
+                            for (const jsonNode of encounterNode.children) {
+                                if (jsonNode.name.endsWith('.json')) {
+                                    try {
+                                        const file = jsonNode as TFile;
+                                        const content = await this.app.vault.read(file);
+                                        const data = JSON.parse(content);
+                                        if (!data.encounterId) {
+                                            data.encounterId = encounterId;
+                                            await this.app.vault.modify(file, JSON.stringify(data, null, 2));
+                                        }
+                                    } catch (e) {}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     onunload() {
