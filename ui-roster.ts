@@ -111,22 +111,26 @@ export class MoveModal extends Modal {
 export class NewEncounterModal extends Modal {
     scenarios: string[];
     defaultScenario: string;
-    onSubmit: (scenario: string | null, encounter: string | null) => void;
+    folders: string[];
+    onSubmit: (scenario: string | null, encounter: string | null, folderPath: string | null) => void;
 
-    constructor(app: App, scenarios: string[], defaultScenario: string, onSubmit: (scenario: string | null, encounter: string | null) => void) {
+    constructor(app: App, scenarios: string[], defaultScenario: string, folders: string[], onSubmit: (scenario: string | null, encounter: string | null, folderPath: string | null) => void) {
         super(app);
         this.scenarios = scenarios;
         this.defaultScenario = defaultScenario;
+        this.folders = folders;
         this.onSubmit = onSubmit;
     }
 
     onOpen() {
         const { contentEl } = this;
         contentEl.createEl('h2', { text: 'New Encounter' });
-        contentEl.createEl('p', { text: 'Create a new encounter. You can select an existing scenario or type a new one.' });
+        contentEl.createEl('p', { text: 'Create a new encounter note in your vault.' });
 
         let scenarioValue = this.defaultScenario || (this.scenarios.length > 0 ? this.scenarios[0] : '');
         let encounterValue = '';
+        let folderValue = this.app.workspace.getActiveFile()?.parent?.path || '/';
+        if (folderValue === '/') folderValue = '';
 
         const scenarioSetting = new Setting(contentEl)
             .setName('Scenario')
@@ -153,15 +157,36 @@ export class NewEncounterModal extends Modal {
             .addText(text => {
                 text.onChange(val => encounterValue = val);
             });
+            
+        const folderSetting = new Setting(contentEl)
+            .setName('Vault Path')
+            .setDesc('Where should the Markdown note be created?')
+            .addText(text => {
+                text.setValue(folderValue);
+                text.onChange(val => folderValue = val);
+                
+                const datalistId = 'folder-list-' + Math.random().toString(36).substring(7);
+                const inputEl = text.inputEl;
+                inputEl.setAttribute('list', datalistId);
+                
+                const datalist = document.createElement('datalist');
+                datalist.id = datalistId;
+                this.folders.forEach(f => {
+                    const option = document.createElement('option');
+                    option.value = f;
+                    datalist.appendChild(option);
+                });
+                inputEl.parentElement?.appendChild(datalist);
+            });
 
         new Setting(contentEl)
             .addButton(btn => btn.setButtonText('Create').setCta().onClick(() => {
                 this.close();
-                this.onSubmit(scenarioValue.trim(), encounterValue.trim());
+                this.onSubmit(scenarioValue.trim(), encounterValue.trim(), folderValue.trim());
             }))
             .addButton(btn => btn.setButtonText('Cancel').onClick(() => {
                 this.close();
-                this.onSubmit(null, null);
+                this.onSubmit(null, null, null);
             }));
             
         setTimeout(() => encounterSetting.controlEl.querySelector('input')?.focus(), 100);
@@ -453,14 +478,16 @@ export class RosterManagerUI {
         btnNewEnc.style.marginBottom = '10px';
         btnNewEnc.onclick = () => {
             const allScenarios = this.scenarios.map(s => s.name);
-            new NewEncounterModal(this.app, allScenarios, this.selectedScenario || '', async (scenarioName, encounterName) => {
+            const allFolders = this.app.vault.getAllLoadedFiles().filter(f => f instanceof TFolder).map(f => f.path);
+            new NewEncounterModal(this.app, allScenarios, this.selectedScenario || '', allFolders, async (scenarioName, encounterName, folderPath) => {
                 if (scenarioName && encounterName) {
                     const safeScenario = scenarioName.replace(/[^\p{L}\p{N} -]/gu, '').trim() || 'Uncategorized';
                     const safeName = encounterName.replace(/[^\p{L}\p{N} -]/gu, '').trim();
+                    const safeFolder = folderPath ? normalizePath(folderPath) : '';
                     if (safeName) {
-                        const newFolderPath = normalizePath(`${this.plugin.settings.baseFolder}/Roster/${safeScenario}`);
-                        if (!(await this.app.vault.adapter.exists(newFolderPath))) {
-                            const parts = newFolderPath.split('/');
+                        const targetDir = safeFolder || '/';
+                        if (targetDir !== '/' && !(await this.app.vault.adapter.exists(targetDir))) {
+                            const parts = targetDir.split('/');
                             let currentPath = '';
                             for (const part of parts) {
                                 if (part === '') continue;
@@ -471,12 +498,11 @@ export class RosterManagerUI {
                             }
                         }
                         
-                        const newFilePath = normalizePath(`${newFolderPath}/${safeName}.md`);
+                        const newFilePath = normalizePath(targetDir === '/' ? `${safeName}.md` : `${targetDir}/${safeName}.md`);
                         if (!(await this.app.vault.adapter.exists(newFilePath))) {
                             const content = `---\ntype: mythras-encounter\nscenario: "${safeScenario}"\n---\n\n`;
                             await this.app.vault.create(newFilePath, content);
                             
-                            // Let the metadata cache catch up
                             setTimeout(async () => {
                                 await this.loadInstances();
                                 this.selectedScenario = safeScenario;
@@ -485,7 +511,7 @@ export class RosterManagerUI {
                                 this.display();
                             }, 300);
                         } else {
-                            new Notice('Encounter already exists!');
+                            new Notice('A note with this name already exists in that folder!');
                         }
                     }
                 }
