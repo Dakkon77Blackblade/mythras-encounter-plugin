@@ -9,7 +9,7 @@ import { ItemSuggester } from './item-suggester';
 import { buildItemLivePreviewPlugin } from './live-preview';
 import { formatInstanceAsMarkdown, renderEnemyStatblock } from './statblock-formatter';
 import { MythrasInstance } from './mythras-api';
-import { MarkdownRenderer, TFile } from 'obsidian';
+import { MarkdownRenderer } from 'obsidian';
 
 export default class MythrasEncounterPlugin extends Plugin {
     settings: MythrasEncounterSettings;
@@ -193,6 +193,85 @@ export default class MythrasEncounterPlugin extends Plugin {
             } catch (e) {
                 el.createEl('div', { text: `Failed to load enemy: ${e}` });
                 console.error(e);
+            }
+        });
+
+        // Block-level processor for ```mythras-encounter ... ```
+        this.registerMarkdownCodeBlockProcessor('mythras-encounter', async (source, el, ctx) => {
+            const rawText = source.trim();
+            if (!rawText) return;
+
+            const isLong = /\blong\b/i.test(rawText);
+            const encounterName = rawText.replace(/\blong\b/ig, '').trim().toLowerCase();
+
+            if (!encounterName) return;
+
+            const rosterPath = `${this.settings.baseFolder}/Roster`;
+            const folder = this.app.vault.getAbstractFileByPath(rosterPath);
+            if (!folder) {
+                el.createEl('div', { text: `Roster folder not found. Cannot load encounter ${encounterName}` });
+                return;
+            }
+
+            const matchingFiles: TFile[] = [];
+
+            const findJsonFiles = (f: any) => {
+                if (f && 'children' in f) {
+                    for (const child of f.children) {
+                        findJsonFiles(child);
+                    }
+                } else if (f instanceof TFile && f.extension === 'json') {
+                    matchingFiles.push(f);
+                }
+            };
+            findJsonFiles(folder);
+
+            const gridWrapper = el.createDiv('mythras-encounter-grid');
+            let foundCount = 0;
+
+            for (const file of matchingFiles) {
+                try {
+                    const content = await this.app.vault.read(file);
+                    const instance = JSON.parse(content); // MythrasInstance
+                    
+                    if (instance.encounter && instance.encounter.trim().toLowerCase() === encounterName) {
+                        foundCount++;
+                        const statblock = renderEnemyStatblock(instance, isLong ? 'long' : 'short');
+                        gridWrapper.appendChild(statblock);
+
+                        // Render image if present
+                        const imgDiv = statblock.querySelector('.mythras-enemy-image') as HTMLElement;
+                        if (imgDiv && imgDiv.dataset.imageLink) {
+                            let link = imgDiv.dataset.imageLink.trim();
+                            link = link.replace(/^!*\[\[(.*?)\]\]$/, '$1'); // strip brackets
+                            
+                            if (link.startsWith('http') || link.startsWith('data:')) {
+                                imgDiv.createEl('img', { attr: { src: link } });
+                            } else {
+                                const imgFile = this.app.metadataCache.getFirstLinkpathDest(link, '');
+                                if (imgFile) {
+                                    const src = this.app.vault.getResourcePath(imgFile);
+                                    imgDiv.createEl('img', { attr: { src } });
+                                } else {
+                                    // fallback
+                                    // Make sure MarkdownRenderer is available from obsidian import, it should be if 'enemy' used it
+                                    // It actually is used in 'enemy' processor (see line 189)
+                                    // @ts-ignore
+                                    if (typeof MarkdownRenderer !== 'undefined') {
+                                        // @ts-ignore
+                                        await MarkdownRenderer.renderMarkdown(`![[${link}]]`, imgDiv, ctx.sourcePath, this);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error(`Failed to load instance from ${file.path}: ${e}`);
+                }
+            }
+
+            if (foundCount === 0) {
+                el.createEl('div', { text: `No enemies found for encounter: ${encounterName}` });
             }
         });
     }
