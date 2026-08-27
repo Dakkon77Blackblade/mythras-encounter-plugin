@@ -89,18 +89,22 @@ export default class MythrasEncounterPlugin extends Plugin {
 
         // Auto-inject encounter-id for mythras-encounter files and refresh UI
         this.registerEvent(
-            this.app.metadataCache.on('changed', (file, data, cache) => {
+            this.app.metadataCache.on('changed', async (file, data, cache) => {
                 const fm = cache.frontmatter;
                 if (fm && fm.type === 'mythras-encounter') {
                     if (!fm['encounter-id']) {
-                        this.app.fileManager.processFrontMatter(file, (frontmatter) => {
-                            if (!frontmatter['encounter-id']) {
-                                frontmatter['encounter-id'] = window.crypto.randomUUID();
-                            }
-                        });
+                        try {
+                            await this.app.fileManager.processFrontMatter(file as TFile, (frontmatter) => {
+                                if (!frontmatter['encounter-id']) {
+                                    frontmatter['encounter-id'] = window.crypto.randomUUID();
+                                }
+                            });
+                        } catch (e) {
+                            console.error("Failed to inject encounter-id:", e);
+                        }
                     }
                     
-                    // Notify any open Roster UI to refresh so backend folders auto-sync
+                    // Notify any open Roster UI to refresh
                     const leaves = this.app.workspace.getLeavesOfType(MYTHRAS_MANAGER_VIEW);
                     for (const leaf of leaves) {
                         const view = leaf.view as any;
