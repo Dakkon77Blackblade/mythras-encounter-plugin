@@ -375,7 +375,7 @@ export default class MythrasEncounterPlugin extends Plugin {
             }
 
             if (matchingInstances.length === 0) {
-                wrapper.createEl('div', { text: `No enemies found for encounter: ${encounterName}` });
+                wrapper.createEl('div', { text: `No enemies found for encounter: ${displayTitle}` });
                 return;
             }
 

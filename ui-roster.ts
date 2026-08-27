@@ -327,6 +327,9 @@ export class RosterManagerUI {
                         }
                         encounterId = enc.id;
                         data.encounterId = encounterId;
+                        
+                        // Save it back to disk so it's permanently migrated
+                        this.app.vault.modify(file, JSON.stringify(data, null, 2)).catch(e => console.error(e));
                     }
 
                     const enc = encounterMap.get(encounterId);
