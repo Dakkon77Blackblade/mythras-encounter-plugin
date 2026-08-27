@@ -227,7 +227,7 @@ export default class MythrasEncounterPlugin extends Plugin {
             findJsonFiles(folder);
 
             const gridWrapper = el.createDiv('mythras-encounter-grid');
-            let foundCount = 0;
+            const matchingInstances: any[] = [];
 
             for (const file of matchingFiles) {
                 try {
@@ -235,43 +235,54 @@ export default class MythrasEncounterPlugin extends Plugin {
                     const instance = JSON.parse(content); // MythrasInstance
                     
                     if (instance.encounter && instance.encounter.trim().toLowerCase() === encounterName) {
-                        foundCount++;
-                        const statblock = renderEnemyStatblock(instance, isLong ? 'long' : 'short');
-                        gridWrapper.appendChild(statblock);
-
-                        // Render image if present
-                        const imgDiv = statblock.querySelector('.mythras-enemy-image') as HTMLElement;
-                        if (imgDiv && imgDiv.dataset.imageLink) {
-                            let link = imgDiv.dataset.imageLink.trim();
-                            link = link.replace(/^!*\[\[(.*?)\]\]$/, '$1'); // strip brackets
-                            
-                            if (link.startsWith('http') || link.startsWith('data:')) {
-                                imgDiv.createEl('img', { attr: { src: link } });
-                            } else {
-                                const imgFile = this.app.metadataCache.getFirstLinkpathDest(link, '');
-                                if (imgFile) {
-                                    const src = this.app.vault.getResourcePath(imgFile);
-                                    imgDiv.createEl('img', { attr: { src } });
-                                } else {
-                                    // fallback
-                                    // Make sure MarkdownRenderer is available from obsidian import, it should be if 'enemy' used it
-                                    // It actually is used in 'enemy' processor (see line 189)
-                                    // @ts-ignore
-                                    if (typeof MarkdownRenderer !== 'undefined') {
-                                        // @ts-ignore
-                                        await MarkdownRenderer.renderMarkdown(`![[${link}]]`, imgDiv, ctx.sourcePath, this);
-                                    }
-                                }
-                            }
-                        }
+                        matchingInstances.push(instance);
                     }
                 } catch (e) {
                     console.error(`Failed to load instance from ${file.path}: ${e}`);
                 }
             }
 
-            if (foundCount === 0) {
+            if (matchingInstances.length === 0) {
                 el.createEl('div', { text: `No enemies found for encounter: ${encounterName}` });
+                return;
+            }
+
+            // Sort by templateName, then by instanceName
+            matchingInstances.sort((a, b) => {
+                const cmpTpl = (a.templateName || '').localeCompare(b.templateName || '');
+                if (cmpTpl !== 0) return cmpTpl;
+                return (a.instanceName || '').localeCompare(b.instanceName || '');
+            });
+
+            for (const instance of matchingInstances) {
+                const statblock = renderEnemyStatblock(instance, isLong ? 'long' : 'short');
+                gridWrapper.appendChild(statblock);
+
+                // Render image if present
+                const imgDiv = statblock.querySelector('.mythras-enemy-image') as HTMLElement;
+                if (imgDiv && imgDiv.dataset.imageLink) {
+                    let link = imgDiv.dataset.imageLink.trim();
+                    link = link.replace(/^!*\[\[(.*?)\]\]$/, '$1'); // strip brackets
+                    
+                    if (link.startsWith('http') || link.startsWith('data:')) {
+                        imgDiv.createEl('img', { attr: { src: link } });
+                    } else {
+                        const imgFile = this.app.metadataCache.getFirstLinkpathDest(link, '');
+                        if (imgFile) {
+                            const src = this.app.vault.getResourcePath(imgFile);
+                            imgDiv.createEl('img', { attr: { src } });
+                        } else {
+                            // fallback
+                            // Make sure MarkdownRenderer is available from obsidian import, it should be if 'enemy' used it
+                            // It actually is used in 'enemy' processor (see line 189)
+                            // @ts-ignore
+                            if (typeof MarkdownRenderer !== 'undefined') {
+                                // @ts-ignore
+                                await MarkdownRenderer.renderMarkdown(`![[${link}]]`, imgDiv, ctx.sourcePath, this);
+                            }
+                        }
+                    }
+                }
             }
         });
     }
