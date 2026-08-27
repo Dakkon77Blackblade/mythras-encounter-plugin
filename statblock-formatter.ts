@@ -367,11 +367,23 @@ export function renderEnemyStatblock(instance: MythrasInstance, mode: 'short' | 
         pill.createSpan({ text: `(${hl.ap}/${hl.hp})`, cls: 'mythras-hl-vals' });
     });
 
+    const renderSkills = (label: string, skillsMap: Record<string, number | string>, addTopBorder: boolean) => {
+        const wrap = container.createDiv('mythras-skill-line');
+        if (addTopBorder) wrap.addClass('mythras-skill-group-start');
+        
+        wrap.createSpan({ text: label + ' ', cls: 'mythras-label-bold' });
+        const entries = Object.entries(skillsMap);
+        entries.forEach(([k, v], idx) => {
+            wrap.createSpan({ text: k + ' ', cls: 'mythras-skill-name' });
+            wrap.createSpan({ text: `${v}%`, cls: 'mythras-skill-val' });
+            if (idx < entries.length - 1) {
+                wrap.createSpan({ text: ' | ', cls: 'mythras-skill-sep' });
+            }
+        });
+    };
+
     if (instance.combatStyles && Object.keys(instance.combatStyles).length > 0) {
-        const csDiv = container.createDiv('mythras-enemy-cs');
-        const styles = Object.entries(instance.combatStyles).map(([k, v]) => `${k} ${v}%`).join(', ');
-        csDiv.createSpan({ text: 'Combat Styles: ', cls: 'mythras-label-bold' });
-        csDiv.createSpan({ text: styles });
+        renderSkills('Combat Styles:', instance.combatStyles, true);
     }
 
     if (instance.weapons && instance.weapons.length > 0) {
@@ -396,25 +408,23 @@ export function renderEnemyStatblock(instance: MythrasInstance, mode: 'short' | 
     }
 
     if (mode === 'long') {
+        let firstSkillGroup = true;
+
         if (instance.standardSkills && Object.keys(instance.standardSkills).length > 0) {
-            const skillsDiv = container.createDiv('mythras-enemy-skills');
-            const skills = Object.entries(instance.standardSkills).map(([k, v]) => `${k} ${v}%`).join(', ');
-            skillsDiv.createSpan({ text: 'Standard Skills: ', cls: 'mythras-label-bold' });
-            skillsDiv.createSpan({ text: skills });
+            renderSkills('Standard Skills:', instance.standardSkills, firstSkillGroup);
+            firstSkillGroup = false;
         }
 
         if (instance.customSkills && Object.keys(instance.customSkills).length > 0) {
-            const cSkillsDiv = container.createDiv('mythras-enemy-skills');
-            const cSkills = Object.entries(instance.customSkills).map(([k, v]) => `${k} ${v}%`).join(', ');
-            cSkillsDiv.createSpan({ text: 'Professional Skills: ', cls: 'mythras-label-bold' });
-            cSkillsDiv.createSpan({ text: cSkills });
+            renderSkills('Professional Skills:', instance.customSkills, firstSkillGroup);
+            firstSkillGroup = false;
         }
 
         if (instance.notes) {
             const notesDiv = container.createDiv('mythras-enemy-notes');
             notesDiv.createEl('div', { text: 'Notes:', cls: 'mythras-label-bold' });
             const noteContent = notesDiv.createDiv('mythras-note-content');
-            noteContent.innerText = instance.notes; // handles newlines better if CSS white-space is pre-wrap
+            noteContent.innerText = instance.notes; 
         }
     }
 

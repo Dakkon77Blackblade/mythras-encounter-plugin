@@ -420,10 +420,24 @@
     color: var(--text-muted);
 }
 
-.mythras-enemy-skills {
-    margin-top: 8px;
-    padding-top: 4px;
+.mythras-skill-line {
+    margin-top: 4px;
+    line-height: 1.5;
+}
+
+.mythras-skill-group-start {
+    margin-top: 10px;
+    padding-top: 6px;
     border-top: 1px dashed var(--background-modifier-border);
+}
+
+.mythras-skill-name {
+    font-weight: 500;
+}
+
+.mythras-skill-sep {
+    color: var(--text-muted);
+    margin: 0 6px;
 }
 
 .mythras-enemy-notes {
