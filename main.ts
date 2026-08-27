@@ -153,7 +153,6 @@ export default class MythrasEncounterPlugin extends Plugin {
         // Run legacy migration on startup
         this.app.workspace.onLayoutReady(() => {
             this.migrateLegacyEncounters();
-            this.flattenRosterHierarchy();
         });
 
         // Register the CodeMirror 6 plugin for Live Preview inline items
