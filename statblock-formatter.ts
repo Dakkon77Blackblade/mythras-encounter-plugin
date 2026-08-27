@@ -1,5 +1,5 @@
-import { App, normalizePath, setIcon } from 'obsidian';
-import { MythrasTemplate, MythrasWeapon, MythrasInstance } from './mythras-api';
+import { App, normalizePath, setIcon, Modal, Setting } from 'obsidian';
+import { MythrasTemplate, MythrasWeapon, MythrasInstance, HitLocationInstance } from './mythras-api';
 import { DiceRoller } from './dice-roller';
 
 export async function generateStatblock(app: App, armoryFile: string, template: MythrasTemplate, index: number): Promise<string> {
@@ -349,7 +349,13 @@ export function formatInstanceAsMarkdown(instance: MythrasInstance): string {
     return md;
 }
 
-export function renderEnemyStatblock(instance: MythrasInstance, mode: 'short' | 'long', onEdit?: () => void): HTMLElement {
+export function renderEnemyStatblock(
+    app: App,
+    instance: MythrasInstance, 
+    mode: 'short' | 'long', 
+    onEdit?: () => void,
+    onUpdate?: (updatedInstance: MythrasInstance) => Promise<void>
+): HTMLElement {
     const container = document.createElement('div');
     container.addClass('mythras-enemy-short');
 
@@ -393,11 +399,30 @@ export function renderEnemyStatblock(instance: MythrasInstance, mode: 'short' | 
     });
 
     const hlContainer = container.createDiv('mythras-hl-container');
-    instance.hitLocations.forEach(hl => {
+    instance.hitLocations.forEach((hl, idx) => {
         const pill = hlContainer.createDiv('mythras-hl-compact');
         pill.createSpan({ text: hl.range, cls: 'mythras-hl-range' });
         pill.createSpan({ text: hl.name, cls: 'mythras-hl-name' });
-        pill.createSpan({ text: `(${hl.ap}/${hl.hp})`, cls: 'mythras-hl-vals' });
+        
+        const displayAp = hl.currentAp !== undefined ? hl.currentAp : hl.ap;
+        const displayHp = hl.currentHp !== undefined ? hl.currentHp : hl.hp;
+        
+        const valSpan = pill.createSpan({ text: `(${displayAp}/${displayHp})`, cls: 'mythras-hl-vals' });
+        
+        if (String(displayAp) !== String(hl.ap) || Number(displayHp) !== Number(hl.hp)) {
+            valSpan.addClass('is-modified');
+        }
+        
+        if (onUpdate) {
+            pill.addClass('is-clickable');
+            pill.onclick = () => {
+                new HitLocationEditModal(app, hl, async (newAp, newHp) => {
+                    hl.currentAp = newAp;
+                    hl.currentHp = newHp;
+                    await onUpdate(instance);
+                }).open();
+            };
+        }
     });
 
     const renderSkills = (label: string, skillsMap: Record<string, number | string>, addTopBorder: boolean, disableLinks: boolean = false) => {
@@ -483,4 +508,47 @@ export function renderEnemyStatblock(instance: MythrasInstance, mode: 'short' | 
     }
 
     return container;
+}
+
+export class HitLocationEditModal extends Modal {
+    constructor(
+        app: App, 
+        public hl: HitLocationInstance, 
+        public onSave: (ap: number | string, hp: number) => void
+    ) {
+        super(app);
+    }
+    
+    onOpen() {
+        const { contentEl } = this;
+        contentEl.createEl('h2', { text: `Edit ${this.hl.name}` });
+        
+        let newAp = this.hl.currentAp !== undefined ? String(this.hl.currentAp) : String(this.hl.ap);
+        let newHp = this.hl.currentHp !== undefined ? String(this.hl.currentHp) : String(this.hl.hp);
+        
+        new Setting(contentEl)
+            .setName('Current AP')
+            .addText(text => text.setValue(newAp).onChange(val => newAp = val));
+            
+        new Setting(contentEl)
+            .setName('Current HP')
+            .addText(text => text.setValue(newHp).onChange(val => newHp = val));
+            
+        new Setting(contentEl)
+            .addButton(btn => btn
+                .setButtonText('Save')
+                .setCta()
+                .onClick(() => {
+                    let parsedAp: string | number = newAp;
+                    if (!isNaN(Number(newAp)) && newAp.trim() !== '') {
+                        parsedAp = Number(newAp);
+                    }
+                    this.onSave(parsedAp, parseInt(newHp) || 0);
+                    this.close();
+                }));
+    }
+    
+    onClose() {
+        this.contentEl.empty();
+    }
 }

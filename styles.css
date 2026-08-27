@@ -380,6 +380,31 @@
     min-width: 45px;
 }
 
+.mythras-char-box, .mythras-hl-compact {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    background-color: var(--background-modifier-form-field);
+    padding: 2px 8px;
+    border-radius: 12px;
+    border: 1px solid var(--background-modifier-border);
+    transition: background-color 0.1s ease;
+}
+
+.mythras-hl-compact.is-clickable {
+    cursor: pointer;
+}
+
+.mythras-hl-compact.is-clickable:hover {
+    background-color: var(--background-modifier-hover);
+    border-color: var(--text-accent);
+}
+
+.mythras-hl-vals.is-modified {
+    color: var(--text-error);
+    font-weight: bold;
+}
+
 .mythras-char-label, .mythras-derived-label {
     font-size: 0.7em;
     text-transform: uppercase;

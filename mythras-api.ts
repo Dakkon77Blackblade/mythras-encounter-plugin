@@ -58,6 +58,7 @@ export interface HitLocationInstance {
     range: string;
     name: string;
     ap: string;
+    currentAp?: number | string;
     hp: number;
     currentHp: number;
 }

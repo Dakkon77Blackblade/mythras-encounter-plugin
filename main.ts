@@ -220,37 +220,16 @@ export default class MythrasEncounterPlugin extends Plugin {
             try {
                 const content = await this.app.vault.read(file);
                 const instance: MythrasInstance = JSON.parse(content);
-                const onEdit = async () => {
-                    const leaf = this.app.workspace.getLeaf(false);
-                    await leaf.setViewState({ type: MYTHRAS_MANAGER_VIEW, active: true });
-                    const view = leaf.view as any;
-                    if (view && view.rosterUI) {
-                        view.currentTab = 'roster';
-                        view.rosterUI.openEditView(instance.id);
-                    }
-                };
-                const statblock = renderEnemyStatblock(instance, isLong ? 'long' : 'short', onEdit);
-                el.appendChild(statblock);
-
-                // Render image if present
-                const imgDiv = statblock.querySelector('.mythras-enemy-image') as HTMLElement;
-                if (imgDiv && imgDiv.dataset.imageLink) {
-                    let link = imgDiv.dataset.imageLink.trim();
-                    link = link.replace(/^!*\[\[(.*?)\]\]$/, '$1'); // strip brackets
-                    
-                    if (link.startsWith('http') || link.startsWith('data:')) {
-                        imgDiv.createEl('img', { attr: { src: link } });
-                    } else {
-                        const imgFile = this.app.metadataCache.getFirstLinkpathDest(link, '');
-                        if (imgFile) {
-                            const src = this.app.vault.getResourcePath(imgFile);
-                            imgDiv.createEl('img', { attr: { src } });
-                        } else {
-                            // fallback
-                            await MarkdownRenderer.renderMarkdown(`![[${link}]]`, imgDiv, ctx.sourcePath, this);
+                    const statblock = await this.renderEnemyWithImages(instance, isLong, ctx.sourcePath, async () => {
+                        const leaf = this.app.workspace.getLeaf(false);
+                        await leaf.setViewState({ type: MYTHRAS_MANAGER_VIEW, active: true });
+                        const view = leaf.view as any;
+                        if (view && view.rosterUI) {
+                            view.currentTab = 'roster';
+                            view.rosterUI.openEditView(instance.id);
                         }
-                    }
-                }
+                    });
+                    el.appendChild(statblock);
             } catch (e) {
                 el.createEl('div', { text: `Failed to load enemy: ${e}` });
                 console.error(e);
@@ -394,7 +373,7 @@ export default class MythrasEncounterPlugin extends Plugin {
 
             for (const instance of matchingInstances) {
                 try {
-                    const onEdit = async () => {
+                    const statblock = await this.renderEnemyWithImages(instance, isLong, ctx.sourcePath, async () => {
                         const leaf = this.app.workspace.getLeaf(false);
                         await leaf.setViewState({ type: MYTHRAS_MANAGER_VIEW, active: true });
                         const view = leaf.view as any;
@@ -402,34 +381,8 @@ export default class MythrasEncounterPlugin extends Plugin {
                             view.currentTab = 'roster';
                             view.rosterUI.openEditView(instance.id);
                         }
-                    };
-                    const statblock = renderEnemyStatblock(instance, isLong ? 'long' : 'short', onEdit);
+                    });
                     gridWrapper.appendChild(statblock);
-
-                    // Render image if present
-                    const imgDiv = statblock.querySelector('.mythras-enemy-image') as HTMLElement;
-                    if (imgDiv && imgDiv.dataset.imageLink) {
-                        let link = imgDiv.dataset.imageLink.trim();
-                        link = link.replace(/^!*\[\[(.*?)\]\]$/, '$1'); // strip brackets
-                        
-                        if (link.startsWith('http') || link.startsWith('data:')) {
-                            imgDiv.createEl('img', { attr: { src: link } });
-                        } else {
-                            // resolve local path
-                            const imgFile = this.app.metadataCache.getFirstLinkpathDest(link, ctx.sourcePath);
-                            if (imgFile) {
-                                const src = this.app.vault.getResourcePath(imgFile);
-                                imgDiv.createEl('img', { attr: { src } });
-                            } else {
-                                // fallback
-                                // @ts-ignore
-                                if (typeof MarkdownRenderer !== 'undefined') {
-                                    // @ts-ignore
-                                    await MarkdownRenderer.renderMarkdown(`![[${link}]]`, imgDiv, ctx.sourcePath, this);
-                                }
-                            }
-                        }
-                    }
                 } catch (e) {
                     gridWrapper.createEl('div', { text: `Error rendering instance ${instance.instanceName}: ${e}`, cls: 'mythras-error' });
                 }
@@ -582,5 +535,53 @@ export default class MythrasEncounterPlugin extends Plugin {
             
             await this.app.vault.adapter.write(armoryPath, JSON.stringify(defaultArmory, null, 2));
         }
+    }
+
+    async renderEnemyWithImages(instance: MythrasInstance, isLong: boolean, sourcePath: string, onEdit?: () => Promise<void>): Promise<HTMLElement> {
+        let currentStatblock: HTMLElement;
+        
+        const onUpdate = async (updatedInstance: MythrasInstance) => {
+            const rosterPath = normalizePath(`${this.settings.baseFolder}/Roster`);
+            const folder = this.app.vault.getAbstractFileByPath(rosterPath);
+            if (folder && 'children' in folder) {
+                const file = (folder as any).children.find((f: any) => f.extension === 'json' && f.name.startsWith(updatedInstance.id));
+                if (file && file instanceof TFile) {
+                    await this.app.vault.modify(file, JSON.stringify(updatedInstance, null, 2));
+                    Object.assign(instance, updatedInstance);
+                    
+                    const newStatblock = await this.renderEnemyWithImages(instance, isLong, sourcePath, onEdit);
+                    if (currentStatblock && currentStatblock.parentNode) {
+                        currentStatblock.replaceWith(newStatblock);
+                    }
+                }
+            }
+        };
+
+        const statblock = renderEnemyStatblock(this.app, instance, isLong ? 'long' : 'short', onEdit, onUpdate);
+        currentStatblock = statblock;
+
+        const imgDiv = statblock.querySelector('.mythras-enemy-image') as HTMLElement;
+        if (imgDiv && imgDiv.dataset.imageLink) {
+            let link = imgDiv.dataset.imageLink.trim();
+            link = link.replace(/^!*\[\[(.*?)\]\]$/, '$1'); 
+            
+            if (link.startsWith('http') || link.startsWith('data:')) {
+                imgDiv.createEl('img', { attr: { src: link } });
+            } else {
+                const imgFile = this.app.metadataCache.getFirstLinkpathDest(link, sourcePath);
+                if (imgFile) {
+                    const src = this.app.vault.getResourcePath(imgFile);
+                    imgDiv.createEl('img', { attr: { src } });
+                } else {
+                    // @ts-ignore
+                    if (typeof MarkdownRenderer !== 'undefined') {
+                        // @ts-ignore
+                        await MarkdownRenderer.renderMarkdown(`![[${link}]]`, imgDiv, sourcePath, this);
+                    }
+                }
+            }
+        }
+
+        return statblock;
     }
 }
