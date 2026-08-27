@@ -12,13 +12,15 @@ export class MythrasGenerateModal extends Modal {
     scenario: string = 'General';
     encounter: string = 'Random Encounter';
     onComplete?: () => void;
+    encounterId?: string;
 
-    constructor(app: App, plugin: MythrasEncounterPlugin, defaultScenario: string = 'General', defaultEncounter: string = 'Random Encounter', onComplete?: () => void) {
+    constructor(app: App, plugin: MythrasEncounterPlugin, defaultScenario: string = 'General', defaultEncounter: string = 'Random Encounter', onComplete?: () => void, encounterId?: string) {
         super(app);
         this.plugin = plugin;
         this.scenario = defaultScenario;
         this.encounter = defaultEncounter;
         this.onComplete = onComplete;
+        this.encounterId = encounterId;
     }
 
     async onOpen() {
@@ -122,6 +124,9 @@ export class MythrasGenerateModal extends Modal {
             for (let i = 0; i < this.amount; i++) {
                 const instanceName = `${template.name} ${i + 1}`;
                 const instance = await instantiateEnemy(this.app, armoryPath, template, instanceName, safeScenario, safeEncounter);
+                if (this.encounterId) {
+                    instance.encounterId = this.encounterId;
+                }
                 
                 const filePath = normalizePath(`${folderPath}/${instance.id}_${template.name.replace(/[^\p{L}\p{N}]/gu, '')}.json`);
                 await this.app.vault.create(filePath, JSON.stringify(instance, null, 2));

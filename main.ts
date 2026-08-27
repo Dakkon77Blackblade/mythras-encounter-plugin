@@ -229,20 +229,43 @@ export default class MythrasEncounterPlugin extends Plugin {
         // Block-level processor for ```mythras-encounter ... ```
         this.registerMarkdownCodeBlockProcessor('mythras-encounter', async (source, el, ctx) => {
             const rawText = source.trim();
-            const isLong = /\blong\b/i.test(rawText);
-
-            const sourceFile = this.app.vault.getAbstractFileByPath(ctx.sourcePath);
-            if (!(sourceFile instanceof TFile)) return;
             
-            const cache = this.app.metadataCache.getFileCache(sourceFile);
-            if (!cache?.frontmatter || cache.frontmatter.type !== 'mythras-encounter') {
-                el.createEl('div', { text: `Achtung: Die Datei '${sourceFile.name}' ist nicht als Encounter markiert. Bitte füge 'type: mythras-encounter' im Frontmatter hinzu.`, cls: 'mythras-encounter-warning' });
-                return;
+            let encounterId = '';
+            let scenario = '';
+            let displayTitle = '';
+            let targetFile: TFile | null = null;
+            let targetCache: any = null;
+
+            const idMatch = rawText.match(/id:\s*([a-zA-Z0-9-]+)/i);
+            if (idMatch) {
+                const searchId = idMatch[1].trim();
+                const allFiles = this.app.vault.getMarkdownFiles();
+                for (const file of allFiles) {
+                    const c = this.app.metadataCache.getFileCache(file);
+                    if (c?.frontmatter?.['encounter-id'] === searchId) {
+                        targetFile = file;
+                        targetCache = c;
+                        break;
+                    }
+                }
+                
+                if (!targetFile) {
+                    el.createEl('div', { text: `Encounter mit ID '${searchId}' nicht gefunden.`, cls: 'mythras-encounter-warning' });
+                    return;
+                }
+            } else {
+                targetFile = this.app.vault.getAbstractFileByPath(ctx.sourcePath) as TFile;
+                if (!targetFile) return;
+                targetCache = this.app.metadataCache.getFileCache(targetFile);
+                if (!targetCache?.frontmatter || targetCache.frontmatter.type !== 'mythras-encounter') {
+                    el.createEl('div', { text: `Achtung: Die Datei '${targetFile.name}' ist nicht als Encounter markiert. Bitte füge 'type: mythras-encounter' im Frontmatter hinzu, oder gib 'id: <encounter-id>' im Codeblock an.`, cls: 'mythras-encounter-warning' });
+                    return;
+                }
             }
 
-            const encounterId = cache.frontmatter['encounter-id'];
-            const scenario = cache.frontmatter['scenario'];
-            const displayTitle = sourceFile.basename;
+            encounterId = targetCache.frontmatter['encounter-id'];
+            scenario = targetCache.frontmatter['scenario'];
+            displayTitle = targetFile.basename;
 
             const wrapper = el.createDiv('mythras-encounter-wrapper');
             
@@ -269,14 +292,16 @@ export default class MythrasEncounterPlugin extends Plugin {
             // Read description from markdown body
             let description = '';
             try {
-                const fileContent = await this.app.vault.read(sourceFile);
-                const frontmatterMatch = fileContent.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n/);
-                if (frontmatterMatch) {
-                    let mdText = fileContent.substring(frontmatterMatch[0].length).trim();
-                    // Remove the mythras-encounter codeblock itself from the description!
-                    mdText = mdText.replace(/```mythras-encounter[\s\S]*?```/g, '').trim();
-                    if (mdText) {
-                        description = mdText;
+                if (targetFile) {
+                    const fileContent = await this.app.vault.read(targetFile);
+                    const frontmatterMatch = fileContent.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n/);
+                    if (frontmatterMatch) {
+                        let mdText = fileContent.substring(frontmatterMatch[0].length).trim();
+                        // Remove the mythras-encounter codeblock itself from the description!
+                        mdText = mdText.replace(/```mythras-encounter[\s\S]*?```/g, '').trim();
+                        if (mdText) {
+                            description = mdText;
+                        }
                     }
                 }
             } catch (e) {}

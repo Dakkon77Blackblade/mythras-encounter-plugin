@@ -326,6 +326,7 @@ export class RosterManagerUI {
                             scenario.encounters.push(enc);
                         }
                         encounterId = enc.id;
+                        data.encounterId = encounterId;
                     }
 
                     const enc = encounterMap.get(encounterId);
@@ -739,7 +740,9 @@ export class RosterManagerUI {
                 const msg = `Are you sure you want to delete the Encounter '${enc.name}'? This will permanently delete the Markdown note and ${instCount} enemies!`;
                 new ConfirmModal(this.app, msg, async (result) => {
                     if (result) {
-                        const backendPath = normalizePath(`${this.plugin.settings.baseFolder}/Roster/${scenario.name}/${enc.id}`);
+                        const safeScenario = scenario.name.replace(/[^\p{L}\p{N} -]/gu, '').trim() || 'Uncategorized';
+                        const safeName = enc.name.replace(/[^\p{L}\p{N} -]/gu, '').trim();
+                        const backendPath = normalizePath(`${this.plugin.settings.baseFolder}/Roster/${safeScenario}/${safeName}`);
                         const folder = this.app.vault.getAbstractFileByPath(backendPath);
                         if (folder) await this.app.vault.trash(folder, true);
                         
@@ -818,7 +821,7 @@ export class RosterManagerUI {
                 new m.MythrasGenerateModal(this.app, this.plugin, scenario.name, encounter.name, async () => {
                     await this.loadInstances();
                     this.display();
-                }).open();
+                }, encounter.id).open();
             });
         };
 
