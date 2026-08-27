@@ -211,7 +211,8 @@ export default class MythrasEncounterPlugin extends Plugin {
             if (!rawText) return;
 
             const isLong = /\blong\b/i.test(rawText);
-            const encounterName = rawText.replace(/\blong\b/ig, '').trim().toLowerCase();
+            const displayTitle = rawText.replace(/\blong\b/ig, '').trim();
+            const encounterName = displayTitle.toLowerCase();
 
             if (!encounterName) return;
 
@@ -238,7 +239,7 @@ export default class MythrasEncounterPlugin extends Plugin {
             const wrapper = el.createDiv('mythras-encounter-wrapper');
             
             const headerWrap = wrapper.createDiv('mythras-encounter-header');
-            headerWrap.createEl('h2', { text: encounterName });
+            headerWrap.createEl('h2', { text: displayTitle });
             
             const editBtn = headerWrap.createDiv('mythras-encounter-edit-btn');
             setIcon(editBtn, 'pencil');
