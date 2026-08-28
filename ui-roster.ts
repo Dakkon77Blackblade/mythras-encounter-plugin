@@ -416,7 +416,10 @@ export class RosterManagerUI {
         new Notice("Saved successfully.");
     }
 
-    openEditView(instanceId: string) {
+    async openEditView(instanceId: string) {
+        if (this.scenarios.length === 0) {
+            await this.loadInstances();
+        }
         for (const scenario of this.scenarios) {
             for (const encounter of scenario.encounters) {
                 for (const inst of encounter.instances) {
