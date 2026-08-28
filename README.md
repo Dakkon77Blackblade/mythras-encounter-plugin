@@ -85,24 +85,24 @@ flowchart TD
 
 ## Installation & Initial Setup
 
-### 📦 Manuelle Installation (Manual Installation)
-Falls das Plugin manuell in Obsidian installiert werden soll, kann die Veröffentlichung direkt über GitHub heruntergeladen werden:
+### 📦 Manual Installation
+To manually install the plugin in Obsidian from GitHub:
 
-1. Lade die drei benötigten Dateien von der neuesten **[GitHub Release Seite](https://github.com/Dakkon77Blackblade/mythras-encounter-plugin/releases/latest)** herunter:
-   - `main.js` (Kompilierter Plugin-Code)
-   - `manifest.json` (Obsidian Manifest-Datei)
-   - `styles.css` (Plugin Layout & CSS-Styling)
-2. Erstelle in deinem Obsidian Vault folgenden Ordner (geheime Ordner im Dateimanager anzeigen lassen):
-   `<Dein Vault>/.obsidian/plugins/mythras-encounter-plugin/`
-3. Kopiere die drei heruntergeladenen Dateien (`main.js`, `manifest.json`, `styles.css`) direkt in diesen Ordner.
-4. Öffne Obsidian: **Einstellungen ➔ Community-Plugins** (Community Plugins aktivieren, falls deaktiviert).
-5. Klicke auf das **Neu laden**-Icon (Schaltfläche zum Aktualisieren) und aktiviere das Plugin **Mythras Encounter Generator**.
+1. Download the three required asset files from the latest **[GitHub Release Page](https://github.com/Dakkon77Blackblade/mythras-encounter-plugin/releases/latest)**:
+   - `main.js` (Compiled plugin bundle)
+   - `manifest.json` (Obsidian manifest file)
+   - `styles.css` (Plugin layout & stylesheet)
+2. Inside your Obsidian Vault, create the plugin folder (enable hidden folders in your file explorer if needed):
+   `<Your Vault>/.obsidian/plugins/mythras-encounter-plugin/`
+3. Copy the three downloaded files (`main.js`, `manifest.json`, `styles.css`) directly into that folder.
+4. Open Obsidian: Go to **Settings ➔ Community plugins** (turn on Community plugins if disabled).
+5. Click the **Reload** icon (refresh button) and enable the **Mythras Encounter Generator** plugin.
 
 ---
 
 ### Initial Setup
-1. In den Plugin-Einstellungen kannst du optional den **Base Folder** anpassen (Standard: `Mythras-Helper`).
-2. Das Plugin erstellt und verwaltet die Unterordner `Bestiary/`, `Armory/` und `Roster/` automatisch in deinem Vault.
+1. In the plugin settings tab, you can optionally adjust the **Base Folder** (defaults to `Mythras-Helper`).
+2. The plugin automatically creates and manages the `Bestiary/`, `Armory/`, and `Roster/` subdirectories inside this folder.
 3. Open the **Mythras Manager Workspace Leaf**:
    - **Ribbon Icon:** Click the `swords` icon in the left ribbon.
    - **Right-Click Ribbon Icon:** Open the manager in a *New Tab*, *Split Right*, *Split Down*, or *Current Tab*.
