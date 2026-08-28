@@ -373,7 +373,7 @@ export function renderEnemyStatblock(
     plugin?: any
 ): HTMLElement {
     const container = document.createElement('div');
-    container.addClass('mythras-enemy-short');
+    container.addClass(mode === 'long' ? 'mythras-enemy-long' : 'mythras-enemy-short');
 
     if (onEdit) {
         const editBtn = container.createDiv('mythras-enemy-edit-btn');
