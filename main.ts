@@ -270,12 +270,28 @@ export default class MythrasEncounterPlugin extends Plugin {
             if (idMatch) {
                 const searchId = idMatch[1].trim();
                 const allFiles = this.app.vault.getMarkdownFiles();
+                
+                // 1. Check Metadata Cache
                 for (const file of allFiles) {
                     const c = this.app.metadataCache.getFileCache(file);
-                    if (c?.frontmatter?.['encounter-id'] === searchId) {
+                    if (c?.frontmatter?.['encounter-id'] === searchId || file.basename === searchId) {
                         targetFile = file;
                         targetCache = c;
                         break;
+                    }
+                }
+                
+                // 2. Direct Vault Read Fallback if Cache hasn't indexed yet
+                if (!targetFile) {
+                    for (const file of allFiles) {
+                        try {
+                            const fileContent = await this.app.vault.read(file);
+                            if (fileContent.includes(searchId)) {
+                                targetFile = file;
+                                targetCache = this.app.metadataCache.getFileCache(file);
+                                break;
+                            }
+                        } catch (e) {}
                     }
                 }
                 
@@ -293,15 +309,11 @@ export default class MythrasEncounterPlugin extends Plugin {
                 }
             }
 
-            encounterId = targetCache.frontmatter['encounter-id'];
-            scenario = targetCache.frontmatter['scenario'];
-            displayTitle = targetFile.basename;
+            encounterId = targetCache?.frontmatter?.['encounter-id'] || idMatch?.[1]?.trim() || '';
+            scenario = targetCache?.frontmatter?.['scenario'] || 'General';
+            displayTitle = targetFile ? targetFile.basename : 'Encounter';
 
             const wrapper = el.createDiv('mythras-encounter-wrapper');
-            
-            if (!scenario) {
-                wrapper.createEl('div', { text: `Achtung: Bitte trage ein 'scenario' im Frontmatter ein!`, cls: 'mythras-encounter-warning' });
-            }
 
             const headerWrap = wrapper.createDiv('mythras-encounter-header');
             headerWrap.createEl('h2', { text: displayTitle });
