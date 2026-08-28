@@ -623,13 +623,22 @@ export class HitLocationEditModal extends Modal {
             this.close();
         };
         
+        let hpInputEl: HTMLInputElement | null = null;
+
         new Setting(contentEl)
             .setName('Current AP')
             .setDesc(`Max: ${this.hl.ap}`)
             .addText(text => {
                 text.setValue(newAp).onChange(val => newAp = val);
                 text.inputEl.addEventListener('keydown', (e) => {
+                    e.stopPropagation();
                     if (e.key === 'Enter') save();
+                });
+                text.inputEl.addEventListener('keyup', (e) => {
+                    e.stopPropagation();
+                });
+                text.inputEl.addEventListener('keypress', (e) => {
+                    e.stopPropagation();
                 });
             });
             
@@ -637,9 +646,17 @@ export class HitLocationEditModal extends Modal {
             .setName('Current HP')
             .setDesc(`Max: ${this.hl.hp}`)
             .addText(text => {
+                hpInputEl = text.inputEl;
                 text.setValue(newHp).onChange(val => newHp = val);
                 text.inputEl.addEventListener('keydown', (e) => {
+                    e.stopPropagation();
                     if (e.key === 'Enter') save();
+                });
+                text.inputEl.addEventListener('keyup', (e) => {
+                    e.stopPropagation();
+                });
+                text.inputEl.addEventListener('keypress', (e) => {
+                    e.stopPropagation();
                 });
             });
             
@@ -648,6 +665,13 @@ export class HitLocationEditModal extends Modal {
                 .setButtonText('Save')
                 .setCta()
                 .onClick(save));
+
+        if (hpInputEl) {
+            hpInputEl.focus();
+        }
+        setTimeout(() => {
+            hpInputEl?.focus();
+        }, 100);
     }
     
     onClose() {

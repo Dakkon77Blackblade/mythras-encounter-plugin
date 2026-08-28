@@ -95,23 +95,7 @@ export class CombatTrackerService {
             for (const p of this.session.participants) {
                 const fresh = fileMap.get(p.instanceId);
                 if (fresh) {
-                    // Preserve active combat HP/AP state for hit locations
-                    const currentHpMap = new Map<string, number>();
-                    const currentApMap = new Map<string, number | string>();
-                    p.instance.hitLocations.forEach(hl => {
-                        if (hl.currentHp !== undefined) currentHpMap.set(hl.name, hl.currentHp);
-                        if (hl.currentAp !== undefined) currentApMap.set(hl.name, hl.currentAp);
-                    });
-
-                    // Update instance with fresh disk data (including updated image, stats, etc.)
                     p.instance = JSON.parse(JSON.stringify(fresh));
-
-                    // Re-apply active combat HP/AP modifications
-                    p.instance.hitLocations.forEach(hl => {
-                        if (currentHpMap.has(hl.name)) hl.currentHp = currentHpMap.get(hl.name)!;
-                        if (currentApMap.has(hl.name)) hl.currentAp = currentApMap.get(hl.name)!;
-                    });
-
                     updated = true;
                 }
             }

@@ -592,8 +592,23 @@ export default class MythrasEncounterPlugin extends Plugin {
                 if (file && file instanceof TFile) {
                     await this.app.vault.modify(file, JSON.stringify(updatedInstance, null, 2));
                     
+                    await this.combatTrackerService.refreshParticipantInstances();
+
+                    const leaves = this.app.workspace.getLeavesOfType(MYTHRAS_MANAGER_VIEW);
+                    for (const leaf of leaves) {
+                        const view = leaf.view as any;
+                        if (view) {
+                            if (view.combatUI) {
+                                view.combatUI.render();
+                            }
+                            if (view.rosterUI) {
+                                await view.rosterUI.loadInstances();
+                            }
+                        }
+                    }
+
                     // Update all matching instances in the DOM
-                    const domInstances = document.querySelectorAll(`.mythras-enemy-short[data-mythras-instance-id="${updatedInstance.id}"]`);
+                    const domInstances = document.querySelectorAll(`.mythras-enemy-short[data-mythras-instance-id="${updatedInstance.id}"], .mythras-enemy-long[data-mythras-instance-id="${updatedInstance.id}"]`);
                     domInstances.forEach(async (el) => {
                         const elIsLong = (el as HTMLElement).dataset.mythrasIsLong === 'true';
                         const elSourcePath = (el as HTMLElement).dataset.mythrasSourcePath || '';
