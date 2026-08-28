@@ -375,12 +375,6 @@ export function renderEnemyStatblock(
     const container = document.createElement('div');
     container.addClass(mode === 'long' ? 'mythras-enemy-long' : 'mythras-enemy-short');
 
-    if (onEdit) {
-        const editBtn = container.createDiv('mythras-enemy-edit-btn');
-        setIcon(editBtn, 'pencil');
-        editBtn.onclick = onEdit;
-    }
-
     const imgContainer = container.createDiv('mythras-enemy-image');
     if (instance.image) {
         const resolvedUrl = resolveImagePath(app, instance.image);
@@ -400,6 +394,13 @@ export function renderEnemyStatblock(
     const header = container.createDiv('mythras-enemy-header');
     header.createEl('h3', { text: instance.instanceName, cls: 'mythras-enemy-name' });
     header.createEl('span', { text: `(${instance.templateName})`, cls: 'mythras-enemy-template' });
+
+    if (onEdit) {
+        const editBtn = header.createSpan({ cls: 'mythras-enemy-edit-btn' });
+        setIcon(editBtn, 'pencil');
+        editBtn.title = 'Edit enemy';
+        editBtn.onclick = onEdit;
+    }
 
     const topWrap = container.createDiv('mythras-enemy-top-wrap');
 

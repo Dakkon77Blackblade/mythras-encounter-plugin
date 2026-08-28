@@ -300,13 +300,18 @@
 }
 
 .mythras-enemy-edit-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
     cursor: pointer;
     opacity: 0.4;
     transition: opacity 0.2s;
     color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    margin-left: 6px;
+}
+
+.mythras-enemy-edit-btn svg {
+    width: 15px;
+    height: 15px;
 }
 
 .mythras-enemy-edit-btn:hover,
