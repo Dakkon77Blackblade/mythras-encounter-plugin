@@ -172,6 +172,14 @@ export class CombatTrackerService {
         const p = this.session.participants.find(x => x.id === participantId);
         if (p) {
             p.isDone = !p.isDone;
+            this.sortParticipants();
+            
+            // Auto-select the next active combatant at the top of the queue
+            const nextActive = this.session.participants.find(x => x.currentAp > 0 && !x.isDone);
+            if (nextActive) {
+                this.session.selectedParticipantId = nextActive.id;
+            }
+            
             this.notify();
         }
     }
@@ -209,7 +217,8 @@ export class CombatTrackerService {
     removeParticipant(participantId: string) {
         this.session.participants = this.session.participants.filter(x => x.id !== participantId);
         if (this.session.selectedParticipantId === participantId) {
-            this.session.selectedParticipantId = this.session.participants[0]?.id;
+            const nextActive = this.session.participants.find(x => x.currentAp > 0 && !x.isDone) || this.session.participants[0];
+            this.session.selectedParticipantId = nextActive?.id;
         }
         this.notify();
     }
@@ -228,6 +237,10 @@ export class CombatTrackerService {
             }
         }
         this.sortParticipants();
+        const nextActive = this.session.participants.find(x => x.currentAp > 0 && !x.isDone);
+        if (nextActive) {
+            this.session.selectedParticipantId = nextActive.id;
+        }
         this.notify();
     }
 
@@ -239,6 +252,10 @@ export class CombatTrackerService {
             p.currentAp = p.maxAp;
         }
         this.sortParticipants();
+        const nextActive = this.session.participants.find(x => x.currentAp > 0 && !x.isDone);
+        if (nextActive) {
+            this.session.selectedParticipantId = nextActive.id;
+        }
         this.notify();
     }
 
