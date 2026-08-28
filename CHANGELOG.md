@@ -5,7 +5,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.0.0] - 2026-08-28
 ### Added
+- **Mythras Combat Tool (Initiative & Action Point Tracker) (Issue #31):**
+  - **Two-Column Tactical Combat Dashboard:**
+    - Left column miniature initiative queue featuring 52px VTT token portraits, descending initiative order, dynamic turn groupings (*Active Turns*, *Turn Done in Cycle*, *0 AP & Turn Done*), and active turn highlights.
+    - Right column full interactive statblock inspector with click-to-roll d100 skills, click-to-roll weapon damage, clickable hit location editor, and in-place instance deep editing (`EnemyInstanceEditModal`).
+  - **Automated Mythras Initiative Engine:**
+    - Calculates Strike Rank bonus ($\lceil(\text{INT} + \text{DEX})/2\rceil$) and rolls $1\text{d10}$ per combatant.
+    - "Roll Init All" button and individual rerolls with hover tooltips showing Strike Rank + roll breakdown.
+  - **Action Point (AP) Tracker & Quick Modifiers:**
+    - Interactive AP dot trackers with direct click-to-fill/deplete and `-1 AP` quick action buttons.
+    - Miniature hit location badges with shield (AP) and droplet (HP) icons and quick `+`/`-` HP step buttons.
+  - **Turn Pass (Cycle) vs. Round Progression:**
+    - **Next Cycle:** Advances turn passes within the round and reactivates participants with remaining AP while leaving current AP counts intact.
+    - **Next Round:** Advances the round counter, resets cycle to 1, reactivates all combatants, and restores full Action Points.
+  - **VTT Token & Portrait Support:**
+    - High-quality rendering of local vault and remote portraits with transparent PNG support and soft drop shadows.
+  - **Roster & Encounter Integration:**
+    - One-click "⚔️ Start Combat" button in Roster Manager encounter views to instantly stage and roll combatants.
+    - "+ Add Encounter" and "+ Add Enemy" modals to introduce reinforcements dynamically during combat.
+    - Automatic session persistence (`.combat_session.json`) and instant disk sync of wounds/armor to Roster files.
 - **Interactive Weapon Damage Rolls & Dice Breakdown:**
   - Weapon damage values in encounter and enemy statblocks are now interactive "Click-to-Roll" pills (`mythras-rollable-pill`).
   - Automatically incorporates the combatant's Damage Modifier (e.g., `+1d2`, `-1d4`) into the roll expression based on official Mythras rules.
@@ -18,7 +39,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Centralized manager UI tokens in `styles.css` to allow for future Style Settings integration.
 - **Roster Manager Skill Editing (Issue #30):**
   - Added the ability to dynamically add, edit, and remove Standard, Professional, Magic, Custom Skills, and Combat Styles directly in the Roster Manager for individual enemy instances.
-
 
 ## [0.8.0] - 2026-08-27
 ### Added

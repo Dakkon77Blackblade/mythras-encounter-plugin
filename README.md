@@ -2,11 +2,12 @@
 
 [![Obsidian](https://img.shields.io/badge/Obsidian-Plugin-purple.svg)](https://obsidian.md)
 [![Mythras](https://img.shields.io/badge/System-Mythras%20%2F%20d100-blue.svg)](http://thedesignmechanism.com/)
+[![Version](https://img.shields.io/badge/Release-v1.0.0-blueviolet.svg)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-A complete encounter, bestiary, armory, and combat management suite for Game Masters running **Mythras** (and d100 / BRP systems) in [Obsidian](https://obsidian.md).
+A complete encounter, bestiary, armory, and tactical combat management suite for Game Masters running **Mythras** (and d100 / BRP systems) in [Obsidian](https://obsidian.md).
 
-This plugin bridges the gap between the fan-project online [Mythras Encounter Generator](https://mythras.skoll.xyz/about/) and your local Obsidian Vault. It enables offline template management, authentic local dice rolling, dynamic encounter building, live interactive statblocks, real-time Hit Location wound tracking, one-click d100 skill checks, interactive weapon damage rolls with full dice breakdown, a dedicated GM Combat Log, and seamless inline weapon references directly inside your campaign notes.
+This plugin bridges the gap between the fan-project online [Mythras Encounter Generator](https://mythras.skoll.xyz/about/) and your local Obsidian Vault. It enables offline template management, authentic local dice rolling, dynamic encounter building, live interactive statblocks, real-time Hit Location wound tracking, one-click d100 skill checks, interactive weapon damage rolls with full dice breakdown, a dedicated GM Combat Log, seamless inline weapon references, and a full-featured **Mythras Combat Tool (Initiative & Action Point Runner)** directly inside your campaign notes and workspace.
 
 ---
 
@@ -22,6 +23,7 @@ This plugin bridges the gap between the fan-project online [Mythras Encounter Ge
    - [Step 3: Creating Encounters & Instantiating Enemies](#step-3-creating-encounters--instantiating-enemies)
    - [Step 4: Running Combat & Interactive Hit Location Tracking](#step-4-running-combat--interactive-hit-location-tracking)
    - [Step 5: Native GM Combat Log & Click-to-Roll](#step-5-native-gm-combat-log--click-to-roll)
+   - [Step 6: ⚔️ Mythras Combat Tool (Initiative & Action Point Tracker)](#step-6-️-mythras-combat-tool-initiative--action-point-tracker)
 4. [Syntax & Codeblock Cheatsheet](#syntax--codeblock-cheatsheet)
 5. [The Mythras Rules & Math Engine](#the-mythras-rules--math-engine)
 6. [Commands & Navigation](#commands--navigation)
@@ -47,8 +49,11 @@ flowchart TD
     Bestiary -->|Instantiate Encounter| Instantiator
     Instantiator -->|Generate Rolled Combatants| Roster["3. Roster Manager\n(Active Instances with Live HP/AP)"]
     Roster -->|Render Codeblocks| Notes["Obsidian Campaign Notes\n(Interactive Statblocks & Live Combat)"]
+    Roster -->|One-Click 'Start Combat'| CombatTracker["⚔️ Combat Tool\n(Initiative Queue & Action Point Runner)"]
     Notes -->|Click Hit Location / Edit| Roster
     Notes -->|Click Skills & Weapon Damage| CombatLog["Native GM Combat Log\n(D100 Skills & Itemized Weapon Damage)"]
+    CombatTracker -->|Click Skills & Weapon Damage| CombatLog
+    CombatTracker -->|Direct Hit Location Edits| Roster
 ```
 
 ### 1. The Bestiary
@@ -74,7 +79,7 @@ flowchart TD
 - **Hierarchy:** Organizes combatants into **Scenarios** (e.g., *Deep Mines*, *Act 2 - City*) and **Encounters** (e.g., *Gate Ambush*, *Chieftain's Lair*).
 - **Stateful Combat Tracking:** Unlike static text statblocks, Roster instances maintain real-time combat state: Current Hit Points (wounds) and Current Armor Points per Hit Location, custom name overrides, and individual notes.
 - **Two-Pane UI:** A desktop-class workspace with a Scenario navigation tree, Encounter Tag-Cloud filter, multi-select bulk operations (move, duplicate, delete), quick snippet copying, and a tabbed deep-editor.
-- **Deep Editing:** Within the tabbed editor, dynamically adjust core stats, add or modify individual Hit Locations, and freely add, edit, or remove standard, professional, and magic skills directly on the combatant instance to represent unique variations.
+- **Deep Editing:** Dynamically adjust core stats, add or modify individual Hit Locations, and freely add, edit, or remove standard, professional, and magic skills directly on the combatant instance to represent unique variations.
 
 ---
 
@@ -279,6 +284,87 @@ Every weapon listed in an encounter or enemy statblock features an interactive d
 
 ---
 
+### Step 6: ⚔️ Mythras Combat Tool (Initiative & Action Point Tracker)
+
+The **Mythras Combat Tool** is a dedicated tactical combat runner designed specifically for the unique mechanics of the Mythras ruleset (Initiative ordering, multi-pass Action Point cycles, and locational wound tracking).
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│ COMBAT TRACKER: Goblin Ambush (Deep Caverns)                [Round: 1 | Cycle: 2]           │
+│ [+ Add Encounter] [+ Add Enemy] [🎲 Roll Init All]                                  [Clear] │
+├───────────────────────────────────────────────┬─────────────────────────────────────────────┤
+│ INITIATIVE ORDER (4)   [⏭ Next Cycle] [🔄 Next Round]│ COMBAT INSPECTOR                           │
+├───────────────────────────────────────────────┼─────────────────────────────────────────────┤
+│ ▼ ACTIVE TURNS                                │ Goblin Chieftain (Elite)                    │
+│ ┌───────────────────────────────────────────┐ │ STR: 14  CON: 13  SIZ: 12  DEX: 15  INT: 13 │
+│ │ ⚔️ Goblin Chieftain (Elite)     Init [18]  │ │ AP: 3  Dmg Mod: +1d2  Init: 14  Move: 6m   │
+│ │ AP: [●] [●] [○]                   [-1 AP] │ ├───────────────────────────────────────────┤
+│ │ Head: 🛡️3 💧4  Chest: 🛡️4 💧6  Abdomen: 🛡️4 💧5│ │ HIT LOCATIONS                             │
+│ │ [✓ Turn Done]                         [X] │ │ 01-03 | Right Leg (2/5)                   │
+│ └───────────────────────────────────────────┘ │ 04-06 | Left Leg (2/5)                    │
+│                                               │ 07-09 | Abdomen (4/5)                       │
+│ ┌───────────────────────────────────────────┐ │ 10-12 | Chest (4/6)                         │
+│ │ Cave Troll                     Init [14]  │ │ 13-15 | Right Arm (2/4)                   │
+│ │ AP: [●] [●]                       [-1 AP] │ │ 16-18 | Left Arm (2/4)                    │
+│ │ Head: 🛡️1 💧7  Chest: 🛡️2 💧9 [-] [+]       │ │ 19-20 | Head (3/4)                        │
+│ │ [✓ Turn Done]                         [X] │ ├───────────────────────────────────────────┤
+│ └───────────────────────────────────────────┘ │ COMBAT STYLES & WEAPONS                     │
+│                                               │ Spear & Shield (72%)                        │
+│ ▼ TURN DONE IN CYCLE (1)                      │ • Shortspear (1d8+1+1d2, M, L) [Roll Dmg]   │
+│ ┌───────────────────────────────────────────┐ │ • Target Shield (1d4+1d2, M, S)             │
+│ │ Goblin Archer #1 (AP: 1)       Init [12]  │ ├───────────────────────────────────────────┤
+│ │ [↩ Reactivate]                            │ │ STANDARD & MAGIC SKILLS                   │
+│ └───────────────────────────────────────────┘ │ Athletics: 58% | Brawn: 65% | Evade: 60%    │
+│                                               │ [✏️ Edit Combatant Instance]                │
+└───────────────────────────────────────────────┴─────────────────────────────────────────────┘
+```
+
+#### 1. Launching Combat in One Click
+- **From the Roster Manager:** Click the prominent **`⚔️ Start Combat`** CTA button on any encounter header. All enemy instances in that encounter are instantly imported into the Combat Tracker with rolled initiatives and ready Action Points.
+- **From the Mythras Manager:** Click the **`⚔️ Combat Tracker`** tab in the top navigation bar at any time.
+- **Mid-Combat Reinforcements:** Use the **`+ Add Encounter`** or **`+ Add Enemy`** buttons in the toolbar to seamlessly introduce reinforcements or wandering monsters without disrupting the active battle.
+
+#### 2. Automated Mythras Initiative Engine
+- **Authentic Formula:** When combat begins (or when clicking **`🎲 Roll Init All`**), the plugin calculates each combatant's base **Strike Rank** ($\lceil(\text{INT} + \text{DEX}) / 2\rceil$) and rolls a local $1\text{d10}$ die.
+- **Dynamic Sorting:** Participants are automatically ordered descending by net Initiative ($\text{Strike Rank} + 1\text{d10}$).
+- **Hover Breakdown:** Hovering over any participant's `Init` badge reveals the exact mathematical breakdown (e.g., `Strike Rank: 13 + Roll: 🎲5`).
+- **Individual Rerolls:** Reroll initiative for any specific participant at any time.
+
+#### 3. Two-Column Tactical Interface
+
+##### Left Column: Miniature Initiative Queue
+- **52px VTT Token Portraits:** Displays local vault images or external web portraits with transparent PNG support and soft drop shadows (`filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.3))`).
+- **Action Point (AP) Dot Trackers:** Visual filled/empty dots (`[●] [●] [○]`) represent remaining Action Points. Click any dot to set remaining AP directly, or click the **`-1 AP`** button to expend an action.
+- **Miniature Hit Location Health & Armor Badges:** Compact location pills show remaining Armor Points (🛡️ shield icon) and Hit Points (💧 droplet icon).
+  - Wounded locations are highlighted in yellow/orange; severed or disabled locations ($\le 0\text{ HP}$) are highlighted in red.
+  - Quick **`-`** and **`+`** buttons let you adjust Hit Location HP on the fly with a single click.
+- **Turn State & Visual Groupings:**
+  - **Active Turns:** Combatants with remaining AP who have not yet acted in the current cycle. The current actor is highlighted with a distinct active-turn border and ⚔️ icon.
+  - **Turn Done in Cycle:** Combatants who took their turn pass in this cycle but still possess remaining AP for subsequent cycles.
+  - **0 AP & Turn Done:** Combatants whose AP has been exhausted for the round, neatly sequestered at the bottom.
+- **Turn Done Toggle:** Clicking **`✓ Turn Done`** marks the actor's turn pass as complete, re-sorts the queue, and automatically selects the next active combatant in line. Clicking **`↩ Reactivate`** returns them to the active queue.
+
+##### Right Column: Interactive Combat Inspector
+- **Unabridged Live Statblock:** Clicking any participant card in the queue immediately displays their complete, full-depth statblock in the right pane.
+- **Click-to-Roll Directly in Combat:** Trigger D100 skill checks and rolled weapon damage directly from the inspector; results route immediately into the right sidebar GM Combat Log.
+- **In-Place Enemy Instance Deep Editing:** Click the pencil icon on the inspector header to open the `EnemyInstanceEditModal`. Freely modify attributes, add/remove hit locations, change equipment, or adjust skill percentages mid-fight.
+- **Instant Disk Sync:** All changes made in the Combat Tracker (wounds, armor damage, AP) automatically sync to `<baseFolder>/Roster/<instance_id>.json` on disk and persist across app reloads via `<baseFolder>/Roster/.combat_session.json`.
+
+#### 4. Turn Pass (Cycle) vs. Round Progression Engine
+Combat in Mythras uses multiple Action Point passes per round. The Combat Tool provides dedicated controls for this workflow:
+
+- **⏭ Next Cycle (Turn Pass):**
+  - Advances the **Cycle** counter (e.g., `Round 1 | Cycle 1` $\rightarrow$ `Round 1 | Cycle 2`).
+  - Reactivates all combatants who still have remaining Action Points ($\text{AP} > 0$), clearing their `isDone` status.
+  - **Action Points are strictly preserved** (they do not reset).
+  - Automatically selects the first active combatant at the top of the queue.
+- **🔄 Next Round:**
+  - Advances the **Round** counter (e.g., `Round 1` $\rightarrow$ `Round 2`) and resets the Cycle counter to `1`.
+  - **Fully restores Action Points** for every participant back to their maximum rating ($\text{Current AP} = \text{Max AP}$).
+  - Clears all `isDone` statuses and readies the entire roster for the new round.
+
+---
+
 ## Syntax & Codeblock Cheatsheet
 
 | Syntax | Description | Example |
@@ -308,6 +394,7 @@ The plugin strictly implements official Mythras Core Rules:
   $$\text{Damage} = \max(0, \text{Weapon Base Dice} \pm \text{Damage Modifier})$$
   Evaluates compound dice formulas (e.g., `2d8+1d12+2`), tracks individual die roll components, and clamps negative sums to 0.
 - **Strike Rank / Initiative:** $\left\lceil \frac{\text{INT} + \text{DEX}}{2} \right\rceil$.
+- **Initiative Roll:** $\text{Strike Rank} + 1\text{d10}$.
 - **Magic Points:** Equal to current $\text{POW}$.
 - **Skill Checks & Success Levels:**
   - **Critical:** $\text{Roll} \le \lceil\text{Skill} / 10\rceil$
@@ -320,12 +407,14 @@ The plugin strictly implements official Mythras Core Rules:
 
 ## Commands & Navigation
 
-| Command | Action |
-| :--- | :--- |
-| **`Import Template from Mythras Encounter Generator`** | Opens search modal to download templates directly from `mythras.skoll.xyz`. |
-| **`Generate Mythras Encounter`** | Opens generation modal to roll enemies from local Bestiary templates. |
-| **`Open Mythras Manager`** | Opens the tabbed Manager leaf (Roster, Armory, Bestiary) via ribbon icon (`swords`) or settings. |
-| **`Open Combat Log`** | Opens the dedicated GM Combat Log sidebar view via ribbon icon (`list`) or command palette. |
+| Command / Control | Location | Action |
+| :--- | :--- | :--- |
+| **`Mythras: Open Mythras Manager`** | Command Palette / Ribbon (`swords`) | Opens the tabbed Manager leaf (Roster, Armory, Bestiary, Combat Tracker). |
+| **`⚔️ Start Combat`** | Roster Manager Encounter View | Instantly stages the active encounter into the Combat Tool and rolls initiative. |
+| **`⚔️ Combat Tracker` Tab** | Mythras Manager Header | Opens the two-column tactical initiative and action point runner. |
+| **`Mythras: Open Combat Log`** | Command Palette / Ribbon (`list`) | Opens the dedicated GM Combat Log sidebar view for skill and damage rolls. |
+| **`Import Template from Mythras Encounter Generator`** | Command Palette | Opens search modal to download templates directly from `mythras.skoll.xyz`. |
+| **`Generate Mythras Encounter`** | Command Palette / Roster UI | Opens generation modal to roll enemies from local Bestiary templates. |
 
 ---
 
