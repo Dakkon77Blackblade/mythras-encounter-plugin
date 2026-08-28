@@ -162,14 +162,6 @@ export class CombatTrackerUI {
         const btnRollAll = controls.createEl('button', { text: '🎲 Roll Init All', cls: 'mythras-btn-secondary' });
         btnRollAll.onclick = () => this.service.rollInitiativeAll();
 
-        const btnNextCycle = controls.createEl('button', { text: '⏭ Next Cycle', cls: 'mythras-btn-secondary' });
-        btnNextCycle.title = 'Advance to next turn pass within the round (AP stays unchanged)';
-        btnNextCycle.onclick = () => this.service.nextCycle();
-
-        const btnNextRound = controls.createEl('button', { text: '🔄 Next Round', cls: 'mythras-btn-cta' });
-        btnNextRound.title = 'Start new round (resets AP to max for everyone)';
-        btnNextRound.onclick = () => this.service.nextRound();
-
         const btnClear = controls.createEl('button', { text: 'Clear', cls: 'mythras-btn-danger' });
         btnClear.onclick = () => {
             if (confirm('Clear the current combat session?')) {
@@ -193,8 +185,20 @@ export class CombatTrackerUI {
         container.empty();
 
         const header = container.createDiv('mythras-queue-header');
-        header.createEl('h3', { text: 'Initiative Order' });
-        header.createSpan({ text: `${this.service.session.participants.length} participants`, cls: 'mythras-text-muted' });
+        
+        const titleGroup = header.createDiv('mythras-queue-title-group');
+        titleGroup.createEl('h3', { text: 'Initiative Order' });
+        titleGroup.createSpan({ text: ` (${this.service.session.participants.length})`, cls: 'mythras-text-muted' });
+
+        const queueControls = header.createDiv('mythras-queue-controls');
+        
+        const btnNextCycle = queueControls.createEl('button', { text: '⏭ Next Cycle', cls: 'mythras-btn-secondary' });
+        btnNextCycle.title = 'Advance to next turn pass within the round (AP stays unchanged)';
+        btnNextCycle.onclick = () => this.service.nextCycle();
+
+        const btnNextRound = queueControls.createEl('button', { text: '🔄 Next Round', cls: 'mythras-btn-cta' });
+        btnNextRound.title = 'Start new round (resets AP to max for everyone)';
+        btnNextRound.onclick = () => this.service.nextRound();
 
         if (this.service.session.participants.length === 0) {
             const empty = container.createDiv('mythras-empty-state');

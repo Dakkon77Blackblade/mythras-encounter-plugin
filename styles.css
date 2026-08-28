@@ -1173,11 +1173,25 @@
     align-items: center;
     padding-bottom: 8px;
     border-bottom: 1px solid var(--background-modifier-border);
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.mythras-queue-title-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .mythras-queue-header h3 {
     margin: 0;
     font-size: 1.1em;
+}
+
+.mythras-queue-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .mythras-queue-scroll {
