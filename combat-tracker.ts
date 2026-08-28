@@ -1,4 +1,4 @@
-import { normalizePath } from 'obsidian';
+import { normalizePath, TFile } from 'obsidian';
 import MythrasEncounterPlugin from './main';
 import { MythrasInstance } from './mythras-api';
 import { DiceRoller } from './dice-roller';
@@ -257,8 +257,31 @@ export class CombatTrackerService {
         try {
             instance.lastModified = Date.now();
             const folder = this.plugin.settings.baseFolder || 'Mythras-Helper';
-            const filePath = normalizePath(`${folder}/Roster/${instance.id}_${instance.instanceName.replace(/[^a-zA-Z0-9_\-]/g, '_')}.json`);
-            await this.plugin.app.vault.adapter.write(filePath, JSON.stringify(instance, null, 2));
+            const rosterPath = normalizePath(`${folder}/Roster`);
+            
+            // Search vault for the existing instance file matching instance.id
+            const files = this.plugin.app.vault.getFiles().filter(f => 
+                f.path.startsWith(rosterPath) && 
+                f.extension === 'json' && 
+                !f.name.startsWith('.')
+            );
+
+            let targetFile: TFile | null = null;
+            for (const f of files) {
+                if (f.name.startsWith(`${instance.id}_`)) {
+                    targetFile = f;
+                    break;
+                }
+            }
+
+            const content = JSON.stringify(instance, null, 2);
+            if (targetFile) {
+                await this.plugin.app.vault.modify(targetFile, content);
+            } else {
+                const safeTemplate = (instance.templateName || 'Enemy').replace(/[^\p{L}\p{N}]/gu, '');
+                const newFilePath = normalizePath(`${rosterPath}/${instance.id}_${safeTemplate}.json`);
+                await this.plugin.app.vault.create(newFilePath, content);
+            }
         } catch (e) {
             console.error("Failed to sync instance to disk", e);
         }

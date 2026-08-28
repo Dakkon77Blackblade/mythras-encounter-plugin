@@ -298,7 +298,7 @@ export class RosterManagerUI {
                     for (const child of f.children) {
                         findJsonFiles(child);
                     }
-                } else if (f instanceof TFile && f.extension === 'json') {
+                } else if (f instanceof TFile && f.extension === 'json' && !f.name.startsWith('.')) {
                     matchingFiles.push(f);
                 }
             };
@@ -309,7 +309,10 @@ export class RosterManagerUI {
                     const content = await this.app.vault.read(file);
                     const data = JSON.parse(content) as MythrasInstance;
                     
-                    let encounterId = data.encounterId;
+                    if (!data || !data.templateName || !data.hitLocations || !data.id) {
+                        // Skip non-instance JSON files like session state
+                        continue;
+                    }
                     
                     // Fallback for legacy JSON without encounterId
                     if (!encounterId) {
