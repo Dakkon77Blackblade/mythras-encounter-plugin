@@ -102,6 +102,7 @@ export class MythrasManagerView extends ItemView {
         } else if (this.currentTab === 'bestiary') {
             await this.bestiaryUI.render();
         } else if (this.currentTab === 'combat') {
+            await this.plugin.combatTrackerService.refreshParticipantInstances();
             this.combatUI.render();
         }
     }
