@@ -1359,12 +1359,23 @@
 .mythras-hl-icon {
     display: inline-flex;
     align-items: center;
-    opacity: 0.8;
+    opacity: 0.95;
 }
 
 .mythras-hl-icon svg {
     width: 12px;
     height: 12px;
+    fill: currentColor;
+    stroke: currentColor;
+    stroke-width: 1px;
+}
+
+.mythras-hl-icon-shield {
+    color: var(--text-muted);
+}
+
+.mythras-hl-icon-droplet {
+    color: var(--text-accent);
 }
 
 .mythras-mini-hl-badge.is-wounded {

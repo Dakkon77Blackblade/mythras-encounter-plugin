@@ -322,14 +322,14 @@ export class CombatTrackerUI {
             
             // AP Stat (Shield)
             const apStat = hlBadge.createSpan({ cls: 'mythras-hl-mini-stat' });
-            const shieldIcon = apStat.createSpan({ cls: 'mythras-hl-icon' });
+            const shieldIcon = apStat.createSpan({ cls: 'mythras-hl-icon mythras-hl-icon-shield' });
             setIcon(shieldIcon, 'shield');
             apStat.createSpan({ text: `${currentAp}` });
             if (String(currentAp) !== String(hl.ap)) apStat.addClass('is-modified');
 
             // HP Stat (Droplet)
             const hpStat = hlBadge.createSpan({ cls: 'mythras-hl-mini-stat' });
-            const hpIcon = hpStat.createSpan({ cls: 'mythras-hl-icon' });
+            const hpIcon = hpStat.createSpan({ cls: 'mythras-hl-icon mythras-hl-icon-droplet' });
             setIcon(hpIcon, 'droplet');
             hpStat.createSpan({ text: `${currentHp}` });
             if (Number(currentHp) !== Number(hl.hp)) hpStat.addClass('is-modified');
