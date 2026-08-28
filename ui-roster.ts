@@ -474,9 +474,7 @@ export class RosterManagerUI {
     renderSidebar(sidebar: HTMLElement) {
         sidebar.createEl('h3', { text: 'Scenarios' });
         
-        const btnNewEnc = sidebar.createEl('button', { text: '+ New Encounter', cls: 'mythras-btn-primary' });
-        btnNewEnc.style.width = '100%';
-        btnNewEnc.style.marginBottom = '10px';
+        const btnNewEnc = sidebar.createEl('button', { text: '+ New Encounter', cls: 'mythras-btn-primary mythras-w-full mythras-mb-10' });
         btnNewEnc.onclick = () => {
             const allScenarios = this.scenarios.map(s => s.name);
             const allFolders = this.app.vault.getAllLoadedFiles().filter(f => f instanceof TFolder).map(f => f.path);
@@ -817,8 +815,7 @@ export class RosterManagerUI {
 
         const tr = table.createEl('thead').createEl('tr');
         ['', 'Instance Name', 'Template', 'HP', 'Actions'].forEach(h => {
-            const th = tr.createEl('th', { text: h, cls: 'mythras-manager-th' });
-            if (h === '') th.style.width = '40px';
+            const th = tr.createEl('th', { text: h, cls: `mythras-manager-th ${h === '' ? 'mythras-th-checkbox' : ''}` });
         });
 
         const tbody = table.createEl('tbody');
@@ -864,9 +861,7 @@ export class RosterManagerUI {
                 hpTd.setText('-');
             }
 
-            const actionsTd = row.createEl('td', { cls: 'mythras-manager-td' });
-            actionsTd.style.display = 'flex';
-            actionsTd.style.gap = '8px';
+            const actionsTd = row.createEl('td', { cls: 'mythras-manager-td mythras-actions-cell' });
 
             const btnEdit = actionsTd.createEl('button', { text: 'Edit', cls: 'mythras-btn-secondary' });
             btnEdit.onclick = (e) => {
@@ -940,10 +935,7 @@ export class RosterManagerUI {
             this.display();
         };
 
-        const tabsDiv = container.createDiv('armory-tabs mythras-manager-header-controls');
-        tabsDiv.style.borderBottom = '1px solid var(--background-modifier-border)';
-        tabsDiv.style.paddingBottom = '10px';
-        tabsDiv.style.marginBottom = '20px';
+        const tabsDiv = container.createDiv('armory-tabs mythras-manager-header-controls mythras-tab-bar mythras-mb-20');
 
         const createTab = (id: typeof this.editTab, label: string) => {
             const btn = tabsDiv.createEl('button', { text: label });
@@ -960,10 +952,7 @@ export class RosterManagerUI {
         createTab('skills', 'Skills');
         createTab('weapons', 'Weapons');
 
-        const formArea = container.createDiv('mythras-manager-form');
-        formArea.style.overflowY = 'auto';
-        formArea.style.maxHeight = 'calc(100% - 150px)';
-        formArea.style.paddingRight = '10px';
+        const formArea = container.createDiv('mythras-manager-form mythras-roster-form-scroll');
 
         const createTextField = (label: string, val: string, onChange: (v: string) => void) => {
             const wrap = formArea.createDiv('mythras-manager-form-group');
@@ -978,11 +967,9 @@ export class RosterManagerUI {
             createTextField('Scenario', data.scenario, v => data.scenario = v);
             createTextField('Encounter', data.encounter, v => data.encounter = v);
             
-            const imgWrap = formArea.createDiv('mythras-manager-input-group');
-            imgWrap.style.alignItems = 'flex-end';
+            const imgWrap = formArea.createDiv('mythras-manager-input-group mythras-align-end');
             
-            const fieldWrap = imgWrap.createDiv('mythras-manager-form-group');
-            fieldWrap.style.flex = '1';
+            const fieldWrap = imgWrap.createDiv('mythras-manager-form-group mythras-flex-1');
             fieldWrap.createEl('label', { text: 'Image' });
             
             const imgInp = fieldWrap.createEl('input', { type: 'text', cls: 'mythras-manager-input' });
@@ -1001,18 +988,15 @@ export class RosterManagerUI {
 
 
             
-            const notesWrap = formArea.createDiv();
-            notesWrap.style.display = 'flex';
-            notesWrap.style.flexDirection = 'column';
-            notesWrap.createEl('label', { text: 'Notes' }).style.fontWeight = 'bold';
-            const ta = notesWrap.createEl('textarea');
+            const notesWrap = formArea.createDiv('mythras-manager-form-group');
+            notesWrap.createEl('label', { text: 'Notes', cls: 'mythras-bold' });
+            const ta = notesWrap.createEl('textarea', { cls: 'mythras-w-full mythras-manager-input' });
             ta.value = data.notes || '';
             ta.rows = 6;
             ta.oninput = (e) => data.notes = (e.target as HTMLTextAreaElement).value;
 
         } else if (this.editTab === 'hitlocations') {
             const table = formArea.createEl('table', { cls: 'mythras-manager-table' });
-            table.style.width = '100%';
             const thead = table.createEl('thead').createEl('tr');
             ['Location', 'Range', 'AP', 'Current HP', 'Max HP'].forEach(h => {
                 thead.createEl('th', { text: h, cls: 'mythras-manager-th' });
@@ -1025,43 +1009,32 @@ export class RosterManagerUI {
                 tr.createEl('td', { text: hl.range, cls: 'mythras-manager-td' });
                 
                 const apTd = tr.createEl('td', { cls: 'mythras-manager-td' });
-                const apInp = apTd.createEl('input', { type: 'text', cls: 'mythras-manager-input' });
-                apInp.style.width = '60px';
+                const apInp = apTd.createEl('input', { type: 'text', cls: 'mythras-manager-input mythras-input-w60' });
                 apInp.value = hl.ap;
                 apInp.oninput = (e) => hl.ap = (e.target as HTMLInputElement).value;
 
                 const currTd = tr.createEl('td', { cls: 'mythras-manager-td' });
-                const currInp = currTd.createEl('input', { type: 'number', cls: 'mythras-manager-input' });
-                currInp.style.width = '60px';
+                const currInp = currTd.createEl('input', { type: 'number', cls: 'mythras-manager-input mythras-input-w60' });
                 currInp.value = hl.currentHp.toString();
                 currInp.oninput = (e) => hl.currentHp = parseInt((e.target as HTMLInputElement).value) || 0;
 
                 const maxTd = tr.createEl('td', { cls: 'mythras-manager-td' });
-                const maxInp = maxTd.createEl('input', { type: 'number', cls: 'mythras-manager-input' });
-                maxInp.style.width = '60px';
+                const maxInp = maxTd.createEl('input', { type: 'number', cls: 'mythras-manager-input mythras-input-w60' });
                 maxInp.value = hl.hp.toString();
                 maxInp.oninput = (e) => hl.hp = parseInt((e.target as HTMLInputElement).value) || 0;
             });
 
         } else if (this.editTab === 'stats') {
-            const grid = formArea.createDiv();
-            grid.style.display = 'grid';
-            grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(200px, 1fr))';
-            grid.style.gap = '15px';
+            const grid = formArea.createDiv('mythras-grid-200');
 
             const renderObj = (obj: any, label: string) => {
                 formArea.createEl('h3', { text: label });
-                const wrap = formArea.createDiv();
-                wrap.style.display = 'grid';
-                wrap.style.gridTemplateColumns = 'repeat(auto-fill, minmax(150px, 1fr))';
-                wrap.style.gap = '10px';
+                const wrap = formArea.createDiv('mythras-grid-150');
                 
                 Object.keys(obj).forEach(k => {
-                    const field = wrap.createDiv();
-                    field.style.display = 'flex';
-                    field.style.flexDirection = 'column';
+                    const field = wrap.createDiv('mythras-manager-form-group');
                     field.createEl('label', { text: k });
-                    const inp = field.createEl('input', { type: typeof obj[k] === 'number' ? 'number' : 'text' });
+                    const inp = field.createEl('input', { type: typeof obj[k] === 'number' ? 'number' : 'text', cls: 'mythras-manager-input' });
                     inp.value = obj[k].toString();
                     inp.oninput = (e) => {
                         const val = typeof obj[k] === 'number' 
@@ -1122,8 +1095,7 @@ export class RosterManagerUI {
                         vInput.onchange = update;
                     });
 
-                    const btnAdd = listDiv.createEl('button', { text: '+ Add', cls: 'mythras-btn-secondary' });
-                    btnAdd.style.alignSelf = 'flex-start';
+                    const btnAdd = listDiv.createEl('button', { text: '+ Add', cls: 'mythras-btn-secondary mythras-self-start' });
                     btnAdd.onclick = () => {
                         obj['New Skill'] = 0;
                         redraw();
@@ -1140,8 +1112,7 @@ export class RosterManagerUI {
             renderDict(data.customSkills, 'Custom Skills');
             renderDict(data.combatStyles, 'Combat Styles');
         } else if (this.editTab === 'weapons') {
-            const btnAdd = formArea.createEl('button', { text: '+ Add Weapon', cls: 'mod-cta' });
-            btnAdd.style.width = '200px';
+            const btnAdd = formArea.createEl('button', { text: '+ Add Weapon', cls: 'mod-cta mythras-btn-w200' });
             btnAdd.onclick = () => {
                 const defaultWeapon = this.plugin.armoryCache.length > 0 ? this.plugin.armoryCache[0] : { name: 'New Weapon' };
                 const newWeapon = JSON.parse(JSON.stringify(defaultWeapon));
@@ -1151,32 +1122,19 @@ export class RosterManagerUI {
             };
 
             data.weapons.forEach((w, idx) => {
-                const wrap = formArea.createDiv();
-                wrap.style.border = '1px solid var(--background-modifier-border)';
-                wrap.style.padding = '10px';
-                wrap.style.borderRadius = '6px';
-                wrap.style.position = 'relative';
+                const wrap = formArea.createDiv('mythras-weapon-card');
 
-                const btnDel = wrap.createEl('button', { cls: 'clickable-icon mod-warning' });
+                const btnDel = wrap.createEl('button', { cls: 'clickable-icon mod-warning mythras-card-del-btn' });
                 setIcon(btnDel, 'trash-2');
-                btnDel.style.position = 'absolute';
-                btnDel.style.top = '10px';
-                btnDel.style.right = '10px';
                 btnDel.onclick = () => {
                     data.weapons.splice(idx, 1);
                     this.display();
                 };
 
-                const grid = wrap.createDiv();
-                grid.style.display = 'grid';
-                grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(200px, 1fr))';
-                grid.style.gap = '10px';
-                grid.style.marginTop = '20px';
+                const grid = wrap.createDiv('mythras-grid-200-gap10 mythras-mt-20');
 
-                const selWrap = grid.createDiv();
-                selWrap.style.display = 'flex';
-                selWrap.style.flexDirection = 'column';
-                selWrap.createEl('label', { text: 'Select Weapon from Armory' }).style.fontSize = '0.85em';
+                const selWrap = grid.createDiv('mythras-manager-form-group');
+                selWrap.createEl('label', { text: 'Select Weapon from Armory', cls: 'mythras-text-sm' });
                 const sel = selWrap.createEl('select');
                 
                 const inArmory = this.plugin.armoryCache.some(aw => aw.name.toLowerCase() === w.name.toLowerCase());
@@ -1209,11 +1167,9 @@ export class RosterManagerUI {
                 };
 
                 const createField = (label: string, field: 'ap' | 'hp') => {
-                    const fWrap = grid.createDiv();
-                    fWrap.style.display = 'flex';
-                    fWrap.style.flexDirection = 'column';
-                    fWrap.createEl('label', { text: label }).style.fontSize = '0.85em';
-                    const inp = fWrap.createEl('input', { type: 'text' });
+                    const fWrap = grid.createDiv('mythras-manager-form-group');
+                    fWrap.createEl('label', { text: label, cls: 'mythras-text-sm' });
+                    const inp = fWrap.createEl('input', { type: 'text', cls: 'mythras-manager-input' });
                     inp.value = (w[field] as string) || '';
                     inp.oninput = (e) => w[field] = (e.target as HTMLInputElement).value;
                 };
@@ -1221,10 +1177,7 @@ export class RosterManagerUI {
                 createField('AP', 'ap');
                 createField('HP', 'hp');
                 
-                const readWrap = wrap.createDiv();
-                readWrap.style.marginTop = '10px';
-                readWrap.style.fontSize = '0.85em';
-                readWrap.style.color = 'var(--text-muted)';
+                const readWrap = wrap.createDiv('mythras-weapon-summary-text');
                 readWrap.setText(`Damage: ${w.damage || '-'} | Type: ${w.type || '-'} | Size/Force: ${w.size || '-'} | Reach/Range: ${w.reach || w.range || '-'} | Special: ${w.specialFx || 'None'}`);
             });
         }

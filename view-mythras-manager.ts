@@ -43,24 +43,13 @@ export class MythrasManagerView extends ItemView {
         container.addClass('mythras-manager-view');
 
         // Main layout
-        const layout = container.createDiv();
-        layout.style.display = 'flex';
-        layout.style.flexDirection = 'column';
-        layout.style.height = '100%';
-        layout.style.padding = '10px';
+        const layout = container.createDiv('mythras-manager-root-layout');
 
         // Top Navigation
         this.navContainer = layout.createDiv('mythras-manager-nav');
-        this.navContainer.style.display = 'flex';
-        this.navContainer.style.gap = '15px';
-        this.navContainer.style.borderBottom = '1px solid var(--background-modifier-border)';
-        this.navContainer.style.paddingBottom = '10px';
-        this.navContainer.style.marginBottom = '20px';
 
         // Content Area
-        this.mainContainer = layout.createDiv('mythras-manager-content');
-        this.mainContainer.style.flex = '1';
-        this.mainContainer.style.overflow = 'hidden'; // Inner UIs handle their own scrolling
+        this.mainContainer = layout.createDiv('mythras-manager-content'); // Inner UIs handle their own scrolling
 
         this.rosterUI = new RosterManagerUI(this.app, this.plugin, this.mainContainer);
         this.armoryUI = new ArmoryManagerUI(this.app, this.plugin, this.mainContainer);

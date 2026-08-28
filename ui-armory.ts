@@ -237,8 +237,7 @@ export class ArmoryManagerUI {
             row.createEl('td', { text: w.size || '-', cls: 'mythras-manager-td' });
             row.createEl('td', { text: `${w.ap || 0}/${w.hp || 0}`, cls: 'mythras-manager-td' });
             
-            const actionsTd = row.createEl('td', { cls: 'mythras-manager-td' });
-            actionsTd.style.textAlign = 'right';
+            const actionsTd = row.createEl('td', { cls: 'mythras-manager-td mythras-align-right' });
             const btnDeleteList = actionsTd.createEl('button', { text: '🗑️', cls: 'mythras-btn-icon mythras-btn-danger' });
             btnDeleteList.onclick = (e) => {
                 e.stopPropagation(); // prevent row click
@@ -261,10 +260,7 @@ export class ArmoryManagerUI {
         const container = this.containerEl.createDiv('armory-edit-container');
         
         // Buttons
-        const buttonDiv = container.createDiv('armory-edit-buttons');
-        buttonDiv.style.display = 'flex';
-        buttonDiv.style.gap = '10px';
-        buttonDiv.style.marginBottom = '20px';
+        const buttonDiv = container.createDiv('armory-edit-buttons mythras-manager-actions');
 
         const btnBack = buttonDiv.createEl('button', { text: 'Cancel' });
         btnBack.onclick = () => {

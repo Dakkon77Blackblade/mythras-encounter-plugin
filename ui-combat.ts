@@ -45,19 +45,14 @@ export class AddEncounterModal extends Modal {
             return;
         }
 
-        const listDiv = contentEl.createDiv('mythras-manager-list');
-        listDiv.style.maxHeight = '400px';
-        listDiv.style.overflowY = 'auto';
+        const listDiv = contentEl.createDiv('mythras-manager-list mythras-modal-list-scrollable');
 
         for (const [key, data] of encountersMap.entries()) {
-            const row = listDiv.createDiv('mythras-manager-list-row');
-            row.style.cursor = 'pointer';
-            row.style.padding = '8px 12px';
+            const row = listDiv.createDiv('mythras-manager-list-row mythras-list-row-clickable');
             
-            const title = row.createDiv();
+            const title = row.createDiv('mythras-list-title');
             title.createEl('strong', { text: data.encounter });
             title.createEl('span', { text: ` (${data.scenario}) - ${data.instances.length} enemies`, cls: 'mythras-text-muted' });
-            title.style.fontSize = '0.95em';
 
             const btnAdd = row.createEl('button', { text: '+ Add', cls: 'mythras-btn-primary' });
             btnAdd.onclick = () => {
@@ -388,9 +383,6 @@ export class CombatTrackerUI {
         }
 
         const inspectorWrap = container.createDiv('mythras-combat-inspector-wrap');
-        inspectorWrap.style.overflowY = 'auto';
-        inspectorWrap.style.height = '100%';
-        inspectorWrap.style.paddingRight = '10px';
 
         // Render full interactive statblock!
         const element = renderEnemyStatblock(

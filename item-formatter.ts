@@ -15,27 +15,11 @@ export function renderItemStatblock(weapon: MythrasWeapon, compact: boolean = fa
 
         // Line 2: Core Stats (smaller, with icons)
         const line2 = container.createDiv('mythras-item-line2');
-        line2.style.display = 'flex';
-        line2.style.flexWrap = 'wrap';
-        line2.style.gap = '12px';
-        line2.style.alignItems = 'center';
 
         const addIconStat = (iconName: string, value: string) => {
             const statSpan = line2.createSpan('mythras-item-stat-inline');
-            statSpan.style.display = 'flex';
-            statSpan.style.alignItems = 'center';
-            statSpan.style.gap = '4px';
-
             const iconSpan = statSpan.createSpan('mythras-item-icon');
             setIcon(iconSpan, iconName);
-            // Size the SVG appropriately
-            const svg = iconSpan.querySelector('svg');
-            if (svg) {
-                svg.style.width = '14px';
-                svg.style.height = '14px';
-                svg.style.color = 'var(--text-muted)';
-            }
-
             statSpan.createSpan('mythras-item-val').setText(value);
         };
 
@@ -56,27 +40,11 @@ export function renderItemStatblock(weapon: MythrasWeapon, compact: boolean = fa
         // Line 3: Effects & Traits (even smaller, with icons)
         if (weapon.specialFx || weapon.traits) {
             const line3 = container.createDiv('mythras-item-line3');
-            line3.style.display = 'flex';
-            line3.style.flexWrap = 'wrap';
-            line3.style.gap = '12px';
-            line3.style.alignItems = 'center';
-            line3.style.marginTop = '4px';
             
             const addDetailIcon = (iconName: string, value: string) => {
                 const statSpan = line3.createSpan('mythras-item-stat-inline');
-                statSpan.style.display = 'flex';
-                statSpan.style.alignItems = 'center';
-                statSpan.style.gap = '4px';
-                
                 const iconSpan = statSpan.createSpan('mythras-item-icon');
                 setIcon(iconSpan, iconName);
-                const svg = iconSpan.querySelector('svg');
-                if (svg) {
-                    svg.style.width = '12px';
-                    svg.style.height = '12px';
-                    svg.style.color = 'var(--text-muted)';
-                }
-
                 statSpan.createSpan('mythras-item-val').setText(value);
             };
 

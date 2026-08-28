@@ -88,11 +88,42 @@
 .mythras-item-line2 {
     font-size: 0.9em;
     color: var(--text-normal);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
 }
 
 .mythras-item-line3 {
     font-size: 0.8em;
     color: var(--text-muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.mythras-item-stat-inline {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.mythras-item-icon {
+    display: inline-flex;
+    align-items: center;
+}
+
+.mythras-item-icon svg {
+    width: 14px;
+    height: 14px;
+    color: var(--text-muted);
+}
+
+.mythras-item-line3 .mythras-item-icon svg {
+    width: 12px;
+    height: 12px;
 }
 
 .mythras-item-line4 {
@@ -1510,4 +1541,204 @@
     margin: 0;
     display: inline-block;
 }
+
+/* ==========================================================================
+   Semantic Utility and Layout Classes
+   ========================================================================== */
+
+/* Layout & Navigation */
+.mythras-manager-root-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 10px;
+}
+
+.mythras-manager-nav {
+    display: flex;
+    gap: 15px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.mythras-manager-content {
+    flex: 1;
+    overflow: hidden;
+}
+
+.mythras-tab-bar {
+    border-bottom: 1px solid var(--background-modifier-border);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+/* Scrollable Containers */
+.mythras-modal-form-scroll {
+    overflow-y: auto;
+    max-height: 60vh;
+}
+
+.mythras-roster-form-scroll {
+    overflow-y: auto;
+    max-height: calc(100% - 150px);
+    padding-right: 10px;
+}
+
+.mythras-combat-inspector-wrap {
+    overflow-y: auto;
+    height: 100%;
+    padding-right: 10px;
+}
+
+.mythras-modal-list-scrollable {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* List & Table Utilities */
+.mythras-list-row-clickable {
+    cursor: pointer;
+    padding: 8px 12px;
+}
+
+.mythras-list-title {
+    font-size: 0.95em;
+}
+
+.mythras-th-checkbox {
+    width: 40px;
+}
+
+.mythras-actions-cell {
+    display: flex;
+    gap: 8px;
+}
+
+.mythras-align-right {
+    text-align: right;
+}
+
+/* Card & Component Containers */
+.mythras-skills-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.mythras-weapon-card {
+    border: 1px solid var(--background-modifier-border);
+    padding: 10px;
+    border-radius: 6px;
+    position: relative;
+}
+
+.mythras-card-compact {
+    margin-bottom: 10px;
+    padding: 10px;
+}
+
+.mythras-card-del-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.mythras-weapon-summary-text {
+    margin-top: 10px;
+    font-size: 0.85em;
+    color: var(--text-muted);
+}
+
+/* Form Grids */
+.mythras-grid-150 {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.mythras-grid-180 {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+}
+
+.mythras-grid-200 {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.mythras-grid-200-gap10 {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+}
+
+/* Sizing, Flex & Alignment Utilities */
+.mythras-w-full {
+    width: 100%;
+}
+
+.mythras-input-w60 {
+    width: 60px !important;
+}
+
+.mythras-btn-w200 {
+    width: 200px;
+}
+
+.mythras-flex-1 {
+    flex: 1;
+}
+
+.mythras-flex-2 {
+    flex: 2;
+}
+
+.mythras-align-end {
+    align-items: flex-end;
+}
+
+.mythras-self-start {
+    align-self: flex-start;
+}
+
+.mythras-bold {
+    font-weight: bold;
+}
+
+.mythras-text-sm {
+    font-size: 0.85em;
+}
+
+/* Spacing Helpers */
+.mythras-mb-6 {
+    margin-bottom: 6px;
+}
+
+.mythras-mb-10 {
+    margin-bottom: 10px;
+}
+
+.mythras-mb-15 {
+    margin-bottom: 15px;
+}
+
+.mythras-mb-20 {
+    margin-bottom: 20px;
+}
+
+.mythras-mt-10 {
+    margin-top: 10px;
+}
+
+.mythras-mt-15 {
+    margin-top: 15px;
+}
+
+.mythras-mt-20 {
+    margin-top: 20px;
+}
+
 
