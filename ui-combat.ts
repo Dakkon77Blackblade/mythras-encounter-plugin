@@ -396,7 +396,17 @@ export class CombatTrackerUI {
             this.app,
             participant.instance,
             'long',
-            undefined,
+            () => {
+                // Open Roster Manager edit view for this enemy instance
+                const leaf = this.app.workspace.getLeaf(false);
+                leaf.setViewState({ type: MYTHRAS_MANAGER_VIEW, active: true }).then(() => {
+                    const view = leaf.view as any;
+                    if (view && view.rosterUI) {
+                        view.currentTab = 'roster';
+                        view.rosterUI.openEditView(participant.instanceId || participant.instance.id);
+                    }
+                });
+            },
             async (updatedInstance) => {
                 await this.service.syncInstanceToDisk(updatedInstance);
                 this.service.saveSession();
