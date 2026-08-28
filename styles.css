@@ -332,6 +332,9 @@
     margin-left: 15px;
     margin-bottom: 10px;
     background: transparent;
+    position: relative;
+    z-index: 1;
+    pointer-events: none;
 }
 
 .mythras-enemy-image img {
@@ -341,6 +344,15 @@
     filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3));
 }
 
+
+.mythras-enemy-header,
+.mythras-enemy-top-wrap,
+.mythras-hl-container,
+.mythras-skill-line,
+.mythras-enemy-weapons {
+    position: relative;
+    z-index: 2;
+}
 
 .mythras-enemy-header {
     display: flex;
