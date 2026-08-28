@@ -267,23 +267,25 @@ export class RosterManagerUI {
         for (const file of mdFiles) {
             const cache = this.app.metadataCache.getFileCache(file);
             if (cache?.frontmatter?.type === 'mythras-encounter') {
-                const encounterId = cache.frontmatter['encounter-id'];
-                if (!encounterId) continue; // wait for auto-id
-
+                const encounterId = cache.frontmatter['encounter-id'] || file.basename;
                 const scenarioName = cache.frontmatter['scenario'] || 'Uncategorized';
                 const encounterName = file.basename;
 
                 const scenario = getOrCreateScenario(scenarioName);
                 
-                const enc: RosterEncounter = {
-                    name: encounterName,
-                    path: file.path,
-                    id: encounterId,
-                    instances: []
-                };
+                let enc = scenario.encounters.find(e => e.id === encounterId || e.name === encounterName);
+                if (!enc) {
+                    enc = {
+                        name: encounterName,
+                        path: file.path,
+                        id: encounterId,
+                        instances: []
+                    };
+                    scenario.encounters.push(enc);
+                }
                 
                 encounterMap.set(encounterId, enc);
-                scenario.encounters.push(enc);
+                encounterMap.set(encounterName, enc);
             }
         }
 
@@ -314,49 +316,40 @@ export class RosterManagerUI {
                         continue;
                     }
                     
-                    // Fallback for legacy JSON without encounterId
-                    if (!encounterId) {
-                        // Guess encounter by finding one with matching name
-                        const legacyName = data.encounter || 'Random Encounter';
-                        const legacyScenarioName = data.scenario || 'General';
-                        
-                        // Let's just create a legacy bucket if missing
-                        const scenario = getOrCreateScenario(legacyScenarioName);
-                        let enc = scenario.encounters.find(e => e.name === legacyName);
-                        if (!enc) {
-                            enc = { name: legacyName, path: `${rosterPath}/${legacyScenarioName}/${legacyName}`, id: legacyName, instances: [] };
-                            encounterMap.set(enc.id, enc);
-                            scenario.encounters.push(enc);
-                        }
-                        encounterId = enc.id;
-                        data.encounterId = encounterId;
-                        
-                        // Save it back to disk so it's permanently migrated
-                        this.app.vault.modify(file, JSON.stringify(data, null, 2)).catch(e => console.error(e));
+                    const encounterId = data.encounterId;
+                    const legacyName = data.encounter || 'Random Encounter';
+                    const legacyScenarioName = data.scenario || 'General';
+
+                    let targetEnc: RosterEncounter | undefined = undefined;
+                    if (encounterId) {
+                        targetEnc = encounterMap.get(encounterId);
+                    }
+                    if (!targetEnc) {
+                        targetEnc = encounterMap.get(legacyName);
                     }
 
-                    const enc = encounterMap.get(encounterId);
-                    if (enc) {
-                        enc.instances.push({ file, data });
-                    } else {
-                        // Encounter not linked to a markdown file: place in instance's specified Scenario & Encounter
-                        const scenarioName = data.scenario || 'General';
-                        const encounterName = data.encounter || 'Random Encounter';
-                        const scenario = getOrCreateScenario(scenarioName);
-                        
-                        let targetEnc = scenario.encounters.find(e => e.id === encounterId || e.name === encounterName);
+                    if (!targetEnc) {
+                        const scenario = getOrCreateScenario(legacyScenarioName);
+                        targetEnc = scenario.encounters.find(e => e.name === legacyName || (encounterId && e.id === encounterId));
                         if (!targetEnc) {
                             targetEnc = { 
-                                name: encounterName, 
-                                path: `${rosterPath}/${scenarioName}/${encounterName}`, 
-                                id: encounterId, 
+                                name: legacyName, 
+                                path: `${rosterPath}/${legacyScenarioName}/${legacyName}`, 
+                                id: encounterId || legacyName, 
                                 instances: [] 
                             };
                             scenario.encounters.push(targetEnc);
-                            encounterMap.set(encounterId, targetEnc);
                         }
-                        targetEnc.instances.push({ file, data });
+                        if (encounterId) encounterMap.set(encounterId, targetEnc);
+                        encounterMap.set(legacyName, targetEnc);
                     }
+
+                    if (!data.encounterId && targetEnc.id) {
+                        data.encounterId = targetEnc.id;
+                        this.app.vault.modify(file, JSON.stringify(data, null, 2)).catch(e => {});
+                    }
+
+                    targetEnc.instances.push({ file, data });
                 } catch (e) {}
             }
         }
@@ -505,7 +498,8 @@ export class RosterManagerUI {
                         
                         const newFilePath = normalizePath(targetDir === '/' ? `${safeName}.md` : `${targetDir}/${safeName}.md`);
                         if (!(await this.app.vault.adapter.exists(newFilePath))) {
-                            const content = `---\ntype: mythras-encounter\nscenario: "${safeScenario}"\n---\n\n`;
+                            const encounterId = 'enc_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+                            const content = `---\ntype: mythras-encounter\nencounter-id: "${encounterId}"\nscenario: "${safeScenario}"\n---\n\n`;
                             await this.app.vault.create(newFilePath, content);
                             
                             setTimeout(async () => {
