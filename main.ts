@@ -12,13 +12,17 @@ import { MythrasInstance } from './mythras-api';
 import { MarkdownRenderer } from 'obsidian';
 import { CombatLogService, CombatLogView, COMBAT_LOG_VIEW } from './combat-log';
 
+import { CombatTrackerService } from './combat-tracker';
+
 export default class MythrasEncounterPlugin extends Plugin {
     settings: MythrasEncounterSettings;
     armoryCache: MythrasWeapon[] = [];
     combatLogService: CombatLogService = new CombatLogService();
+    combatTrackerService: CombatTrackerService = new CombatTrackerService(this);
 
     async onload() {
         await this.loadSettings();
+        await this.combatTrackerService.loadSession();
 
         await this.initArmory();
         await this.refreshArmoryCache();

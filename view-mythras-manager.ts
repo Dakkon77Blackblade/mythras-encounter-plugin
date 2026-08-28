@@ -3,17 +3,19 @@ import MythrasEncounterPlugin from './main';
 import { RosterManagerUI } from './ui-roster';
 import { ArmoryManagerUI } from './ui-armory';
 import { BestiaryManagerUI } from './ui-bestiary';
+import { CombatTrackerUI } from './ui-combat';
 
 export const MYTHRAS_MANAGER_VIEW = "mythras-manager-view";
 
 export class MythrasManagerView extends ItemView {
     navigation = true;
     plugin: MythrasEncounterPlugin;
-    currentTab: 'roster' | 'armory' | 'bestiary' = 'roster';
+    currentTab: 'roster' | 'armory' | 'bestiary' | 'combat' = 'roster';
 
     rosterUI: RosterManagerUI;
     armoryUI: ArmoryManagerUI;
     bestiaryUI: BestiaryManagerUI;
+    combatUI: CombatTrackerUI;
 
     mainContainer: HTMLElement;
     navContainer: HTMLElement;
@@ -63,6 +65,7 @@ export class MythrasManagerView extends ItemView {
         this.rosterUI = new RosterManagerUI(this.app, this.plugin, this.mainContainer);
         this.armoryUI = new ArmoryManagerUI(this.app, this.plugin, this.mainContainer);
         this.bestiaryUI = new BestiaryManagerUI(this.app, this.plugin, this.mainContainer);
+        this.combatUI = new CombatTrackerUI(this.app, this.plugin, this.mainContainer, this.plugin.combatTrackerService);
 
         this.renderNav();
         await this.renderCurrentTab();
@@ -71,7 +74,7 @@ export class MythrasManagerView extends ItemView {
     renderNav() {
         this.navContainer.empty();
 
-        const createTab = (id: 'roster' | 'armory' | 'bestiary', label: string) => {
+        const createTab = (id: 'roster' | 'armory' | 'bestiary' | 'combat', label: string) => {
             const btn = this.navContainer.createEl('button', { text: label });
             if (this.currentTab === id) {
                 btn.addClass('mod-cta');
@@ -86,6 +89,7 @@ export class MythrasManagerView extends ItemView {
         createTab('roster', 'Roster Manager');
         createTab('armory', 'Armory');
         createTab('bestiary', 'Bestiary');
+        createTab('combat', '⚔️ Combat Tracker');
     }
 
     async renderCurrentTab() {
@@ -97,6 +101,8 @@ export class MythrasManagerView extends ItemView {
             await this.armoryUI.render();
         } else if (this.currentTab === 'bestiary') {
             await this.bestiaryUI.render();
+        } else if (this.currentTab === 'combat') {
+            this.combatUI.render();
         }
     }
 

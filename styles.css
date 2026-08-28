@@ -1099,3 +1099,285 @@
     padding: 4px 8px;
     font-weight: bold;
 }
+
+/* ==========================================================================
+   Mythras Combat Tracker Tool Styles
+   ========================================================================== */
+
+.mythras-combat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 15px;
+}
+
+.mythras-combat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.mythras-combat-title-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mythras-combat-title {
+    margin: 0;
+    font-size: 1.3em;
+    font-weight: bold;
+}
+
+.mythras-combat-cycle-badge {
+    background-color: var(--background-secondary-alt);
+    padding: 4px 10px;
+    border-radius: 12px;
+    border: 1px solid var(--background-modifier-border);
+    font-size: 0.9em;
+}
+
+.mythras-combat-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.mythras-combat-main-area {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 15px;
+    flex: 1;
+    overflow: hidden;
+}
+
+.mythras-combat-left-col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background-color: var(--background-secondary-alt);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 8px;
+    padding: 12px;
+    overflow: hidden;
+}
+
+.mythras-queue-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.mythras-queue-header h3 {
+    margin: 0;
+    font-size: 1.1em;
+}
+
+.mythras-queue-scroll {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 4px;
+}
+
+.mythras-queue-section-title {
+    font-size: 0.8em;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    font-weight: bold;
+    margin-top: 6px;
+}
+
+.mythras-done-section {
+    opacity: 0.7;
+    margin-top: 15px;
+}
+
+/* Miniature Queue Card */
+.mythras-combat-card-mini {
+    background-color: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 6px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.mythras-combat-card-mini:hover {
+    border-color: var(--interactive-accent);
+}
+
+.mythras-combat-card-mini.is-selected {
+    border-color: var(--interactive-accent);
+    box-shadow: 0 0 0 1px var(--interactive-accent);
+}
+
+.mythras-combat-card-mini.mythras-combat-active-turn {
+    border: 2px solid var(--text-accent);
+    background-color: var(--background-primary-alt);
+    box-shadow: 0 0 12px rgba(var(--interactive-accent-rgb), 0.25);
+}
+
+.mythras-combat-card-mini.is-done {
+    opacity: 0.6;
+    background-color: var(--background-secondary);
+}
+
+.mythras-card-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.mythras-card-name-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.95em;
+}
+
+.mythras-card-name {
+    color: var(--text-normal);
+}
+
+.mythras-card-template {
+    color: var(--text-muted);
+    font-size: 0.85em;
+}
+
+.mythras-card-init-badge {
+    background-color: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.85em;
+}
+
+.mythras-card-ap-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.85em;
+}
+
+.mythras-ap-dots {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.mythras-ap-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+}
+
+.mythras-ap-dot:hover {
+    transform: scale(1.2);
+}
+
+.mythras-ap-dot.filled {
+    background-color: var(--interactive-accent);
+    box-shadow: 0 0 4px var(--interactive-accent);
+}
+
+.mythras-ap-dot.empty {
+    background-color: var(--background-modifier-border);
+    border: 1px solid var(--text-muted);
+}
+
+.mythras-ap-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.mythras-btn-xs {
+    padding: 2px 6px;
+    font-size: 0.75em;
+    border-radius: 3px;
+}
+
+/* Miniature Hit Locations Summary */
+.mythras-card-hl-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.mythras-mini-hl-badge {
+    background-color: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.78em;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.mythras-mini-hl-badge.is-wounded {
+    background-color: rgba(255, 165, 0, 0.15);
+    border-color: orange;
+    color: orange;
+}
+
+.mythras-mini-hl-badge.is-severed {
+    background-color: rgba(255, 0, 0, 0.15);
+    border-color: var(--text-error);
+    color: var(--text-error);
+}
+
+.mythras-mini-hp-btn {
+    cursor: pointer;
+    font-weight: bold;
+    padding: 0 2px;
+    opacity: 0.7;
+}
+
+.mythras-mini-hp-btn:hover {
+    opacity: 1;
+    color: var(--text-accent);
+}
+
+.mythras-card-bottom-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.mythras-combat-right-col {
+    background-color: var(--background-secondary-alt);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 8px;
+    padding: 15px;
+    overflow: hidden;
+}
+
+.mythras-inspector-header {
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.mythras-inspector-header h3 {
+    margin: 0;
+    display: inline-block;
+}
+

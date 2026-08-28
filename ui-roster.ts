@@ -793,6 +793,13 @@ export class RosterManagerUI {
             });
         };
 
+        const btnStartCombat = btnGroup.createEl('button', { text: '⚔️ Start Combat', cls: 'mythras-btn-cta' });
+        btnStartCombat.onclick = () => {
+            const rawInstances = encounter.instances.map(i => i.data);
+            this.plugin.combatTrackerService.addInstances(rawInstances, scenario.name, encounter.name);
+            new Notice(`Added ${rawInstances.length} enemies from "${encounter.name}" to Combat Tracker.`);
+        };
+
         if (encounter.instances.length === 0) {
             mainArea.createEl('p', { text: 'This encounter is empty. Add some enemies!' });
             return;
