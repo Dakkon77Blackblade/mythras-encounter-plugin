@@ -397,14 +397,14 @@ export class CombatTrackerUI {
             participant.instance,
             'long',
             async () => {
-                // Open Roster Manager edit view for this enemy instance
-                const leaf = this.app.workspace.getLeaf(false);
-                await leaf.setViewState({ type: MYTHRAS_MANAGER_VIEW, active: true });
-                const view = leaf.view as any;
-                if (view && view.rosterUI) {
-                    view.currentTab = 'roster';
-                    await view.renderCurrentTab();
-                    await view.rosterUI.openEditView(participant.instanceId || participant.instance.id);
+                const leaves = this.app.workspace.getLeavesOfType(MYTHRAS_MANAGER_VIEW);
+                if (leaves.length > 0) {
+                    const managerView = leaves[0].view as any;
+                    if (managerView) {
+                        managerView.currentTab = 'roster';
+                        await managerView.renderCurrentTab();
+                        await managerView.rosterUI.openEditView(participant.instanceId || participant.instance.id);
+                    }
                 }
             },
             async (updatedInstance) => {
