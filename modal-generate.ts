@@ -137,7 +137,7 @@ export class MythrasGenerateModal extends Modal {
                 activeView.editor.replaceRange(output, cursor);
                 new Notice(`Generated ${this.amount}x ${template.name} in Roster and inserted into note!`);
             } else {
-                new Notice(`Generated ${this.amount}x ${template.name} in Roster! (No active note to insert into)`);
+                new Notice(`Generated ${this.amount}x ${template.name} in Roster!`);
             }
 
             if (this.onComplete) {
