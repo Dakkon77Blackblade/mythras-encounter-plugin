@@ -22,7 +22,7 @@ export class MythrasEncounterSettingTab extends PluginSettingTab {
         containerEl.empty();
 
         new Setting(containerEl)
-            .setName('Base Folder')
+            .setName('Base folder')
             .setDesc('Folder where Bestiary and Armory subfolders will be created (e.g. Mythras-Helper)')
             .addText((text) =>
                 text
@@ -35,11 +35,11 @@ export class MythrasEncounterSettingTab extends PluginSettingTab {
             );
 
         new Setting(containerEl)
-            .setName('Mythras Manager')
+            .setName('Mythras manager')
             .setDesc('Open the integrated workspace view for Bestiary, Armory, and Roster management.')
             .addButton((btn) =>
                 btn
-                    .setButtonText('Open Manager')
+                    .setButtonText('Open manager')
                     .setCta()
                     .onClick(() => {
                         this.plugin.activateManagerView();

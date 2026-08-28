@@ -18,7 +18,7 @@ export class AddEncounterModal extends Modal {
     async onOpen() {
         const { contentEl } = this;
         contentEl.empty();
-        contentEl.createEl('h2', { text: 'Add Encounter to Combat' });
+        contentEl.createEl('h2', { text: 'Add encounter to combat' });
 
         const folder = this.plugin.settings.baseFolder || 'Mythras-Helper';
         const rosterPath = normalizePath(`${folder}/Roster`);
@@ -132,7 +132,7 @@ export class CombatTrackerUI {
         const header = this.container.createDiv('mythras-combat-header');
         
         const titleArea = header.createDiv('mythras-combat-title-area');
-        titleArea.createEl('h2', { text: 'Combat Tracker', cls: 'mythras-combat-title' });
+        titleArea.createEl('h2', { text: 'Combat tracker', cls: 'mythras-combat-title' });
         
         if (this.service.session.encounter) {
             titleArea.createSpan({ text: `${this.service.session.encounter} (${this.service.session.scenario})`, cls: 'mythras-badge' });
@@ -188,7 +188,7 @@ export class CombatTrackerUI {
         const header = container.createDiv('mythras-queue-header');
         
         const titleGroup = header.createDiv('mythras-queue-title-group');
-        titleGroup.createEl('h3', { text: 'Initiative Order' });
+        titleGroup.createEl('h3', { text: 'Initiative order' });
         titleGroup.createSpan({ text: ` (${this.service.session.participants.length})`, cls: 'mythras-text-muted' });
 
         const queueControls = header.createDiv('mythras-queue-controls');
@@ -382,7 +382,7 @@ export class CombatTrackerUI {
 
         if (!participant) {
             const empty = container.createDiv('mythras-empty-state');
-            empty.createEl('h3', { text: 'Combat Inspector' });
+            empty.createEl('h3', { text: 'Combat inspector' });
             empty.createEl('p', { text: 'Select a participant from the left queue to view their full statblock.', cls: 'mythras-text-muted' });
             return;
         }

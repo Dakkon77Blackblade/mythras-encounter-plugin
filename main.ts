@@ -43,15 +43,15 @@ export default class MythrasEncounterPlugin extends Plugin {
 
         this.addCommand({
             id: 'open-mythras-combat-log',
-            name: 'Open Combat Log',
+            name: 'Open combat log',
             callback: () => this.activateCombatLogView()
         });
 
-        this.addRibbonIcon('list', 'Open Combat Log', () => {
+        this.addRibbonIcon('list', 'Open combat log', () => {
             this.activateCombatLogView();
         });
 
-        const ribbonIcon = this.addRibbonIcon('swords', 'Open Mythras Manager', (evt: MouseEvent) => {
+        const ribbonIcon = this.addRibbonIcon('swords', 'Open Mythras manager', (evt: MouseEvent) => {
             if (evt.button === 2) return; // Ignore right-clicks
             this.activateManagerView('tab');
         });
@@ -62,25 +62,25 @@ export default class MythrasEncounterPlugin extends Plugin {
             const menu = new Menu();
             menu.addItem((item) =>
                 item
-                    .setTitle('Open in New Tab')
+                    .setTitle('Open in new tab')
                     .setIcon('file-plus')
                     .onClick(() => this.activateManagerView('tab'))
             );
             menu.addItem((item) =>
                 item
-                    .setTitle('Open to the Right')
+                    .setTitle('Open to the right')
                     .setIcon('split')
                     .onClick(() => this.activateManagerView('split-right'))
             );
             menu.addItem((item) =>
                 item
-                    .setTitle('Open Below')
+                    .setTitle('Open below')
                     .setIcon('split')
                     .onClick(() => this.activateManagerView('split-down'))
             );
             menu.addItem((item) =>
                 item
-                    .setTitle('Open in Current Tab')
+                    .setTitle('Open in current tab')
                     .setIcon('file')
                     .onClick(() => this.activateManagerView('current'))
             );
@@ -90,7 +90,7 @@ export default class MythrasEncounterPlugin extends Plugin {
         // Command to search and import templates
         this.addCommand({
             id: 'import-mythras-template',
-            name: 'Import Template from Mythras Encounter Generator',
+            name: 'Import template from Mythras Encounter Generator',
             callback: () => {
                 new MythrasSearchModal(this.app, this).open();
             }
@@ -99,7 +99,7 @@ export default class MythrasEncounterPlugin extends Plugin {
         // Command to generate enemies from a local template
         this.addCommand({
             id: 'generate-mythras-encounter',
-            name: 'Generate Mythras Encounter',
+            name: 'Generate Mythras encounter',
             callback: () => {
                 new MythrasGenerateModal(this.app, this).open();
             }

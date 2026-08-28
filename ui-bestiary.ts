@@ -445,7 +445,7 @@ export class BestiaryManagerUI {
 
     renderHitLocationsEditor(container: HTMLElement, list: any[]) {
         const wrap = container.createDiv('mythras-manager-form-group');
-        wrap.createEl('h3', { text: 'Hit Locations' });
+        wrap.createEl('h3', { text: 'Hit locations' });
         const listDiv = wrap.createDiv('mythras-manager-list');
         
         const redraw = () => {

@@ -124,7 +124,7 @@ export class NewEncounterModal extends Modal {
 
     onOpen() {
         const { contentEl } = this;
-        contentEl.createEl('h2', { text: 'New Encounter' });
+        contentEl.createEl('h2', { text: 'New encounter' });
         contentEl.createEl('p', { text: 'Create a new encounter note in your vault.' });
 
         let scenarioValue = this.defaultScenario || (this.scenarios.length > 0 ? this.scenarios[0] : '');

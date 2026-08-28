@@ -148,7 +148,7 @@ export class EnemyInstanceEditModal extends Modal {
             });
 
         } else if (this.editTab === 'stats') {
-            formArea.createEl('h3', { text: 'Core Characteristics' });
+            formArea.createEl('h3', { text: 'Core characteristics' });
             const grid = formArea.createDiv();
             grid.style.display = 'grid';
             grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(180px, 1fr))';
@@ -162,7 +162,7 @@ export class EnemyInstanceEditModal extends Modal {
                 inp.oninput = (e) => this.instance.stats[stat] = parseInt((e.target as HTMLInputElement).value) || 0;
             });
 
-            formArea.createEl('h3', { text: 'Derived Attributes' }).style.marginTop = '15px';
+            formArea.createEl('h3', { text: 'Derived attributes' }).style.marginTop = '15px';
             const attrGrid = formArea.createDiv();
             attrGrid.style.display = 'grid';
             attrGrid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(180px, 1fr))';
