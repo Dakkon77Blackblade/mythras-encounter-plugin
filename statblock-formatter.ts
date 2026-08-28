@@ -351,6 +351,19 @@ export function formatInstanceAsMarkdown(instance: MythrasInstance): string {
     return md;
 }
 
+export function resolveImagePath(app: App, imgPath: string): string {
+    if (!imgPath) return '';
+    if (imgPath.startsWith('http://') || imgPath.startsWith('https://') || imgPath.startsWith('data:')) {
+        return imgPath;
+    }
+    const cleanLink = imgPath.replace(/^\[\[/, '').replace(/\]\]$/, '').trim();
+    const file = app.metadataCache.getFirstLinkpathDest(cleanLink, '');
+    if (file) {
+        return app.vault.getResourcePath(file);
+    }
+    return '';
+}
+
 export function renderEnemyStatblock(
     app: App,
     instance: MythrasInstance, 
@@ -368,9 +381,20 @@ export function renderEnemyStatblock(
         editBtn.onclick = onEdit;
     }
 
+    const imgContainer = container.createDiv('mythras-enemy-image');
     if (instance.image) {
-        const imgContainer = container.createDiv('mythras-enemy-image');
-        imgContainer.dataset.imageLink = instance.image;
+        const resolvedUrl = resolveImagePath(app, instance.image);
+        if (resolvedUrl) {
+            const img = imgContainer.createEl('img');
+            img.src = resolvedUrl;
+            img.alt = instance.instanceName;
+        } else {
+            const dummy = imgContainer.createDiv('mythras-detail-avatar dummy');
+            setIcon(dummy, 'image');
+        }
+    } else {
+        const dummy = imgContainer.createDiv('mythras-detail-avatar dummy');
+        setIcon(dummy, 'image');
     }
 
     const header = container.createDiv('mythras-enemy-header');

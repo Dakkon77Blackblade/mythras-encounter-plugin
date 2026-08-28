@@ -2,7 +2,7 @@ import { App, Notice, Modal, FuzzySuggestModal, setIcon, TFile, normalizePath } 
 import MythrasEncounterPlugin from './main';
 import { CombatTrackerService, CombatParticipant } from './combat-tracker';
 import { MythrasInstance } from './mythras-api';
-import { renderEnemyStatblock } from './statblock-formatter';
+import { renderEnemyStatblock, resolveImagePath } from './statblock-formatter';
 
 export class AddEncounterModal extends Modal {
     plugin: MythrasEncounterPlugin;
@@ -261,7 +261,18 @@ export class CombatTrackerUI {
         const topRow = card.createDiv('mythras-card-top-row');
         
         const nameGroup = topRow.createDiv('mythras-card-name-group');
-        if (isCurrentTurn && !p.isDone && p.currentAp > 0) {
+        
+        // Mini Avatar / Portrait
+        const avatarUrl = p.instance.image ? resolveImagePath(this.app, p.instance.image) : '';
+        if (avatarUrl) {
+            const avatarImg = nameGroup.createEl('img', { cls: 'mythras-mini-avatar' });
+            avatarImg.src = avatarUrl;
+        } else {
+            const dummy = nameGroup.createDiv('mythras-mini-avatar dummy');
+            setIcon(dummy, 'user');
+        }
+
+        if (isCurrentTurn && !p.isDone) {
             nameGroup.createSpan({ text: '⚔️ ', cls: 'mythras-turn-icon' });
         }
         nameGroup.createEl('strong', { text: p.instance.instanceName, cls: 'mythras-card-name' });

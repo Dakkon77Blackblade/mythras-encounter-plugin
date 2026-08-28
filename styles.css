@@ -1384,6 +1384,25 @@
     overflow: hidden;
 }
 
+.mythras-mini-avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: var(--background-modifier-form-field);
+    border: 1px solid var(--background-modifier-border);
+    flex-shrink: 0;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.mythras-mini-avatar.dummy {
+    font-size: 0.75em;
+    color: var(--text-muted);
+    background-color: var(--background-secondary);
+}
+
 .mythras-inspector-header {
     margin-bottom: 12px;
     padding-bottom: 8px;
