@@ -188,7 +188,6 @@ export class CombatTrackerService {
         const p = this.session.participants.find(x => x.id === participantId);
         if (p) {
             p.currentAp = Math.max(0, Math.min(p.maxAp, p.currentAp + delta));
-            this.sortParticipants();
             this.notify();
         }
     }
@@ -197,7 +196,6 @@ export class CombatTrackerService {
         const p = this.session.participants.find(x => x.id === participantId);
         if (p) {
             p.currentAp = Math.max(0, Math.min(p.maxAp, value));
-            this.sortParticipants();
             this.notify();
         }
     }
