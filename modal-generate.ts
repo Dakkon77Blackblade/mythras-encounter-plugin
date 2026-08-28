@@ -146,7 +146,6 @@ export class MythrasGenerateModal extends Modal {
 
         } catch (e) {
             new Notice(`Failed to generate enemies: ${e}`);
-            console.error(e);
         }
     }
 

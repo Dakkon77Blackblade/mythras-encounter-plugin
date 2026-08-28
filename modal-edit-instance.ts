@@ -319,7 +319,6 @@ export class EnemyInstanceEditModal extends Modal {
             this.close();
             new Notice(`Saved edits for "${this.instance.instanceName}".`);
         } catch (e) {
-            console.error("Failed to save instance changes", e);
             new Notice("Error saving changes.");
         }
     }

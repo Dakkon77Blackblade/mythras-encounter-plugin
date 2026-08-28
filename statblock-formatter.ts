@@ -83,9 +83,7 @@ export async function generateStatblock(app: App, armoryFile: string, template: 
             const content = await app.vault.adapter.read(armoryPath);
             armory = JSON.parse(content);
         }
-    } catch (e) {
-        console.error("Failed to load armory:", e);
-    }
+    } catch (e) {}
 
     const activeWeapons: MythrasWeapon[] = [];
     

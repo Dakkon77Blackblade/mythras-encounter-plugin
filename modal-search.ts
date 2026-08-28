@@ -20,7 +20,6 @@ export class MythrasSearchModal extends SuggestModal<MythrasSearchResult> {
             return await MythrasApi.search(query);
         } catch (e) {
             new Notice("Error searching Mythras API.");
-            console.error(e);
             return [];
         }
     }
@@ -39,7 +38,6 @@ export class MythrasSearchModal extends SuggestModal<MythrasSearchResult> {
             new Notice(`Template '${item.name}' saved to Bestiary!`);
         } catch (e) {
             new Notice(`Failed to download template: ${e}`);
-            console.error(e);
         }
     }
 

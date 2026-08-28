@@ -63,9 +63,7 @@ export class BestiaryManagerUI {
                 try {
                     const content = await this.app.vault.read(file);
                     this.armoryWeapons = JSON.parse(content) as MythrasWeapon[];
-                } catch (e) {
-                    console.error("Failed to parse armory.json", e);
-                }
+                } catch (e) {}
             }
         }
     }
@@ -83,9 +81,7 @@ export class BestiaryManagerUI {
                     const content = await this.app.vault.read(file);
                     const template: MythrasTemplate = JSON.parse(content);
                     this.entries.push({ template, file });
-                } catch (e) {
-                    console.error(`Failed to parse bestiary file ${file.path}`, e);
-                }
+                } catch (e) {}
             }
         }
     }
@@ -706,7 +702,6 @@ export class BestiaryManagerUI {
             this.renderView();
 
         } catch (e) {
-            console.error('Failed to save template', e);
             new Notice('Failed to save template.');
         }
     }

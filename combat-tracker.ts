@@ -67,9 +67,7 @@ export class CombatTrackerService {
                     await this.refreshParticipantInstances();
                 }
             }
-        } catch (e) {
-            console.error("Failed to load combat session", e);
-        }
+        } catch (e) {}
     }
 
     async refreshParticipantInstances() {
@@ -121,9 +119,7 @@ export class CombatTrackerService {
             if (updated) {
                 await this.saveSession();
             }
-        } catch (e) {
-            console.error("Failed to refresh participant instances", e);
-        }
+        } catch (e) {}
     }
 
     async saveSession() {
@@ -132,9 +128,7 @@ export class CombatTrackerService {
             const sessionPath = normalizePath(`${folder}/Roster/.combat_session.json`);
             const content = JSON.stringify(this.session, null, 2);
             await this.plugin.app.vault.adapter.write(sessionPath, content);
-        } catch (e) {
-            console.error("Failed to save combat session", e);
-        }
+        } catch (e) {}
     }
 
     calculateStrikeRank(instance: MythrasInstance): number {
@@ -360,8 +354,6 @@ export class CombatTrackerService {
                 const newFilePath = normalizePath(`${rosterPath}/${instance.id}_${safeTemplate}.json`);
                 await this.plugin.app.vault.create(newFilePath, content);
             }
-        } catch (e) {
-            console.error("Failed to sync instance to disk", e);
-        }
+        } catch (e) {}
     }
 }

@@ -74,7 +74,6 @@ export class ArmoryManagerUI {
                     const content = await this.app.vault.read(file);
                     this.weapons = JSON.parse(content) as MythrasWeapon[];
                 } catch (e) {
-                    console.error("Failed to parse armory.json", e);
                     this.weapons = [];
                 }
             }

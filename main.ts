@@ -120,9 +120,7 @@ export default class MythrasEncounterPlugin extends Plugin {
                                     frontmatter['encounter-id'] = window.crypto.randomUUID();
                                 }
                             });
-                        } catch (e) {
-                            console.error("Failed to inject encounter-id:", e);
-                        }
+                        } catch (e) {}
                     }
                     
                     // Notify any open Roster UI to refresh
@@ -252,7 +250,6 @@ export default class MythrasEncounterPlugin extends Plugin {
                     el.appendChild(statblock);
             } catch (e) {
                 el.createEl('div', { text: `Failed to load enemy: ${e}` });
-                console.error(e);
             }
         });
 
@@ -549,9 +546,7 @@ export default class MythrasEncounterPlugin extends Plugin {
             try {
                 const content = await this.app.vault.adapter.read(armoryPath);
                 this.armoryCache = JSON.parse(content) as MythrasWeapon[];
-            } catch (e) {
-                console.error("Failed to parse armory.json", e);
-            }
+            } catch (e) {}
         }
     }
 

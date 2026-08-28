@@ -88,9 +88,7 @@ export async function instantiateEnemy(
             const content = await app.vault.adapter.read(armoryPath);
             armory = JSON.parse(content);
         }
-    } catch (e) {
-        console.error("Failed to load armory:", e);
-    }
+    } catch (e) {}
 
     const activeWeapons: MythrasWeapon[] = [];
     
