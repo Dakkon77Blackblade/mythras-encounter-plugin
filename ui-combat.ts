@@ -257,34 +257,40 @@ export class CombatTrackerUI {
             this.service.selectParticipant(p.id);
         };
 
-        // Top Row: Name, Template, Init Badge
-        const topRow = card.createDiv('mythras-card-top-row');
+        // Main Header Container: 52px Portrait Avatar on Left + Info on Right
+        const headerWrap = card.createDiv('mythras-card-header-wrap');
         
-        const nameGroup = topRow.createDiv('mythras-card-name-group');
-        
-        // Mini Avatar / Portrait
+        // 52px Avatar Container
+        const avatarContainer = headerWrap.createDiv('mythras-card-avatar-container');
         const avatarUrl = p.instance.image ? resolveImagePath(this.app, p.instance.image) : '';
         if (avatarUrl) {
-            const avatarImg = nameGroup.createEl('img', { cls: 'mythras-mini-avatar' });
+            const avatarImg = avatarContainer.createEl('img', { cls: 'mythras-card-avatar' });
             avatarImg.src = avatarUrl;
+            avatarImg.alt = p.instance.instanceName;
         } else {
-            const dummy = nameGroup.createDiv('mythras-mini-avatar dummy');
+            const dummy = avatarContainer.createDiv('mythras-card-avatar dummy');
             setIcon(dummy, 'user');
         }
 
+        // Header Content: Title Row + AP Row
+        const headerContent = headerWrap.createDiv('mythras-card-header-content');
+        
+        // Title Row: Name, Template, Init Badge
+        const titleRow = headerContent.createDiv('mythras-card-title-row');
+        const nameGroup = titleRow.createDiv('mythras-card-name-group');
         if (isCurrentTurn && !p.isDone) {
             nameGroup.createSpan({ text: '⚔️ ', cls: 'mythras-turn-icon' });
         }
         nameGroup.createEl('strong', { text: p.instance.instanceName, cls: 'mythras-card-name' });
         nameGroup.createSpan({ text: ` (${p.instance.templateName})`, cls: 'mythras-card-template' });
 
-        const initBadge = topRow.createDiv('mythras-card-init-badge');
+        const initBadge = titleRow.createDiv('mythras-card-init-badge');
         initBadge.title = `Strike Rank: ${p.initiativeBonus} + Roll: 🎲${p.initiativeRoll}`;
         initBadge.createSpan({ text: 'Init ', cls: 'mythras-init-label' });
         initBadge.createEl('strong', { text: `${p.initiative}` });
 
         // AP Row: Dots + AP Controls
-        const apRow = card.createDiv('mythras-card-ap-row');
+        const apRow = headerContent.createDiv('mythras-card-ap-row');
         apRow.createSpan({ text: 'AP: ', cls: 'mythras-ap-label' });
 
         const dotsContainer = apRow.createDiv('mythras-ap-dots');

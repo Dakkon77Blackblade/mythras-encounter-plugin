@@ -1251,10 +1251,52 @@
     background-color: var(--background-secondary);
 }
 
-.mythras-card-top-row {
+.mythras-card-header-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mythras-card-avatar-container {
+    width: 52px;
+    height: 52px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    position: relative;
+    border: 1px solid var(--background-modifier-border);
+    background-color: var(--background-modifier-form-field);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.mythras-card-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.mythras-card-avatar.dummy {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4em;
+    color: var(--text-muted);
+    background-color: var(--background-secondary);
+}
+
+.mythras-card-header-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.mythras-card-title-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 6px;
 }
 
 .mythras-card-name-group {
