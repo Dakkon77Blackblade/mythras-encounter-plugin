@@ -319,7 +319,20 @@ export class CombatTrackerUI {
             else if (currentHp < hl.hp) hlBadge.addClass('is-wounded');
 
             hlBadge.createSpan({ text: `${hl.name}: `, cls: 'mythras-hl-mini-name' });
-            hlBadge.createSpan({ text: `${currentHp}/${hl.hp}`, cls: 'mythras-hl-mini-hp' });
+            
+            // AP Stat (Shield)
+            const apStat = hlBadge.createSpan({ cls: 'mythras-hl-mini-stat' });
+            const shieldIcon = apStat.createSpan({ cls: 'mythras-hl-icon' });
+            setIcon(shieldIcon, 'shield');
+            apStat.createSpan({ text: `${currentAp}` });
+            if (String(currentAp) !== String(hl.ap)) apStat.addClass('is-modified');
+
+            // HP Stat (Droplet)
+            const hpStat = hlBadge.createSpan({ cls: 'mythras-hl-mini-stat' });
+            const hpIcon = hpStat.createSpan({ cls: 'mythras-hl-icon' });
+            setIcon(hpIcon, 'droplet');
+            hpStat.createSpan({ text: `${currentHp}` });
+            if (Number(currentHp) !== Number(hl.hp)) hpStat.addClass('is-modified');
 
             // Quick -1 / +1 HP click on badge
             const btnHpMinus = hlBadge.createSpan({ text: ' -', cls: 'mythras-mini-hp-btn' });

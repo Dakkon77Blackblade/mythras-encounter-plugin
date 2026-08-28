@@ -1337,12 +1337,34 @@
 .mythras-mini-hl-badge {
     background-color: var(--background-secondary);
     border: 1px solid var(--background-modifier-border);
-    padding: 1px 6px;
+    padding: 2px 7px;
     border-radius: 4px;
     font-size: 0.78em;
     display: flex;
     align-items: center;
+    gap: 4px;
+}
+
+.mythras-hl-mini-stat {
+    display: inline-flex;
+    align-items: center;
     gap: 2px;
+}
+
+.mythras-hl-mini-stat.is-modified {
+    color: var(--text-accent);
+    font-weight: bold;
+}
+
+.mythras-hl-icon {
+    display: inline-flex;
+    align-items: center;
+    opacity: 0.8;
+}
+
+.mythras-hl-icon svg {
+    width: 12px;
+    height: 12px;
 }
 
 .mythras-mini-hl-badge.is-wounded {
