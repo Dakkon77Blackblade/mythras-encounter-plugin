@@ -3,6 +3,7 @@ import MythrasEncounterPlugin from './main';
 import { CombatTrackerService, CombatParticipant } from './combat-tracker';
 import { MythrasInstance } from './mythras-api';
 import { renderEnemyStatblock, resolveImagePath } from './statblock-formatter';
+import { EnemyInstanceEditModal } from './modal-edit-instance';
 
 export class AddEncounterModal extends Modal {
     plugin: MythrasEncounterPlugin;
@@ -396,16 +397,13 @@ export class CombatTrackerUI {
             this.app,
             participant.instance,
             'long',
-            async () => {
-                const leaves = this.app.workspace.getLeavesOfType(MYTHRAS_MANAGER_VIEW);
-                if (leaves.length > 0) {
-                    const managerView = leaves[0].view as any;
-                    if (managerView) {
-                        managerView.currentTab = 'roster';
-                        await managerView.renderCurrentTab();
-                        await managerView.rosterUI.openEditView(participant.instanceId || participant.instance.id);
-                    }
-                }
+            () => {
+                new EnemyInstanceEditModal(this.app, this.plugin, participant.instance, async (updatedInstance) => {
+                    await this.service.syncInstanceToDisk(updatedInstance);
+                    await this.service.refreshParticipantInstances();
+                    this.service.saveSession();
+                    this.render();
+                }).open();
             },
             async (updatedInstance) => {
                 await this.service.syncInstanceToDisk(updatedInstance);
