@@ -2,6 +2,7 @@ import { normalizePath, TFile } from 'obsidian';
 import MythrasEncounterPlugin from './main';
 import { MythrasInstance } from './mythras-api';
 import { DiceRoller } from './dice-roller';
+import { MYTHRAS_MANAGER_VIEW } from './view-mythras-manager';
 
 export interface CombatParticipant {
     id: string; // Unique session ID
@@ -57,8 +58,9 @@ export class CombatTrackerService {
         try {
             const folder = this.plugin.settings.baseFolder || 'Mythras-Helper';
             const sessionPath = normalizePath(`${folder}/Roster/.combat_session.json`);
-            if (await this.plugin.app.vault.adapter.exists(sessionPath)) {
-                const raw = await this.plugin.app.vault.adapter.read(sessionPath);
+            const file = this.plugin.app.vault.getAbstractFileByPath(sessionPath);
+            if (file instanceof TFile) {
+                const raw = await this.plugin.app.vault.read(file);
                 if (raw) {
                     const parsed = JSON.parse(raw);
                     if (!parsed.round) parsed.round = 1;
@@ -106,12 +108,35 @@ export class CombatTrackerService {
         } catch (e) {}
     }
 
+    private async ensureFolderExists(folderPath: string) {
+        const parts = folderPath.split('/');
+        let currentPath = '';
+        for (const part of parts) {
+            if (part === '') continue;
+            currentPath = currentPath === '' ? part : `${currentPath}/${part}`;
+            try {
+                if (!this.plugin.app.vault.getAbstractFileByPath(currentPath)) {
+                    await this.plugin.app.vault.createFolder(currentPath);
+                }
+            } catch (e) {
+                // Ignore if folder already exists
+            }
+        }
+    }
+
     async saveSession() {
         try {
             const folder = this.plugin.settings.baseFolder || 'Mythras-Helper';
             const sessionPath = normalizePath(`${folder}/Roster/.combat_session.json`);
             const content = JSON.stringify(this.session, null, 2);
-            await this.plugin.app.vault.adapter.write(sessionPath, content);
+            const file = this.plugin.app.vault.getAbstractFileByPath(sessionPath);
+            if (file instanceof TFile) {
+                await this.plugin.app.vault.modify(file, content);
+            } else {
+                const rosterFolder = normalizePath(`${folder}/Roster`);
+                await this.ensureFolderExists(rosterFolder);
+                await this.plugin.app.vault.create(sessionPath, content);
+            }
         } catch (e) {}
     }
 
@@ -324,9 +349,22 @@ export class CombatTrackerService {
 
             let targetFile: TFile | null = null;
             for (const f of files) {
-                if (f.name.startsWith(`${instance.id}_`)) {
+                if (f.name.includes(instance.id)) {
                     targetFile = f;
                     break;
+                }
+            }
+
+            if (!targetFile) {
+                for (const f of files) {
+                    try {
+                        const content = await this.plugin.app.vault.read(f);
+                        const parsed = JSON.parse(content);
+                        if (parsed && parsed.id === instance.id) {
+                            targetFile = f;
+                            break;
+                        }
+                    } catch (e) {}
                 }
             }
 
@@ -337,6 +375,44 @@ export class CombatTrackerService {
                 const safeTemplate = (instance.templateName || 'Enemy').replace(/[^\p{L}\p{N}]/gu, '');
                 const newFilePath = normalizePath(`${rosterPath}/${instance.id}_${safeTemplate}.json`);
                 await this.plugin.app.vault.create(newFilePath, content);
+            }
+
+            // Update matching rendered DOM statblocks across active documents
+            const selector = `.mythras-enemy-short[data-mythras-instance-id="${instance.id}"], .mythras-enemy-long[data-mythras-instance-id="${instance.id}"]`;
+            const domInstances: HTMLElement[] = [];
+            const docs = new Set<Document>();
+            if (typeof document !== 'undefined') docs.add(document);
+            if (typeof activeDocument !== 'undefined') docs.add(activeDocument);
+
+            this.plugin.app.workspace.iterateAllLeaves((leaf) => {
+                if (leaf.view?.containerEl?.ownerDocument) {
+                    docs.add(leaf.view.containerEl.ownerDocument);
+                }
+            });
+
+            for (const doc of docs) {
+                doc.querySelectorAll(selector).forEach(el => {
+                    if (!domInstances.includes(el as HTMLElement)) {
+                        domInstances.push(el as HTMLElement);
+                    }
+                });
+            }
+
+            const onEdit = async () => {
+                const leaf = this.plugin.app.workspace.getLeaf(false);
+                await leaf.setViewState({ type: MYTHRAS_MANAGER_VIEW, active: true });
+                const view = leaf.view as any;
+                if (view && view.rosterUI) {
+                    view.currentTab = 'roster';
+                    view.rosterUI.openEditView(instance.id);
+                }
+            };
+
+            for (const el of domInstances) {
+                const elIsLong = el.dataset.mythrasIsLong === 'true';
+                const elSourcePath = el.dataset.mythrasSourcePath || '';
+                const newStatblock = await this.plugin.renderEnemyWithImages(instance, elIsLong, elSourcePath, onEdit);
+                el.replaceWith(newStatblock);
             }
         } catch (e) {}
     }

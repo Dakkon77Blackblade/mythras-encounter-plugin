@@ -542,9 +542,10 @@ export default class MythrasEncounterPlugin extends Plugin {
     async refreshArmoryCache() {
         const baseFolder = normalizePath(this.settings.baseFolder);
         const armoryPath = normalizePath(`${baseFolder}/Armory/armory.json`);
-        if (await this.app.vault.adapter.exists(armoryPath)) {
+        const file = this.app.vault.getAbstractFileByPath(armoryPath);
+        if (file instanceof TFile) {
             try {
-                const content = await this.app.vault.adapter.read(armoryPath);
+                const content = await this.app.vault.read(file);
                 this.armoryCache = JSON.parse(content) as MythrasWeapon[];
             } catch (e) {}
         }
@@ -557,18 +558,30 @@ export default class MythrasEncounterPlugin extends Plugin {
         const armoryPath = normalizePath(`${armoryFolderPath}/armory.json`);
 
         // Ensure Base, Bestiary and Armory folders exist
-        if (!(await this.app.vault.adapter.exists(baseFolder))) {
-            await this.app.vault.adapter.mkdir(baseFolder);
+        try {
+            if (!this.app.vault.getAbstractFileByPath(baseFolder)) {
+                await this.app.vault.createFolder(baseFolder);
+            }
+        } catch (e) {
+            // Ignore if folder already exists
         }
-        if (!(await this.app.vault.adapter.exists(bestiaryPath))) {
-            await this.app.vault.adapter.mkdir(bestiaryPath);
+        try {
+            if (!this.app.vault.getAbstractFileByPath(bestiaryPath)) {
+                await this.app.vault.createFolder(bestiaryPath);
+            }
+        } catch (e) {
+            // Ignore if folder already exists
         }
-        if (!(await this.app.vault.adapter.exists(armoryFolderPath))) {
-            await this.app.vault.adapter.mkdir(armoryFolderPath);
+        try {
+            if (!this.app.vault.getAbstractFileByPath(armoryFolderPath)) {
+                await this.app.vault.createFolder(armoryFolderPath);
+            }
+        } catch (e) {
+            // Ignore if folder already exists
         }
 
-        const exists = await this.app.vault.adapter.exists(armoryPath);
-        if (!exists) {
+        const armoryFile = this.app.vault.getAbstractFileByPath(armoryPath);
+        if (!armoryFile) {
             const defaultArmory = [
                 { name: "Hatchet", type: "1h-melee", damage: "1d6+1", size: "S", reach: "S", ap: "4", hp: "6", specialFx: "None" },
                 { name: "Shortspear", type: "1h-melee", damage: "1d8+1", size: "M", reach: "L", ap: "4", hp: "5", specialFx: "Impale" },
@@ -579,7 +592,7 @@ export default class MythrasEncounterPlugin extends Plugin {
                 { name: "Heavy Crossbow", type: "ranged", damage: "2d6", size: "M", range: "250m", ap: "4", hp: "6", damageModifier: false, specialFx: "Impale" }
             ];
             
-            await this.app.vault.adapter.write(armoryPath, JSON.stringify(defaultArmory, null, 2));
+            await this.app.vault.create(armoryPath, JSON.stringify(defaultArmory, null, 2));
         }
     }
 

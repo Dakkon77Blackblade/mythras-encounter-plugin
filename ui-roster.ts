@@ -389,16 +389,21 @@ export class RosterManagerUI {
         const newFolderPath = normalizePath(`${this.plugin.settings.baseFolder}/Roster`);
         
         if (oldFile.parent?.path !== newFolderPath) {
-            if (!await this.app.vault.adapter.exists(newFolderPath)) {
-                await this.app.vault.createFolder(newFolderPath);
+            try {
+                if (!this.app.vault.getAbstractFileByPath(newFolderPath)) {
+                    await this.app.vault.createFolder(newFolderPath);
+                }
+            } catch (e) {
+                // Ignore if folder already exists
             }
             
             const newFilePath = normalizePath(`${newFolderPath}/${oldFile.name}`);
-            if (await this.app.vault.adapter.exists(newFilePath)) {
+            const existingFile = this.app.vault.getAbstractFileByPath(newFilePath);
+            if (existingFile instanceof TFile) {
                 // If a file with the same name already exists in root, maybe handle collision?
                 // For now, let's just delete the old one and overwrite the new one, or rename.
                 // Usually oldFile.name is unique enough (UUID-based).
-                await this.app.vault.modify(this.app.vault.getAbstractFileByPath(newFilePath) as TFile, dataStr);
+                await this.app.vault.modify(existingFile, dataStr);
                 await this.app.vault.delete(oldFile);
             } else {
                 await this.app.vault.create(newFilePath, dataStr);
@@ -485,20 +490,24 @@ export class RosterManagerUI {
                     const safeFolder = folderPath ? normalizePath(folderPath) : '';
                     if (safeName) {
                         const targetDir = safeFolder || '/';
-                        if (targetDir !== '/' && !(await this.app.vault.adapter.exists(targetDir))) {
+                        if (targetDir !== '/' && !this.app.vault.getAbstractFileByPath(targetDir)) {
                             const parts = targetDir.split('/');
                             let currentPath = '';
                             for (const part of parts) {
                                 if (part === '') continue;
                                 currentPath = currentPath === '' ? part : `${currentPath}/${part}`;
-                                if (!await this.app.vault.adapter.exists(currentPath)) {
-                                    await this.app.vault.createFolder(currentPath);
+                                try {
+                                    if (!this.app.vault.getAbstractFileByPath(currentPath)) {
+                                        await this.app.vault.createFolder(currentPath);
+                                    }
+                                } catch (e) {
+                                    // Ignore if folder already exists
                                 }
                             }
                         }
                         
                         const newFilePath = normalizePath(targetDir === '/' ? `${safeName}.md` : `${targetDir}/${safeName}.md`);
-                        if (!(await this.app.vault.adapter.exists(newFilePath))) {
+                        if (!this.app.vault.getAbstractFileByPath(newFilePath)) {
                             const encounterId = 'enc_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
                             const content = `---\ntype: mythras-encounter\nencounter-id: "${encounterId}"\nscenario: "${safeScenario}"\n---\n\n`;
                             await this.app.vault.create(newFilePath, content);
@@ -565,7 +574,7 @@ export class RosterManagerUI {
                     const oldPath = normalizePath(`${this.plugin.settings.baseFolder}/Roster/${scenario.name}`);
                     const newPath = normalizePath(`${this.plugin.settings.baseFolder}/Roster/${safeName}`);
                     const folder = this.app.vault.getAbstractFileByPath(oldPath);
-                    if (folder && !(await this.app.vault.adapter.exists(newPath))) {
+                    if (folder && !this.app.vault.getAbstractFileByPath(newPath)) {
                         await this.app.vault.rename(folder, newPath);
                     }
                     
@@ -650,7 +659,7 @@ export class RosterManagerUI {
                         const mdFile = this.app.vault.getAbstractFileByPath(enc.path);
                         if (mdFile instanceof TFile && mdFile.extension === 'md') {
                             const newPath = normalizePath(`${mdFile.parent?.path}/${safeName}.md`);
-                            if (!(await this.app.vault.adapter.exists(newPath))) {
+                            if (!this.app.vault.getAbstractFileByPath(newPath)) {
                                 await this.app.fileManager.renameFile(mdFile, newPath);
                                 
                                 setTimeout(async () => {

@@ -1,4 +1,4 @@
-import { App, Modal, Notice, TFile, Setting } from 'obsidian';
+import { App, Modal, Notice, TFile, Setting, normalizePath } from 'obsidian';
 import MythrasEncounterPlugin from './main';
 import { MythrasWeapon } from './mythras-api';
 import { DEFAULT_ARMORY } from './default-armory';
@@ -66,16 +66,14 @@ export class ArmoryManagerUI {
     }
 
     async loadArmory() {
-        const armoryPath = `${this.plugin.settings.baseFolder}/Armory/armory.json`;
-        if (await this.app.vault.adapter.exists(armoryPath)) {
-            const file = this.app.vault.getAbstractFileByPath(armoryPath);
-            if (file instanceof TFile) {
-                try {
-                    const content = await this.app.vault.read(file);
-                    this.weapons = JSON.parse(content) as MythrasWeapon[];
-                } catch (e) {
-                    this.weapons = [];
-                }
+        const armoryPath = normalizePath(`${this.plugin.settings.baseFolder}/Armory/armory.json`);
+        const file = this.app.vault.getAbstractFileByPath(armoryPath);
+        if (file instanceof TFile) {
+            try {
+                const content = await this.app.vault.read(file);
+                this.weapons = JSON.parse(content) as MythrasWeapon[];
+            } catch (e) {
+                this.weapons = [];
             }
         } else {
             this.weapons = [];
@@ -83,10 +81,14 @@ export class ArmoryManagerUI {
     }
 
     async saveArmory() {
-        const armoryPath = `${this.plugin.settings.baseFolder}/Armory/armory.json`;
-        const folderPath = `${this.plugin.settings.baseFolder}/Armory`;
-        if (!(await this.app.vault.adapter.exists(folderPath))) {
-            await this.app.vault.createFolder(folderPath);
+        const armoryPath = normalizePath(`${this.plugin.settings.baseFolder}/Armory/armory.json`);
+        const folderPath = normalizePath(`${this.plugin.settings.baseFolder}/Armory`);
+        try {
+            if (!this.app.vault.getAbstractFileByPath(folderPath)) {
+                await this.app.vault.createFolder(folderPath);
+            }
+        } catch (e) {
+            // Ignore if folder already exists
         }
 
         const data = JSON.stringify(this.weapons, null, 2);
@@ -101,11 +103,11 @@ export class ArmoryManagerUI {
     }
 
     async repopulateArmory() {
-        const armoryPath = `${this.plugin.settings.baseFolder}/Armory/armory.json`;
+        const armoryPath = normalizePath(`${this.plugin.settings.baseFolder}/Armory/armory.json`);
         const file = this.app.vault.getAbstractFileByPath(armoryPath);
         if (file instanceof TFile) {
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            const backupPath = `${this.plugin.settings.baseFolder}/Armory/armory_backup_${timestamp}.json`;
+            const backupPath = normalizePath(`${this.plugin.settings.baseFolder}/Armory/armory_backup_${timestamp}.json`);
             const content = await this.app.vault.read(file);
             await this.app.vault.create(backupPath, content);
             new Notice(`Backup created: armory_backup_${timestamp}.json`);

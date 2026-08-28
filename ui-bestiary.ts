@@ -1,4 +1,4 @@
-import { App, Notice, TFile, FuzzySuggestModal, setIcon } from 'obsidian';
+import { App, Notice, TFile, FuzzySuggestModal, setIcon, normalizePath } from 'obsidian';
 import MythrasEncounterPlugin from './main';
 import { MythrasTemplate, MythrasWeapon } from './mythras-api';
 
@@ -56,15 +56,13 @@ export class BestiaryManagerUI {
     }
 
     async loadArmory() {
-        const armoryPath = `${this.plugin.settings.baseFolder}/Armory/armory.json`;
-        if (await this.app.vault.adapter.exists(armoryPath)) {
-            const file = this.app.vault.getAbstractFileByPath(armoryPath);
-            if (file instanceof TFile) {
-                try {
-                    const content = await this.app.vault.read(file);
-                    this.armoryWeapons = JSON.parse(content) as MythrasWeapon[];
-                } catch (e) {}
-            }
+        const armoryPath = normalizePath(`${this.plugin.settings.baseFolder}/Armory/armory.json`);
+        const file = this.app.vault.getAbstractFileByPath(armoryPath);
+        if (file instanceof TFile) {
+            try {
+                const content = await this.app.vault.read(file);
+                this.armoryWeapons = JSON.parse(content) as MythrasWeapon[];
+            } catch (e) {}
         }
     }
 
@@ -660,22 +658,23 @@ export class BestiaryManagerUI {
         this.editTemplate.author = 'local';
         this.sanitizeTemplate(this.editTemplate);
 
-        const folderPath = `${this.plugin.settings.baseFolder}/Bestiary`;
+        const folderPath = normalizePath(`${this.plugin.settings.baseFolder}/Bestiary`);
         const safeName = this.editTemplate.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
         const fileName = `${safeName}_by_local.json`;
-        const newFilePath = `${folderPath}/${fileName}`;
+        const newFilePath = normalizePath(`${folderPath}/${fileName}`);
         const oldFilePath = this.selectedEntry.file.path;
 
         const content = JSON.stringify(this.editTemplate, null, 4);
 
         try {
-            if (oldFilePath !== newFilePath && await this.app.vault.adapter.exists(oldFilePath)) {
+            const oldFile = this.app.vault.getAbstractFileByPath(oldFilePath);
+            if (oldFilePath !== newFilePath && oldFile instanceof TFile) {
                 await this.app.vault.trash(this.selectedEntry.file, true);
             }
 
-            if (await this.app.vault.adapter.exists(newFilePath)) {
-                const f = this.app.vault.getAbstractFileByPath(newFilePath);
-                if (f instanceof TFile) await this.app.vault.modify(f, content);
+            const existingFile = this.app.vault.getAbstractFileByPath(newFilePath);
+            if (existingFile instanceof TFile) {
+                await this.app.vault.modify(existingFile, content);
             } else {
                 await this.app.vault.create(newFilePath, content);
             }

@@ -1,4 +1,4 @@
-import { App, Modal, Setting, Notice, TFile, normalizePath } from 'obsidian';
+import { App, Modal, Setting, Notice, TFile, TFolder, normalizePath } from 'obsidian';
 import MythrasEncounterPlugin from './main';
 import { MythrasTemplate } from './mythras-api';
 import { instantiateEnemy } from './instantiator';
@@ -29,11 +29,10 @@ export class MythrasGenerateModal extends Modal {
         contentEl.createEl("h2", { text: "Generate Mythras Encounter" });
 
         // Load templates from Bestiary
-        const bestiaryPath = `${this.plugin.settings.baseFolder}/Bestiary`;
+        const bestiaryPath = normalizePath(`${this.plugin.settings.baseFolder}/Bestiary`);
         const folder = this.app.vault.getAbstractFileByPath(bestiaryPath);
-        if (folder && 'children' in folder) {
-            // @ts-ignore
-            this.templates = folder.children.filter(f => f instanceof TFile && f.extension === 'json');
+        if (folder instanceof TFolder) {
+            this.templates = folder.children.filter((f): f is TFile => f instanceof TFile && f.extension === 'json');
         }
 
         if (this.templates.length === 0) {
@@ -117,7 +116,7 @@ export class MythrasGenerateModal extends Modal {
             await this.ensureFolderExists(folderPath);
 
             let output = `\n## Encounter: ${template.name}\n\n`;
-            const armoryPath = `${this.plugin.settings.baseFolder}/Armory/armory.json`;
+            const armoryPath = normalizePath(`${this.plugin.settings.baseFolder}/Armory/armory.json`);
             
             for (let i = 0; i < this.amount; i++) {
                 const instanceName = `${template.name} ${i + 1}`;
@@ -155,8 +154,12 @@ export class MythrasGenerateModal extends Modal {
         for (const part of parts) {
             if (part === '') continue;
             currentPath = currentPath === '' ? part : `${currentPath}/${part}`;
-            if (!await this.app.vault.adapter.exists(currentPath)) {
-                await this.app.vault.createFolder(currentPath);
+            try {
+                if (!this.app.vault.getAbstractFileByPath(currentPath)) {
+                    await this.app.vault.createFolder(currentPath);
+                }
+            } catch (e) {
+                // Ignore if folder already exists
             }
         }
     }

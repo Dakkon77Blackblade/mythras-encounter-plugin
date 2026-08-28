@@ -1,4 +1,4 @@
-import { App, normalizePath, setIcon, Modal, Setting } from 'obsidian';
+import { App, normalizePath, setIcon, Modal, Setting, TFile } from 'obsidian';
 import { MythrasTemplate, MythrasWeapon, MythrasInstance, HitLocationInstance } from './mythras-api';
 import { DiceRoller } from './dice-roller';
 
@@ -79,8 +79,9 @@ export async function generateStatblock(app: App, armoryFile: string, template: 
     let armory: MythrasWeapon[] = [];
     try {
         const armoryPath = normalizePath(armoryFile);
-        if (await app.vault.adapter.exists(armoryPath)) {
-            const content = await app.vault.adapter.read(armoryPath);
+        const file = app.vault.getAbstractFileByPath(armoryPath);
+        if (file instanceof TFile) {
+            const content = await app.vault.read(file);
             armory = JSON.parse(content);
         }
     } catch (e) {}

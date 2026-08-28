@@ -1,4 +1,4 @@
-import { App, Notice, SuggestModal } from 'obsidian';
+import { App, Notice, SuggestModal, TFile, normalizePath } from 'obsidian';
 import { MythrasApi, MythrasSearchResult, MythrasTemplate } from './mythras-api';
 import MythrasEncounterPlugin from './main';
 
@@ -42,25 +42,25 @@ export class MythrasSearchModal extends SuggestModal<MythrasSearchResult> {
     }
 
     async saveTemplateToBestiary(template: MythrasTemplate) {
-        const folderPath = `${this.plugin.settings.baseFolder}/Bestiary`;
-
-        if (!(await this.app.vault.adapter.exists(folderPath))) {
-            await this.app.vault.adapter.mkdir(folderPath);
+        const folderPath = normalizePath(`${this.plugin.settings.baseFolder}/Bestiary`);
+        try {
+            if (!this.app.vault.getAbstractFileByPath(folderPath)) {
+                await this.app.vault.createFolder(folderPath);
+            }
+        } catch (e) {
+            // Ignore if folder already exists
         }
 
         const safeName = template.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
         const safeAuthor = (template.author || 'unknown').replace(/[^a-z0-9]/gi, '_').toLowerCase();
         const fileName = `${safeName}_by_${safeAuthor}`;
-        const filePath = `${folderPath}/${fileName}.json`;
+        const filePath = normalizePath(`${folderPath}/${fileName}.json`);
         
         const content = JSON.stringify(template, null, 4);
 
-        if (await this.app.vault.adapter.exists(filePath)) {
-            const file = this.app.vault.getAbstractFileByPath(filePath);
-            if (file) {
-                // @ts-ignore
-                await this.app.vault.modify(file, content);
-            }
+        const file = this.app.vault.getAbstractFileByPath(filePath);
+        if (file instanceof TFile) {
+            await this.app.vault.modify(file, content);
         } else {
             await this.app.vault.create(filePath, content);
         }
