@@ -138,7 +138,9 @@ export class CombatTrackerUI {
         }
         
         const cycleBadge = titleArea.createDiv('mythras-combat-cycle-badge');
-        cycleBadge.createSpan({ text: `Round / Cycle: `, cls: 'mythras-text-muted' });
+        cycleBadge.createSpan({ text: `Round: `, cls: 'mythras-text-muted' });
+        cycleBadge.createEl('strong', { text: `${this.service.session ? this.service.session.round : 1}` });
+        cycleBadge.createSpan({ text: ` | Cycle: `, cls: 'mythras-text-muted' });
         cycleBadge.createEl('strong', { text: `${this.service.session ? this.service.session.cycle : 1}` });
 
         const controls = header.createDiv('mythras-combat-controls');
@@ -160,8 +162,13 @@ export class CombatTrackerUI {
         const btnRollAll = controls.createEl('button', { text: '🎲 Roll Init All', cls: 'mythras-btn-secondary' });
         btnRollAll.onclick = () => this.service.rollInitiativeAll();
 
-        const btnNextCycle = controls.createEl('button', { text: '⏭ Next Cycle', cls: 'mythras-btn-cta' });
+        const btnNextCycle = controls.createEl('button', { text: '⏭ Next Cycle', cls: 'mythras-btn-secondary' });
+        btnNextCycle.title = 'Advance to next turn pass within the round (AP stays unchanged)';
         btnNextCycle.onclick = () => this.service.nextCycle();
+
+        const btnNextRound = controls.createEl('button', { text: '🔄 Next Round', cls: 'mythras-btn-cta' });
+        btnNextRound.title = 'Start new round (resets AP to max for everyone)';
+        btnNextRound.onclick = () => this.service.nextRound();
 
         const btnClear = controls.createEl('button', { text: 'Clear', cls: 'mythras-btn-danger' });
         btnClear.onclick = () => {
@@ -198,8 +205,9 @@ export class CombatTrackerUI {
 
         const scrollArea = container.createDiv('mythras-queue-scroll');
 
-        const activeList = this.service.session.participants.filter(p => !p.isDone);
-        const doneList = this.service.session.participants.filter(p => p.isDone);
+        const activeList = this.service.session.participants.filter(p => p.currentAp > 0 && !p.isDone);
+        const doneList = this.service.session.participants.filter(p => p.currentAp > 0 && p.isDone);
+        const noApList = this.service.session.participants.filter(p => p.currentAp === 0);
 
         // Render Active Participants
         if (activeList.length > 0) {
@@ -215,9 +223,19 @@ export class CombatTrackerUI {
         // Render Done Participants
         if (doneList.length > 0) {
             const doneHeader = scrollArea.createDiv('mythras-queue-section-title mythras-done-section');
-            doneHeader.createEl('span', { text: `Completed Actions (${doneList.length})` });
+            doneHeader.createEl('span', { text: `Turn Done in Cycle (${doneList.length})` });
 
             doneList.forEach(p => {
+                this.renderParticipantCard(scrollArea, p, false);
+            });
+        }
+
+        // Render 0 AP / Exhausted Participants
+        if (noApList.length > 0) {
+            const noApHeader = scrollArea.createDiv('mythras-queue-section-title mythras-done-section');
+            noApHeader.createEl('span', { text: `0 AP / Out of Actions (${noApList.length})` });
+
+            noApList.forEach(p => {
                 this.renderParticipantCard(scrollArea, p, false);
             });
         }
@@ -227,9 +245,9 @@ export class CombatTrackerUI {
         const isSelected = this.service.session.selectedParticipantId === p.id;
         
         const card = container.createDiv('mythras-combat-card-mini');
-        if (isCurrentTurn && !p.isDone) card.addClass('mythras-combat-active-turn');
+        if (isCurrentTurn && !p.isDone && p.currentAp > 0) card.addClass('mythras-combat-active-turn');
         if (isSelected) card.addClass('is-selected');
-        if (p.isDone) card.addClass('is-done');
+        if (p.isDone || p.currentAp === 0) card.addClass('is-done');
 
         card.onclick = () => {
             this.service.selectParticipant(p.id);
@@ -239,7 +257,7 @@ export class CombatTrackerUI {
         const topRow = card.createDiv('mythras-card-top-row');
         
         const nameGroup = topRow.createDiv('mythras-card-name-group');
-        if (isCurrentTurn && !p.isDone) {
+        if (isCurrentTurn && !p.isDone && p.currentAp > 0) {
             nameGroup.createSpan({ text: '⚔️ ', cls: 'mythras-turn-icon' });
         }
         nameGroup.createEl('strong', { text: p.instance.instanceName, cls: 'mythras-card-name' });
@@ -339,17 +357,19 @@ export class CombatTrackerUI {
         inspectorWrap.style.height = '100%';
         inspectorWrap.style.paddingRight = '10px';
 
-        // Inspector Header
-        const header = inspectorWrap.createDiv('mythras-inspector-header');
-        header.createEl('h3', { text: `${participant.instance.instanceName}` });
-        header.createSpan({ text: ` (${participant.instance.templateName})`, cls: 'mythras-text-muted' });
-
         // Render full interactive statblock!
-        const statblockContainer = inspectorWrap.createDiv('mythras-statblock-full-wrap');
-        renderEnemyStatblock(statblockContainer, participant.instance, this.plugin, async (updatedInstance) => {
-            await this.service.syncInstanceToDisk(updatedInstance);
-            this.service.saveSession();
-            this.render();
-        });
+        const element = renderEnemyStatblock(
+            this.app,
+            participant.instance,
+            'long',
+            undefined,
+            async (updatedInstance) => {
+                await this.service.syncInstanceToDisk(updatedInstance);
+                this.service.saveSession();
+                this.render();
+            },
+            this.plugin
+        );
+        inspectorWrap.appendChild(element);
     }
 }

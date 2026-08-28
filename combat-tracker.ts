@@ -18,6 +18,7 @@ export interface CombatParticipant {
 export interface CombatSession {
     scenario: string;
     encounter: string;
+    round: number;
     cycle: number;
     participants: CombatParticipant[];
     selectedParticipantId?: string;
@@ -28,6 +29,7 @@ export class CombatTrackerService {
     session: CombatSession = {
         scenario: '',
         encounter: '',
+        round: 1,
         cycle: 1,
         participants: []
     };
@@ -59,6 +61,8 @@ export class CombatTrackerService {
                 const raw = await this.plugin.app.vault.adapter.read(sessionPath);
                 if (raw) {
                     const parsed = JSON.parse(raw);
+                    if (!parsed.round) parsed.round = 1;
+                    if (!parsed.cycle) parsed.cycle = 1;
                     this.session = parsed;
                 }
             }
@@ -133,7 +137,14 @@ export class CombatTrackerService {
     }
 
     sortParticipants() {
-        this.session.participants.sort((a, b) => b.initiative - a.initiative);
+        this.session.participants.sort((a, b) => {
+            const aHasAp = a.currentAp > 0 ? 1 : 0;
+            const bHasAp = b.currentAp > 0 ? 1 : 0;
+            if (aHasAp !== bHasAp) {
+                return bHasAp - aHasAp; // 0 AP participants go to the bottom
+            }
+            return b.initiative - a.initiative; // Sort by initiative descending
+        });
     }
 
     rollInitiativeAll() {
@@ -169,6 +180,7 @@ export class CombatTrackerService {
         const p = this.session.participants.find(x => x.id === participantId);
         if (p) {
             p.currentAp = Math.max(0, Math.min(p.maxAp, p.currentAp + delta));
+            this.sortParticipants();
             this.notify();
         }
     }
@@ -177,6 +189,7 @@ export class CombatTrackerService {
         const p = this.session.participants.find(x => x.id === participantId);
         if (p) {
             p.currentAp = Math.max(0, Math.min(p.maxAp, value));
+            this.sortParticipants();
             this.notify();
         }
     }
@@ -208,10 +221,24 @@ export class CombatTrackerService {
 
     nextCycle() {
         this.session.cycle += 1;
+        // Do NOT reset AP! Only reset isDone for participants who still have AP > 0
+        for (const p of this.session.participants) {
+            if (p.currentAp > 0) {
+                p.isDone = false;
+            }
+        }
+        this.sortParticipants();
+        this.notify();
+    }
+
+    nextRound() {
+        this.session.round += 1;
+        this.session.cycle = 1;
         for (const p of this.session.participants) {
             p.isDone = false;
             p.currentAp = p.maxAp;
         }
+        this.sortParticipants();
         this.notify();
     }
 
@@ -219,6 +246,7 @@ export class CombatTrackerService {
         this.session = {
             scenario: '',
             encounter: '',
+            round: 1,
             cycle: 1,
             participants: []
         };
