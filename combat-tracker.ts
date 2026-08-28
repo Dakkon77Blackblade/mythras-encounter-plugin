@@ -138,12 +138,20 @@ export class CombatTrackerService {
 
     sortParticipants() {
         this.session.participants.sort((a, b) => {
-            const aHasAp = a.currentAp > 0 ? 1 : 0;
-            const bHasAp = b.currentAp > 0 ? 1 : 0;
-            if (aHasAp !== bHasAp) {
-                return bHasAp - aHasAp; // 0 AP participants go to the bottom
+            // Completely inactive participants (0 AP and Turn Done) go to the very bottom
+            const aInactive = (a.isDone && a.currentAp === 0) ? 1 : 0;
+            const bInactive = (b.isDone && b.currentAp === 0) ? 1 : 0;
+            if (aInactive !== bInactive) {
+                return aInactive - bInactive;
             }
-            return b.initiative - a.initiative; // Sort by initiative descending
+            // Cycle done participants (Turn Done in this cycle) go below active participants
+            const aCycleDone = (a.isDone && a.currentAp > 0) ? 1 : 0;
+            const bCycleDone = (b.isDone && b.currentAp > 0) ? 1 : 0;
+            if (aCycleDone !== bCycleDone) {
+                return aCycleDone - bCycleDone;
+            }
+            // Primary ordering: Initiative descending
+            return b.initiative - a.initiative;
         });
     }
 

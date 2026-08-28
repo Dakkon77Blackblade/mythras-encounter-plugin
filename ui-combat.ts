@@ -209,9 +209,9 @@ export class CombatTrackerUI {
 
         const scrollArea = container.createDiv('mythras-queue-scroll');
 
-        const activeList = this.service.session.participants.filter(p => p.currentAp > 0 && !p.isDone);
-        const doneList = this.service.session.participants.filter(p => p.currentAp > 0 && p.isDone);
-        const noApList = this.service.session.participants.filter(p => p.currentAp === 0);
+        const activeList = this.service.session.participants.filter(p => !p.isDone);
+        const cycleDoneList = this.service.session.participants.filter(p => p.isDone && p.currentAp > 0);
+        const roundDoneList = this.service.session.participants.filter(p => p.isDone && p.currentAp === 0);
 
         // Render Active Participants
         if (activeList.length > 0) {
@@ -224,22 +224,22 @@ export class CombatTrackerUI {
             });
         }
 
-        // Render Done Participants
-        if (doneList.length > 0) {
+        // Render Done in Cycle Participants
+        if (cycleDoneList.length > 0) {
             const doneHeader = scrollArea.createDiv('mythras-queue-section-title mythras-done-section');
-            doneHeader.createEl('span', { text: `Turn Done in Cycle (${doneList.length})` });
+            doneHeader.createEl('span', { text: `Turn Done in Cycle (${cycleDoneList.length})` });
 
-            doneList.forEach(p => {
+            cycleDoneList.forEach(p => {
                 this.renderParticipantCard(scrollArea, p, false);
             });
         }
 
-        // Render 0 AP / Exhausted Participants
-        if (noApList.length > 0) {
+        // Render 0 AP & Turn Done Participants
+        if (roundDoneList.length > 0) {
             const noApHeader = scrollArea.createDiv('mythras-queue-section-title mythras-done-section');
-            noApHeader.createEl('span', { text: `0 AP / Out of Actions (${noApList.length})` });
+            noApHeader.createEl('span', { text: `0 AP & Turn Done (${roundDoneList.length})` });
 
-            noApList.forEach(p => {
+            roundDoneList.forEach(p => {
                 this.renderParticipantCard(scrollArea, p, false);
             });
         }
@@ -249,9 +249,9 @@ export class CombatTrackerUI {
         const isSelected = this.service.session.selectedParticipantId === p.id;
         
         const card = container.createDiv('mythras-combat-card-mini');
-        if (isCurrentTurn && !p.isDone && p.currentAp > 0) card.addClass('mythras-combat-active-turn');
+        if (isCurrentTurn && !p.isDone) card.addClass('mythras-combat-active-turn');
         if (isSelected) card.addClass('is-selected');
-        if (p.isDone || p.currentAp === 0) card.addClass('is-done');
+        if (p.isDone) card.addClass('is-done');
 
         card.onclick = () => {
             this.service.selectParticipant(p.id);
