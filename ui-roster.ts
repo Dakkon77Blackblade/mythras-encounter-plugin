@@ -339,15 +339,23 @@ export class RosterManagerUI {
                     if (enc) {
                         enc.instances.push({ file, data });
                     } else {
-                        // Orphaned instance? Put in Uncategorized
-                        const scenario = getOrCreateScenario('Uncategorized');
-                        let orphanEnc = scenario.encounters.find(e => e.id === encounterId);
-                        if (!orphanEnc) {
-                            orphanEnc = { name: data.encounter || 'Unknown', path: `${rosterPath}/Uncategorized/${encounterId}`, id: encounterId, instances: [] };
-                            scenario.encounters.push(orphanEnc);
-                            encounterMap.set(encounterId, orphanEnc);
+                        // Encounter not linked to a markdown file: place in instance's specified Scenario & Encounter
+                        const scenarioName = data.scenario || 'General';
+                        const encounterName = data.encounter || 'Random Encounter';
+                        const scenario = getOrCreateScenario(scenarioName);
+                        
+                        let targetEnc = scenario.encounters.find(e => e.id === encounterId || e.name === encounterName);
+                        if (!targetEnc) {
+                            targetEnc = { 
+                                name: encounterName, 
+                                path: `${rosterPath}/${scenarioName}/${encounterName}`, 
+                                id: encounterId, 
+                                instances: [] 
+                            };
+                            scenario.encounters.push(targetEnc);
+                            encounterMap.set(encounterId, targetEnc);
                         }
-                        orphanEnc.instances.push({ file, data });
+                        targetEnc.instances.push({ file, data });
                     }
                 } catch (e) {}
             }
