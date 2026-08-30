@@ -36,7 +36,11 @@ export class CharacterManagerUI {
         if (this.selectedCharacterId && this.editingCharacter) {
             this.renderCharacterEditor(content, this.editingCharacter);
         } else {
-            content.createDiv('mythras-empty-state').setText('Select a character or create a new one.');
+            const emptyState = content.createDiv('mythras-empty-state');
+            const emptyContent = emptyState.createDiv('mythras-empty-state-content');
+            setIcon(emptyContent.createDiv('mythras-empty-icon'), 'users');
+            emptyContent.createEl('h3', { text: 'No Character Selected' });
+            emptyContent.createEl('p', { text: 'Select a character from the sidebar or create a new one to get started.' });
         }
     }
     
