@@ -546,6 +546,9 @@
 
 .mythras-skill-name {
     font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 .mythras-skill-name a.internal-link {
     text-decoration: none;
@@ -1849,8 +1852,10 @@
 }
 
 .mythras-skill-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: 20px 1fr 60px 25px 40px 35px 20px;
     align-items: center;
+    gap: 5px;
     padding: 2px 0;
     border-bottom: 1px solid var(--background-modifier-border);
 }
@@ -1858,6 +1863,38 @@
 .mythras-skill-val {
     margin-left: auto;
     font-weight: bold;
+}
+
+.mythras-skill-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 15px;
+}
+
+.mythras-skill-category-title {
+    border-bottom: 2px solid var(--text-accent);
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    font-size: 1.2em;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.mythras-char-pill {
+    background-color: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 12px;
+    padding: 2px 6px;
+    font-size: 0.8em;
+    color: var(--text-muted);
+}
+
+.mythras-skill-val-input {
+    width: 100%;
+    text-align: center;
+    padding: 2px 4px;
 }
 
 .mythras-skill-filter {

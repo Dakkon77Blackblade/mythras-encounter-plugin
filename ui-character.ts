@@ -366,18 +366,12 @@ export class CharacterManagerUI {
             });
         };
         
-        const grid = container.createDiv('mythras-grid-3col');
-        grid.style.display = 'grid';
-        grid.style.gridTemplateColumns = '1fr 1fr 1fr';
-        grid.style.gap = '1rem';
+        const grid = container.createDiv('mythras-skill-grid');
         
         const renderSkillBlock = (parent: HTMLElement, skillDict: Record<string, any>, title: string, canAdd: boolean) => {
             const wrapper = parent.createDiv('mythras-character-col');
-            const header = wrapper.createDiv('mythras-skill-header');
-            header.style.display = 'flex';
-            header.style.justifyContent = 'space-between';
-            header.style.alignItems = 'center';
-            header.createEl('h3', { text: title });
+            const header = wrapper.createDiv('mythras-skill-category-title');
+            header.createEl('span', { text: title });
             
             if (canAdd) {
                 const addBtn = header.createEl('button', { text: '+', cls: 'mythras-btn' });
@@ -415,33 +409,40 @@ export class CharacterManagerUI {
                     xpCheck.checked = skill.experienceTick;
                     xpCheck.onchange = async () => { skill.experienceTick = xpCheck.checked; await this.saveCurrentCharacter(); };
                     
+                    const nameContainer = row.createDiv('mythras-skill-name');
                     if (title === 'Languages' && key.startsWith('Native')) {
-                        row.createSpan({ text: 'Native ', title: `Base: ${skill.baseFormula} (${skill.baseValue})` });
-                        const langNameInput = row.createEl('input', { type: 'text', cls: 'mythras-input-small' });
+                        nameContainer.createSpan({ text: 'Native ' });
+                        const langNameInput = nameContainer.createEl('input', { type: 'text', cls: 'mythras-input-small' });
                         langNameInput.value = skill.name === 'Native' ? '' : skill.name.replace('Native ', '').replace('(', '').replace(')', '').trim();
                         langNameInput.placeholder = 'Language';
-                        langNameInput.style.marginRight = '5px';
                         langNameInput.onchange = async () => {
                             skill.name = langNameInput.value ? `Native (${langNameInput.value})` : 'Native';
                             await this.saveCurrentCharacter();
                         };
-                        row.createSpan({ text: `(${skill.baseFormula})` });
                     } else {
-                        let labelText = skill.name;
-                        if (skill.baseFormula) {
-                            labelText += ` (${skill.baseFormula})`;
+                        nameContainer.createSpan({ text: skill.name });
+                    }
+
+                    const formulaContainer = row.createDiv('mythras-skills-pills');
+                    formulaContainer.style.display = 'flex';
+                    formulaContainer.style.gap = '2px';
+                    if (skill.baseFormula) {
+                        if (skill.baseFormula.includes('x2')) {
+                            const char = skill.baseFormula.replace('x2', '').trim();
+                            formulaContainer.createSpan({ text: char, cls: 'mythras-char-pill' });
+                            formulaContainer.createSpan({ text: char, cls: 'mythras-char-pill' });
+                        } else {
+                            skill.baseFormula.split('+').forEach((p: string) => {
+                                formulaContainer.createSpan({ text: p.trim(), cls: 'mythras-char-pill' });
+                            });
                         }
-                        row.createSpan({ text: labelText, title: `Base: ${skill.baseFormula} (${skill.baseValue})` });
                     }
                 
                 const baseSpan = row.createSpan({ text: skill.baseValue.toString(), cls: 'mythras-skill-base' });
                 baseSpan.style.color = 'var(--text-muted)';
-                baseSpan.style.marginLeft = '5px';
-                baseSpan.style.fontSize = '0.85em';
+                baseSpan.title = `Base: ${skill.baseFormula} (${skill.baseValue})`;
                 
-                const ptsInput = row.createEl('input', { type: 'number', cls: 'mythras-input-small', value: ((skill.culturePoints||0) + (skill.careerPoints||0) + (skill.bonusPoints||0) + (skill.experienceIncreases||0)).toString() });
-                ptsInput.style.marginLeft = 'auto';
-                ptsInput.style.marginRight = '10px';
+                const ptsInput = row.createEl('input', { type: 'number', cls: 'mythras-skill-val-input', value: ((skill.culturePoints||0) + (skill.careerPoints||0) + (skill.bonusPoints||0) + (skill.experienceIncreases||0)).toString() });
                 ptsInput.title = "Added Skill Points (Culture + Career + Bonus + Exp)";
                 ptsInput.onchange = async () => { 
                     skill.bonusPoints = parseInt(ptsInput.value) || 0;
@@ -455,12 +456,13 @@ export class CharacterManagerUI {
                 
                 if (canAdd) {
                     const delBtn = row.createEl('button', { text: '✕', cls: 'mythras-btn' });
-                    delBtn.style.marginLeft = '5px';
                     delBtn.onclick = async () => {
                         delete skillDict[skill.name];
                         await this.saveCurrentCharacter();
                         this.render();
                     };
+                } else {
+                    row.createSpan();
                 }
             });
         };
@@ -632,9 +634,23 @@ export class SkillCreateModal extends Modal {
         
         const groupForm = contentEl.createDiv('mythras-manager-form-group');
         groupForm.style.marginTop = '10px';
-        groupForm.createEl('label', {text: 'Base Formula (e.g. STR+DEX, INTx2)'});
-        const formInput = groupForm.createEl('input', {type: 'text', cls: 'mythras-input'});
-        formInput.style.width = '100%';
+        groupForm.createEl('label', {text: 'Characteristics'});
+        
+        const chars = ['STR', 'CON', 'SIZ', 'DEX', 'INT', 'POW', 'CHA'];
+        
+        const selectContainer = groupForm.createDiv();
+        selectContainer.style.display = 'flex';
+        selectContainer.style.gap = '10px';
+        selectContainer.style.marginTop = '5px';
+        
+        const char1Select = selectContainer.createEl('select', { cls: 'mythras-input' });
+        chars.forEach(c => char1Select.createEl('option', { value: c, text: c }));
+        
+        selectContainer.createSpan({ text: '+', style: 'align-self: center;' });
+        
+        const char2Select = selectContainer.createEl('select', { cls: 'mythras-input' });
+        char2Select.createEl('option', { value: 'x2', text: 'None / x2' });
+        chars.forEach(c => char2Select.createEl('option', { value: c, text: c }));
         
         const btnGroup = contentEl.createDiv();
         btnGroup.style.display = 'flex';
@@ -644,7 +660,10 @@ export class SkillCreateModal extends Modal {
         const btn = btnGroup.createEl('button', {text: 'Add', cls: 'mythras-btn mythras-btn-primary'});
         btn.onclick = () => {
             if (nameInput.value.trim()) {
-                this.onSubmit(nameInput.value.trim(), formInput.value.trim().toUpperCase());
+                const char1 = char1Select.value;
+                const char2 = char2Select.value;
+                const formula = char2 === 'x2' ? `${char1}x2` : `${char1}+${char2}`;
+                this.onSubmit(nameInput.value.trim(), formula);
                 this.close();
             }
         };
