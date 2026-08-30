@@ -13,14 +13,17 @@ import { MarkdownRenderer } from 'obsidian';
 import { CombatLogService, CombatLogView, COMBAT_LOG_VIEW } from './combat-log';
 
 import { CombatTrackerService } from './combat-tracker';
+import { CharacterService } from './character-service';
 
 export default class MythrasEncounterPlugin extends Plugin {
     settings: MythrasEncounterSettings;
     armoryCache: MythrasWeapon[] = [];
     combatLogService: CombatLogService = new CombatLogService();
     combatTrackerService: CombatTrackerService = new CombatTrackerService(this);
+    characterService: CharacterService;
 
     async onload() {
+        this.characterService = new CharacterService(this.app, this);
         await this.loadSettings();
         await this.combatTrackerService.loadSession();
 
@@ -53,7 +56,8 @@ export default class MythrasEncounterPlugin extends Plugin {
 
         const ribbonIcon = this.addRibbonIcon('swords', 'Open Mythras manager', (evt: MouseEvent) => {
             if (evt.button === 2) return; // Ignore right-clicks
-            this.activateManagerView('tab');
+            // If player mode, start on Characters tab. If GM mode, start on Roster tab.
+            this.activateManagerView('tab', this.settings.pluginRole === 'Player' ? 'characters' : 'roster');
         });
 
         ribbonIcon.addEventListener('contextmenu', (evt: MouseEvent) => {
@@ -419,13 +423,22 @@ export default class MythrasEncounterPlugin extends Plugin {
         });
     }
 
-    async activateManagerView(mode: 'tab' | 'split-right' | 'split-down' | 'current' = 'tab') {
+    async activateManagerView(mode: 'tab' | 'split-right' | 'split-down' | 'current' = 'tab', startTab?: 'roster' | 'armory' | 'bestiary' | 'combat' | 'characters') {
         const { workspace } = this.app;
         const leaves = workspace.getLeavesOfType(MYTHRAS_MANAGER_VIEW);
 
         if (leaves.length > 0) {
             if (mode === 'tab') {
-                workspace.revealLeaf(leaves[0]);
+                const leaf = leaves[0];
+                workspace.revealLeaf(leaf);
+                if (startTab) {
+                    const view = leaf.view as any;
+                    if (view && view.currentTab !== undefined) {
+                        view.currentTab = startTab;
+                        view.renderNav();
+                        view.renderCurrentTab();
+                    }
+                }
                 return;
             }
             // If they explicitly requested a layout via context menu, close old instances
@@ -444,6 +457,15 @@ export default class MythrasEncounterPlugin extends Plugin {
         }
         
         await leaf.setViewState({ type: MYTHRAS_MANAGER_VIEW, active: true });
+        
+        if (startTab) {
+            const view = leaf.view as any;
+            if (view && view.currentTab !== undefined) {
+                view.currentTab = startTab;
+                view.renderNav();
+                view.renderCurrentTab();
+            }
+        }
         workspace.revealLeaf(leaf);
     }
 

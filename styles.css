@@ -1772,3 +1772,171 @@
     border-bottom: 1px solid var(--background-modifier-border);
     margin-bottom: 10px;
 }
+
+/* Character Sheet HUD */
+.mythras-character-hud {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px;
+    background-color: var(--background-secondary);
+    border-bottom: 1px solid var(--background-modifier-border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.mythras-hud-avatar-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.mythras-hud-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--background-primary);
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--background-modifier-border);
+}
+
+.mythras-hud-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 12px;
+}
+
+.mythras-hud-stepper {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background-color: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    padding: 2px;
+}
+
+.mythras-hud-stepper button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0 5px;
+}
+
+.mythras-wound-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 12px;
+    background-color: var(--color-green);
+    color: var(--text-on-accent);
+}
+
+.mythras-wound-badge.status-minor { background-color: var(--color-yellow); }
+.mythras-wound-badge.status-serious { background-color: var(--color-orange); }
+.mythras-wound-badge.status-major { background-color: var(--color-red); }
+.mythras-wound-badge.status-severed-crippled { background-color: var(--color-purple); }
+
+/* Character Skills */
+.mythras-xp-tick {
+    margin-right: 5px;
+}
+
+.mythras-skill-row {
+    display: flex;
+    align-items: center;
+    padding: 2px 0;
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.mythras-skill-val {
+    margin-left: auto;
+    font-weight: bold;
+}
+
+.mythras-skill-filter {
+    margin-bottom: 15px;
+}
+
+/* Character Grid Layouts */
+.mythras-grid-3col {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.mythras-grid-dashboard {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+/* Encumbrance & Fatigue */
+.mythras-enc-meter {
+    margin: 15px 0;
+}
+
+.mythras-enc-bar-wrap {
+    width: 100%;
+    height: 10px;
+    background-color: var(--background-secondary);
+    border-radius: 5px;
+    margin-top: 5px;
+    overflow: hidden;
+}
+
+.mythras-enc-bar-inner {
+    height: 100%;
+    background-color: var(--color-blue);
+}
+
+.mythras-fatigue-track {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.mythras-fatigue-step {
+    padding: 5px 10px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.mythras-fatigue-step.active {
+    background-color: var(--color-accent);
+    color: var(--text-on-accent);
+}
+
+/* Magic Tradition Toggles */
+.mythras-tradition-toggle {
+    display: inline-block;
+    padding: 5px 15px;
+    margin: 0 5px 5px 0;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 15px;
+    cursor: pointer;
+}
+
+.mythras-magic-toggles {
+    margin-bottom: 20px;
+}
+
+.mythras-character-editor {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.mythras-character-tab-content {
+    padding: 15px;
+}

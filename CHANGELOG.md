@@ -5,7 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
+### Added
+- **Mythras Player Character Sheet (Issue #31):**
+  - Fully featured character sheet editor specifically designed for Mythras players.
+  - Interactive "Sticky HUD" tracking Action Points, Magic Points, Luck, Fatigue, and Wound conditions.
+  - Ergonomic 6-tab modular architecture covering Identity, Skills, Combat, Gear, Magic, and Growth.
+  - Integration with the existing Armory for auto-calculating weapon damage and encumbrance.
+  - Support for the 5 modular Magic Traditions (Folk, Theism, Sorcery, Animism, Mysticism).
+  - Integrated "Improvement Wizard" that aggregates XP Ticks from skills for rapid end-of-session improvement rolls.
+  - "GM Mode" vs "Player Mode" setting to simplify the UI for players by hiding Bestiary and Roster tools.
 ## [1.1.0] - 2026-08-30
 ### Added
 - **Unified Creature Editor Component (`editor-shared.ts`):**

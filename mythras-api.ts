@@ -88,6 +88,326 @@ export interface MythrasInstance {
     notes: string;
 }
 
+// ---- Player Character Data Model ----
+
+export interface CharacteristicValue {
+    base: number;
+    current: number;
+}
+
+export interface CharacterIdentity {
+    characterName: string;
+    playerName: string;
+    campaign: string;
+    concept: string;
+    species: string;
+    culture: string;
+    homeland: string;
+    socialClass: string;
+    career: string;
+    currentSocialRank: string;
+    age: number;
+    gender: string;
+    height: string;
+    weight: string;
+    handedness: 'Right' | 'Left' | 'Ambidextrous';
+    distinctiveFeatures: string;
+    lineageAndFamily: string;
+    alliesAndContacts: string[];
+    rivalsAndEnemies: string[];
+    backstoryNotes: string;
+}
+
+export interface Passion {
+    id: string;
+    type: string;
+    target: string;
+    baseFormula: string;
+    value: number;
+    experienceTick: boolean;
+    notes: string;
+}
+
+export interface SkillEntry {
+    name: string;
+    baseFormula: string;
+    baseValue: number;
+    culturePoints: number;
+    careerPoints: number;
+    bonusPoints: number;
+    experienceIncreases: number;
+    totalValue: number;
+    experienceTick: boolean;
+    hasArmorPenalty: boolean;
+}
+
+export interface CombatStyleEntry extends SkillEntry {
+    weaponsCovered: string[];
+    combatTraits: string[];
+}
+
+export interface CharacterHitLocation {
+    locationId: string;
+    range: string;
+    name: string;
+    maxHp: number;
+    currentHp: number;
+    naturalArmorAp: number;
+    equippedArmorAp: number;
+    totalAp: number;
+    wornArmorType: string;
+    wornArmorEnc: number;
+    status: 'Normal' | 'Minor' | 'Serious' | 'Major' | 'Severed/Crippled';
+    notes: string;
+}
+
+export interface CharacterWeapon {
+    id: string;
+    name: string;
+    combatStyle: string;
+    type: string;
+    damage: string;
+    damageModifier: boolean;
+    size: string;
+    reach: string;
+    range: string;
+    load: string;
+    ap: number;
+    maxHp: number;
+    currentHp: number;
+    enc: number;
+    specialFx: string[];
+    traits: string[];
+    isEquipped: boolean;
+    notes: string;
+}
+
+export interface InventoryItem {
+    id: string;
+    name: string;
+    category: string;
+    quantity: number;
+    unitEnc: number;
+    totalEnc: number;
+    locationCarried: string;
+    description: string;
+}
+
+export interface Coinage {
+    copper: number;
+    silver: number;
+    gold: number;
+    otherValuablesTotalSp: number;
+    bankedWealthSp: number;
+    lifestyle: string;
+}
+
+export interface FolkMagicSpell {
+    id: string;
+    name: string;
+    mpCost: number;
+    range: string;
+    duration: string;
+    magnitude: number;
+    description: string;
+}
+
+export interface FolkMagicTradition {
+    skillName: string;
+    skillValue: number;
+    experienceTick: boolean;
+    spells: FolkMagicSpell[];
+}
+
+export interface TheismMiracle {
+    id: string;
+    name: string;
+    magnitude: number;
+    mpCost: number;
+    castingTime: string;
+    range: string;
+    duration: string;
+    description: string;
+}
+
+export interface TheismTradition {
+    cultName: string;
+    deity: string;
+    cultRank: string;
+    devotionSkillValue: number;
+    devotionExperienceTick: boolean;
+    exhortSkillValue: number;
+    exhortExperienceTick: boolean;
+    miracles: TheismMiracle[];
+    geasesAndTaboos: string[];
+    divineGifts: string[];
+}
+
+export interface SorcerySpell {
+    name: string;
+    baseMpCost: number;
+    baseRange: string;
+    baseDuration: string;
+    baseArea: string;
+    description: string;
+}
+
+export interface SorceryGrimoire {
+    id: string;
+    name: string;
+    lore: string;
+    spells: SorcerySpell[];
+}
+
+export interface SorceryTradition {
+    invocationSkillValue: number;
+    invocationExperienceTick: boolean;
+    shapingSkillValue: number;
+    shapingExperienceTick: boolean;
+    maxShapingComponents: number;
+    grimoires: SorceryGrimoire[];
+}
+
+export interface BoundSpirit {
+    id: string;
+    name: string;
+    spiritType: string;
+    int: number;
+    pow: number;
+    cha: number;
+    mp: number;
+    spiritPowers: string[];
+    fetishItem: string;
+    bindingStatus: string;
+}
+
+export interface AnimismTradition {
+    tranceSkillValue: number;
+    tranceExperienceTick: boolean;
+    bindingSkillValue: number;
+    bindingExperienceTick: boolean;
+    spiritCombatDamage: string;
+    spirits: BoundSpirit[];
+}
+
+export interface MysticismTalent {
+    name: string;
+    intensity: number;
+    mpCost: number;
+    duration: string;
+    effectDescription: string;
+}
+
+export interface MysticismTradition {
+    schoolOrPath: string;
+    mysticismSkillValue: number;
+    mysticismExperienceTick: boolean;
+    meditationSkillValue: number;
+    meditationExperienceTick: boolean;
+    talents: MysticismTalent[];
+}
+
+export interface CharacterMagic {
+    folkMagic?: FolkMagicTradition;
+    theism?: TheismTradition;
+    sorcery?: SorceryTradition;
+    animism?: AnimismTradition;
+    mysticism?: MysticismTradition;
+}
+
+export interface OrganizationMembership {
+    id: string;
+    name: string;
+    type: string;
+    rank: string;
+    socialStatus: string;
+    obligations: string;
+    benefitsAndPrivileges: string;
+    geasesAndCodes: string[];
+    standingReputation: number;
+}
+
+export interface TrainingEntry {
+    trainerName: string;
+    skillOrCharacteristic: string;
+    timeInvestedDays: number;
+    requiredDays: number;
+    silverCostPaid: number;
+    status: string;
+}
+
+export interface CharacterProgression {
+    improvementRollsAvailable: number;
+    improvementRollsSpentTotal: number;
+    experienceModifier: number;
+    trainingLog: TrainingEntry[];
+    advancementHistory: {
+        date: string;
+        sessionNumber: number;
+        action: string;
+        rollsSpent: number;
+    }[];
+}
+
+export interface MythrasCharacter {
+    id: string;
+    schemaVersion: string;
+    lastModified: number;
+    image: string;
+    identity: CharacterIdentity;
+    characteristics: {
+        str: CharacteristicValue;
+        con: CharacteristicValue;
+        siz: CharacteristicValue;
+        dex: CharacteristicValue;
+        int: CharacteristicValue;
+        pow: CharacteristicValue;
+        cha: CharacteristicValue;
+    };
+    derivedAttributes: {
+        actionPoints: number;
+        damageModifier: string;
+        initiativeBase: number;
+        initiativeCurrent: number;
+        movementRate: number;
+        maxEncumbrance: number;
+        healingRate: number;
+        magicPointsMax: number;
+        magicPointsCurrent: number;
+        dedicatedMagicPoints: number;
+        luckPointsMax: number;
+        luckPointsCurrent: number;
+        experienceModifier: number;
+        tenacity: string;
+    };
+    passions: Passion[];
+    skills: {
+        standard: Record<string, SkillEntry>;
+        resistances: Record<string, SkillEntry>;
+        languages: Record<string, SkillEntry>;
+        professional: Record<string, SkillEntry>;
+        magical: Record<string, SkillEntry>;
+        combatStyles: Record<string, CombatStyleEntry>;
+    };
+    hitLocations: CharacterHitLocation[];
+    weapons: CharacterWeapon[];
+    condition: {
+        carriedEnc: number;
+        maxEnc: number;
+        encumbranceLevel: string;
+        totalArmorEnc: number;
+        armorSkillPenalty: number;
+        armorStrikeRankPenalty: number;
+        fatigueLevel: string;
+    };
+    wealth: Coinage;
+    inventory: InventoryItem[];
+    magic: CharacterMagic;
+    organizations: OrganizationMembership[];
+    progression: CharacterProgression;
+    notes: string;
+}
+
 export class MythrasApi {
     private static BASE_URL = 'https://mythras.skoll.xyz';
 
