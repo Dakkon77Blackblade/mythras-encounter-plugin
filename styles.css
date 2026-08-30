@@ -1741,4 +1741,34 @@
     margin-top: 20px;
 }
 
+/* Unified Editor Customizations */
+.mythras-manager-tabs {
+    display: flex;
+    gap: 8px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    position: sticky;
+    top: 0;
+    background-color: var(--background-primary);
+    z-index: 10;
+    flex-wrap: wrap;
+}
 
+.mythras-manager-tabs button {
+    cursor: pointer;
+}
+
+.mythras-span-full {
+    grid-column: 1 / -1 !important;
+}
+
+.mythras-manager-actions {
+    position: sticky;
+    top: 0;
+    background-color: var(--background-primary);
+    z-index: 11;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--background-modifier-border);
+    margin-bottom: 10px;
+}

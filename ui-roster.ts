@@ -1,8 +1,8 @@
 import { App, Modal, Setting, Notice, TFile, TFolder, normalizePath, setIcon } from 'obsidian';
-import { ImageSuggestModal } from './modal-image-search';
 import MythrasEncounterPlugin from './main';
 import { MythrasInstance } from './mythras-api';
 import { ConfirmModal } from './ui-armory';
+import { renderUnifiedEditor, EditorTab } from './editor-shared';
 
 export class PromptModal extends Modal {
     title: string;
@@ -226,7 +226,7 @@ export class RosterManagerUI {
     lastSelectedInstancePath: string | null = null;
 
     // Edit View Tabs
-    editTab: 'general' | 'stats' | 'hitlocations' | 'skills' | 'weapons' = 'general';
+    editTab: EditorTab = 'general';
 
     constructor(app: App, plugin: MythrasEncounterPlugin, containerEl: HTMLElement) {
         this.app = app;
@@ -944,251 +944,14 @@ export class RosterManagerUI {
             this.display();
         };
 
-        const tabsDiv = container.createDiv('armory-tabs mythras-manager-header-controls mythras-tab-bar mythras-mb-20');
-
-        const createTab = (id: typeof this.editTab, label: string) => {
-            const btn = tabsDiv.createEl('button', { text: label });
-            if (this.editTab === id) btn.addClass('mod-cta');
-            btn.onclick = () => {
-                this.editTab = id;
-                this.display();
-            };
-        };
-
-        createTab('general', 'General');
-        createTab('hitlocations', 'Hit Locations');
-        createTab('stats', 'Stats & Attributes');
-        createTab('skills', 'Skills');
-        createTab('weapons', 'Weapons');
-
-        const formArea = container.createDiv('mythras-manager-form mythras-roster-form-scroll');
-
-        const createTextField = (label: string, val: string, onChange: (v: string) => void) => {
-            const wrap = formArea.createDiv('mythras-manager-form-group');
-            wrap.createEl('label', { text: label });
-            const inp = wrap.createEl('input', { type: 'text', cls: 'mythras-manager-input' });
-            inp.value = val;
-            inp.oninput = (e) => onChange((e.target as HTMLInputElement).value);
-        };
-
-        if (this.editTab === 'general') {
-            createTextField('Instance Name', data.instanceName, v => data.instanceName = v);
-            createTextField('Scenario', data.scenario, v => data.scenario = v);
-            createTextField('Encounter', data.encounter, v => data.encounter = v);
-            
-            const imgWrap = formArea.createDiv('mythras-manager-input-group mythras-align-end');
-            
-            const fieldWrap = imgWrap.createDiv('mythras-manager-form-group mythras-flex-1');
-            fieldWrap.createEl('label', { text: 'Image' });
-            
-            const imgInp = fieldWrap.createEl('input', { type: 'text', cls: 'mythras-manager-input' });
-            imgInp.value = data.image || '';
-            imgInp.placeholder = 'e.g. [[image.png]]';
-            imgInp.oninput = (e) => data.image = (e.target as HTMLInputElement).value;
-            
-            const btnBrowse = imgWrap.createEl('button', { text: 'Search Vault...', cls: 'mythras-btn-secondary' });
-            btnBrowse.onclick = () => {
-                new ImageSuggestModal(this.app, (file) => {
-                    const link = `[[${file.name}]]`;
-                    imgInp.value = link;
-                    data.image = link;
-                }).open();
-            };
-
-
-            
-            const notesWrap = formArea.createDiv('mythras-manager-form-group');
-            notesWrap.createEl('label', { text: 'Notes', cls: 'mythras-bold' });
-            const ta = notesWrap.createEl('textarea', { cls: 'mythras-w-full mythras-manager-input' });
-            ta.value = data.notes || '';
-            ta.rows = 6;
-            ta.oninput = (e) => data.notes = (e.target as HTMLTextAreaElement).value;
-
-        } else if (this.editTab === 'hitlocations') {
-            const table = formArea.createEl('table', { cls: 'mythras-manager-table' });
-            const thead = table.createEl('thead').createEl('tr');
-            ['Location', 'Range', 'AP', 'Current HP', 'Max HP'].forEach(h => {
-                thead.createEl('th', { text: h, cls: 'mythras-manager-th' });
-            });
-            const tbody = table.createEl('tbody');
-
-            data.hitLocations.forEach(hl => {
-                const tr = tbody.createEl('tr', { cls: 'mythras-manager-tr' });
-                tr.createEl('td', { text: hl.name, cls: 'mythras-manager-td' });
-                tr.createEl('td', { text: hl.range, cls: 'mythras-manager-td' });
-                
-                const apTd = tr.createEl('td', { cls: 'mythras-manager-td' });
-                const apInp = apTd.createEl('input', { type: 'text', cls: 'mythras-manager-input mythras-input-w60' });
-                apInp.value = hl.ap;
-                apInp.oninput = (e) => hl.ap = (e.target as HTMLInputElement).value;
-
-                const currTd = tr.createEl('td', { cls: 'mythras-manager-td' });
-                const currInp = currTd.createEl('input', { type: 'number', cls: 'mythras-manager-input mythras-input-w60' });
-                currInp.value = hl.currentHp.toString();
-                currInp.oninput = (e) => hl.currentHp = parseInt((e.target as HTMLInputElement).value) || 0;
-
-                const maxTd = tr.createEl('td', { cls: 'mythras-manager-td' });
-                const maxInp = maxTd.createEl('input', { type: 'number', cls: 'mythras-manager-input mythras-input-w60' });
-                maxInp.value = hl.hp.toString();
-                maxInp.oninput = (e) => hl.hp = parseInt((e.target as HTMLInputElement).value) || 0;
-            });
-
-        } else if (this.editTab === 'stats') {
-            const grid = formArea.createDiv('mythras-grid-200');
-
-            const renderObj = (obj: any, label: string) => {
-                formArea.createEl('h3', { text: label });
-                const wrap = formArea.createDiv('mythras-grid-150');
-                
-                Object.keys(obj).forEach(k => {
-                    const field = wrap.createDiv('mythras-manager-form-group');
-                    field.createEl('label', { text: k });
-                    const inp = field.createEl('input', { type: typeof obj[k] === 'number' ? 'number' : 'text', cls: 'mythras-manager-input' });
-                    inp.value = obj[k].toString();
-                    inp.oninput = (e) => {
-                        const val = typeof obj[k] === 'number' 
-                            ? parseInt((e.target as HTMLInputElement).value) || 0 
-                            : (e.target as HTMLInputElement).value;
-                        obj[k] = val;
-
-                        if (k === 'Damage Mod') {
-                            data.weapons.forEach(w => {
-                                const aw = this.plugin.armoryCache.find(a => a.name.toLowerCase() === w.name.toLowerCase());
-                                if (aw && aw.damageModifier !== false) {
-                                    let baseDmg = aw.damage;
-                                    if (val && val !== '+0' && val !== '0') {
-                                        const mod = (val as string).startsWith('+') || (val as string).startsWith('-') ? val : '+' + val;
-                                        baseDmg += mod;
-                                    }
-                                    w.damage = baseDmg;
-                                }
-                            });
-                        }
-                    };
-                });
-            };
-
-            renderObj(data.stats, 'Core Stats');
-            renderObj(data.attributes, 'Attributes');
-
-        } else if (this.editTab === 'skills') {
-            const renderDict = (obj: Record<string, number>, label: string) => {
-                const wrap = formArea.createDiv('mythras-manager-form-group');
-                wrap.createEl('h3', { text: label });
-                const listDiv = wrap.createDiv('mythras-manager-list');
-
-                const redraw = () => {
-                    listDiv.empty();
-                    Object.keys(obj).forEach(key => {
-                        const row = listDiv.createDiv('mythras-manager-list-row');
-                        const kInput = row.createEl('input', { type: 'text' });
-                        kInput.value = key;
-                        const vInput = row.createEl('input', { type: 'number', cls: 'mythras-manager-input' });
-                        vInput.value = obj[key].toString();
-                        
-                        const btnDel = row.createEl('button', { text: 'X', cls: 'mythras-btn-icon mythras-btn-danger' });
-                        btnDel.onclick = () => {
-                            delete obj[key];
-                            redraw();
-                        };
-
-                        const update = () => {
-                            if (kInput.value !== key) {
-                                delete obj[key];
-                            }
-                            if (kInput.value) {
-                                obj[kInput.value] = parseInt(vInput.value) || 0;
-                            }
-                        };
-                        kInput.onchange = update;
-                        vInput.onchange = update;
-                    });
-
-                    const btnAdd = listDiv.createEl('button', { text: '+ Add', cls: 'mythras-btn-secondary mythras-self-start' });
-                    btnAdd.onclick = () => {
-                        obj['New Skill'] = 0;
-                        redraw();
-                    };
-                };
-                redraw();
-            };
-            if (!data.magicSkills) data.magicSkills = {};
-            if (!data.professionalSkills) data.professionalSkills = {};
-
-            renderDict(data.standardSkills, 'Standard Skills');
-            renderDict(data.magicSkills, 'Magic Skills');
-            renderDict(data.professionalSkills, 'Professional Skills');
-            renderDict(data.customSkills, 'Custom Skills');
-            renderDict(data.combatStyles, 'Combat Styles');
-        } else if (this.editTab === 'weapons') {
-            const btnAdd = formArea.createEl('button', { text: '+ Add Weapon', cls: 'mod-cta mythras-btn-w200' });
-            btnAdd.onclick = () => {
-                const defaultWeapon = this.plugin.armoryCache.length > 0 ? this.plugin.armoryCache[0] : { name: 'New Weapon' };
-                const newWeapon = JSON.parse(JSON.stringify(defaultWeapon));
-                newWeapon.isOptional = false;
-                data.weapons.push(newWeapon);
-                this.display(); // re-render
-            };
-
-            data.weapons.forEach((w, idx) => {
-                const wrap = formArea.createDiv('mythras-weapon-card');
-
-                const btnDel = wrap.createEl('button', { cls: 'clickable-icon mod-warning mythras-card-del-btn' });
-                setIcon(btnDel, 'trash-2');
-                btnDel.onclick = () => {
-                    data.weapons.splice(idx, 1);
-                    this.display();
-                };
-
-                const grid = wrap.createDiv('mythras-grid-200-gap10 mythras-mt-20');
-
-                const selWrap = grid.createDiv('mythras-manager-form-group');
-                selWrap.createEl('label', { text: 'Select Weapon from Armory', cls: 'mythras-text-sm' });
-                const sel = selWrap.createEl('select');
-                
-                const inArmory = this.plugin.armoryCache.some(aw => aw.name.toLowerCase() === w.name.toLowerCase());
-                if (!inArmory) {
-                    sel.createEl('option', { value: w.name, text: `${w.name} (Custom)` }).selected = true;
-                }
-
-                this.plugin.armoryCache.forEach(aw => {
-                    const opt = sel.createEl('option', { value: aw.name, text: aw.name });
-                    if (w.name.toLowerCase() === aw.name.toLowerCase()) {
-                        opt.selected = true;
-                    }
-                });
-
-                sel.onchange = (e) => {
-                    const selectedName = (e.target as HTMLSelectElement).value;
-                    const armoryWeapon = this.plugin.armoryCache.find(aw => aw.name === selectedName);
-                    if (armoryWeapon) {
-                        let newDamage = armoryWeapon.damage;
-                        const damageMod = data.attributes['Damage Mod'] as string;
-                        if (newDamage && armoryWeapon.damageModifier !== false && damageMod && damageMod !== '+0' && damageMod !== '0') {
-                            const mod = damageMod.startsWith('+') || damageMod.startsWith('-') ? damageMod : '+' + damageMod;
-                            newDamage += mod;
-                        }
-
-                        Object.assign(w, armoryWeapon);
-                        w.damage = newDamage;
-                        this.display();
-                    }
-                };
-
-                const createField = (label: string, field: 'ap' | 'hp') => {
-                    const fWrap = grid.createDiv('mythras-manager-form-group');
-                    fWrap.createEl('label', { text: label, cls: 'mythras-text-sm' });
-                    const inp = fWrap.createEl('input', { type: 'text', cls: 'mythras-manager-input' });
-                    inp.value = (w[field] as string) || '';
-                    inp.oninput = (e) => w[field] = (e.target as HTMLInputElement).value;
-                };
-
-                createField('AP', 'ap');
-                createField('HP', 'hp');
-                
-                const readWrap = wrap.createDiv('mythras-weapon-summary-text');
-                readWrap.setText(`Damage: ${w.damage || '-'} | Type: ${w.type || '-'} | Size/Force: ${w.size || '-'} | Reach/Range: ${w.reach || w.range || '-'} | Special: ${w.specialFx || 'None'}`);
-            });
-        }
+        const formArea = container.createDiv('mythras-roster-form-scroll');
+        
+        renderUnifiedEditor(formArea, 'instance', data, {
+            app: this.app,
+            plugin: this.plugin,
+            activeTab: this.editTab,
+            onTabChange: (tab) => { this.editTab = tab; this.display(); },
+            armoryWeapons: this.plugin.armoryCache
+        });
     }
 }
