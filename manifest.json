@@ -1,7 +1,7 @@
 {
 	"id": "mythras-encounter-plugin",
 	"name": "Mythras Encounter Generator",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"minAppVersion": "0.15.0",
 	"description": "Import templates and generate Mythras encounters locally.",
 	"author": "Christian",

@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-08-30
+### Added
+- **Unified Creature Editor Component (`editor-shared.ts`):**
+  - Consolidated Bestiary template editing and Roster instance editing into a single shared editor architecture.
+  - Standardized ergonomic 6-tab navigation layout: *General*, *Stats & Attributes*, *Hit Locations*, *Skills*, *Weapons*, and *Features* (template mode only).
+  - Sticky tab bar and action buttons with responsive CSS grids for minimal scrolling and optimal scannability.
+  - Full feature parity for instance editing modal (`EnemyInstanceEditModal`), including vault Armory selector integration, AP/HP overrides, and live weapon summary badges.
+
 ## [1.0.0] - 2026-08-28
 ### Added
 - **Mythras Combat Tool (Initiative & Action Point Tracker) (Issue #31):**
