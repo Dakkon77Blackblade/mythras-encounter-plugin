@@ -1853,7 +1853,7 @@
 
 .mythras-skill-row {
     display: grid;
-    grid-template-columns: 20px 1fr 60px 25px 40px 35px 20px;
+    grid-template-columns: 20px 1fr 85px 25px 40px 35px 20px;
     align-items: center;
     gap: 5px;
     padding: 2px 0;
@@ -1866,7 +1866,7 @@
 }
 
 .mythras-skill-grid {
-    column-width: 320px;
+    column-width: 380px;
     column-gap: 15px;
     display: block;
 }
@@ -1875,7 +1875,7 @@
     break-inside: avoid;
     page-break-inside: avoid;
     -webkit-column-break-inside: avoid;
-    margin-bottom: 15px;
+    margin-bottom: 30px;
     display: inline-block;
     width: 100%;
 }
