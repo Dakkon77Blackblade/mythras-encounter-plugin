@@ -2244,3 +2244,38 @@
 .status-serious { background-color: rgba(248, 81, 73, 0.15); color: var(--text-error); border: 1px solid rgba(248, 81, 73, 0.3); }
 .status-major { background-color: rgba(248, 81, 73, 0.3); color: var(--text-error); border: 1px solid rgba(248, 81, 73, 0.5); }
 .status-severed-crippled { background-color: rgba(248, 81, 73, 0.5); color: var(--text-error); font-weight: 900; }
+
+.mythras-skill-category-title button {
+    padding: 2px 8px;
+    font-size: 0.8em;
+    line-height: 1;
+    height: auto;
+}
+
+.mythras-skill-name {
+    font-weight: normal !important;
+    font-size: var(--font-ui-small);
+}
+
+.mythras-skill-name input {
+    width: 100%;
+    min-width: 0;
+}
+
+.mythras-skill-del-btn {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    font-size: 0.9em;
+    font-weight: normal;
+    color: var(--text-muted);
+    opacity: 0.5;
+    cursor: pointer;
+}
+
+.mythras-skill-del-btn:hover {
+    opacity: 1;
+    color: var(--text-error);
+    background: transparent;
+}

@@ -420,7 +420,12 @@ export class CharacterManagerUI {
                             await this.saveCurrentCharacter();
                         };
                     } else {
-                        nameContainer.createSpan({ text: skill.name });
+                        const link = nameContainer.createEl('a', { text: skill.name, cls: 'internal-link' });
+                        link.href = '#';
+                        link.onclick = (e) => {
+                            e.preventDefault();
+                            this.app.workspace.openLinkText(skill.name, '', false);
+                        };
                     }
 
                     const formulaContainer = row.createDiv('mythras-skills-pills');
@@ -455,7 +460,7 @@ export class CharacterManagerUI {
                 row.createSpan({ text: `${skill.totalValue}%`, cls: 'mythras-skill-val' });
                 
                 if (canAdd) {
-                    const delBtn = row.createEl('button', { text: '✕', cls: 'mythras-btn' });
+                    const delBtn = row.createEl('button', { text: '✕', cls: 'mythras-skill-del-btn' });
                     delBtn.onclick = async () => {
                         delete skillDict[skill.name];
                         await this.saveCurrentCharacter();
