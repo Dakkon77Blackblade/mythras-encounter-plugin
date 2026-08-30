@@ -11,7 +11,7 @@ export class CharacterManagerUI {
     container: HTMLElement;
     characterService: CharacterService;
     
-    characters: MythrasCharacter[] = [];
+    characters: MythrasCharacter[] | null = null;
     selectedCharacterId: string | null = null;
     editingCharacter: MythrasCharacter | null = null;
     activeTab: CharacterEditorTab = 'identity';
@@ -45,7 +45,7 @@ export class CharacterManagerUI {
     }
     
     async loadCharacters(forceReload = false): Promise<void> {
-        if (forceReload || !this.characters) {
+        if (forceReload || this.characters === null) {
             this.characters = await this.characterService.listCharacters();
         }
         
@@ -67,7 +67,7 @@ export class CharacterManagerUI {
         setIcon(createBtn, 'plus');
         createBtn.onclick = async () => {
             const char = await this.characterService.createCharacter('New Character');
-            if (!this.characters) this.characters = [];
+            if (this.characters === null) this.characters = [];
             this.characters.push(char);
             this.selectedCharacterId = char.id;
             this.editingCharacter = char;
@@ -75,7 +75,8 @@ export class CharacterManagerUI {
         };
         
         const list = sidebar.createDiv('mythras-manager-sidebar-list');
-        for (const char of this.characters) {
+        if (this.characters) {
+            for (const char of this.characters) {
             const item = list.createDiv('mythras-manager-sidebar-item');
             if (this.selectedCharacterId === char.id) {
                 item.addClass('active');
@@ -105,6 +106,7 @@ export class CharacterManagerUI {
                 this.editingCharacter = char;
                 await this.render();
             };
+        }
         }
     }
     
